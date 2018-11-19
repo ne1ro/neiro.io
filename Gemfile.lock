@@ -141,7 +141,7 @@ GEM
     nuggets (1.5.0)
     pathutil (0.16.2)
       forwardable-extended (~> 2.6)
-    pry (0.12.1)
+    pry (0.12.2)
       coderay (~> 1.1.0)
       method_source (~> 0.9.0)
     pry-bloodline (0.0.2)

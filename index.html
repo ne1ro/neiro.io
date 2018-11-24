@@ -1,19 +1,14 @@
 ---
 layout: default
-title: Web development, functional programming
+title: Functional programming, web development, DevOps
 ---
 
 {% for post in site.posts %}
   <article>
-    <div class="title-container">
+    <div class="container">
       <h1>
         <a href="{{ post.url }}">{{ post.title }}</a>
       </h1>
-    </div>
-
-    <div class="date-container">
-      <p>{{ post.date | | date: '%d %B, %Y' }}</p>
-      <p>⏳<i> {{ post.content | reading_time_as_i }} </i></p>
     </div>
 
     <content>

@@ -1,7 +1,5 @@
-// @include sticky-footer(12.5em)
-
 footer
-  @include font-size(18px)
+  @include font-size(20px)
   background-position: 50%
   padding: gutter()
   z-index: 0
@@ -17,16 +15,15 @@ footer
     padding-left: 0
 
   a
-    color: white
+    color: black
     &:hover
-      @include color-transition($red)
+      @include color-transition($black + #333)
 
   li.current a
     text-decoration: none
-    color: $red-light
+    color: $gray
 
   &:before
-    background-image: linear-gradient(to top, rgba(0, 0, 0, 0.95), rgba(0, 0, 0, 0.25))
     position: absolute
     width: 100%
     height: 100%

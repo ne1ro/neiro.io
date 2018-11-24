@@ -1,5 +1,5 @@
 a
-  @include link-colors($dark, $red, $red + #444, $silver)
+  @include link-colors($dark, $dark, #444, $silver)
   &.icon-link
     display: inline-block
     text-decoration: none
@@ -8,4 +8,4 @@ a
       text-decoration: underline
 
   &:hover
-    @include color-transition($red)
+    @include color-transition($gray + #222)

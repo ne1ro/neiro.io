@@ -10,7 +10,6 @@ gem 'kramdown'
 gem 'rouge'
 gem 'sass', '~> 3.4.0'
 gem 'sass-globbing', require: true
-gem 'compass'
 gem 'susy'
 gem 'breakpoint', '~> 2.7.1'
 gem 'font-awesome-sass', '~> 5.5.0'

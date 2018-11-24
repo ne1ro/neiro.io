@@ -2,8 +2,8 @@ source 'https://rubygems.org'
 
 gem 'bundler'
 gem 'rake'
-gem 'jekyll'
-gem 'jekyll-assets', '~> 3.0.12', require: true
+gem 'jekyll', '~> 3.8.5'
+gem 'jekyll-assets', '~> 3.0.12', require: true, group: :jekyll_plugin
 gem 'jekyll-tagging'
 gem 'jekyll-sitemap'
 gem 'kramdown'

@@ -13,6 +13,11 @@ linkedin: "https://linkedin.com/in/neiro"
 timezone: Europe/Moscow
 markdown: kramdown
 highlighter: rouge
+assets:
+  source_maps: true
+  destination: "/assets"
+  gzip: true
+
 kramdown:
   input: GFM
   syntax_highlighter: rouge

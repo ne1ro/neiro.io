@@ -261,8 +261,9 @@
     date_end: Mar 2017
     description: Full-stack Ruby on Rails development, testing, deployment
 
-  - name: Top Secret Elixir Project
+  - name: Salam
     id: elixir
+    url: https://salam.io
     skills:
       - Elixir
       - Phoenix
@@ -271,5 +272,6 @@
       - SQL
       - REST API
       - PostgreSQL
+      - AWS
     date_start: Mar 2017
     description: Back-end, DevOps, Elixir development

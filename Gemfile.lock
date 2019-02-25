@@ -120,7 +120,7 @@ GEM
       jekyll
     jekyll-watch (2.1.2)
       listen (~> 3.0)
-    json (2.1.0)
+    json (2.2.0)
     kramdown (1.17.0)
     liquid (4.0.1)
     liquid-tag-parser (1.9.0)

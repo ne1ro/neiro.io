@@ -2,7 +2,7 @@ source 'https://rubygems.org'
 
 gem 'bundler'
 gem 'rake'
-gem 'jekyll', '~> 3.8.5'
+gem 'jekyll', '~> 3.8.6'
 gem 'jekyll-assets', '~> 3.0.12', require: true, group: :jekyll_plugin
 gem 'jekyll-tagging'
 gem 'jekyll-sitemap'

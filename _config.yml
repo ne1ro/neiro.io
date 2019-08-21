@@ -10,6 +10,7 @@ url: "http://neiro.io"
 source_url: "https://github.com/ne1ro/neiro.io"
 github: "https://github.com/ne1ro"
 linkedin: "https://linkedin.com/in/neiro"
+salam: "https://salam.io/neiro"
 timezone: Europe/Moscow
 markdown: kramdown
 highlighter: rouge

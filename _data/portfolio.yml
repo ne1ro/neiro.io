@@ -266,12 +266,14 @@
     url: https://salam.io
     skills:
       - Elixir
+      - Clojure
       - Phoenix
       - Ruby
       - DevOps
       - SQL
       - REST API
+      - GraphQL
       - PostgreSQL
       - AWS
-    date_start: Mar 2017
-    description: Back-end, DevOps, Elixir development
+    date_start: Apr 2017
+    description: CTO, Back-end team-leader, DevOps, Elixir/Clojure development

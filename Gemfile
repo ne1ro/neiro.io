@@ -26,7 +26,7 @@ group :development do
   gem 'thin'
   gem 'terminal-notifier'
   gem 'terminal-notifier-guard', '~> 1.7.0'
-  gem 'capistrano', '~> 3.11.0'
+  gem 'capistrano', '~> 3.11.1'
   gem 'capistrano-rbenv', '~> 2.1'
   gem 'capistrano-bundler'
   gem 'capistrano-jekyll'

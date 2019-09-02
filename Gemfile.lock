@@ -15,7 +15,7 @@ GEM
     breakpoint (2.7.1)
       sass (~> 3.3)
       sassy-maps (< 1.0.0)
-    capistrano (3.11.0)
+    capistrano (3.11.1)
       airbrussh (>= 1.0.0)
       i18n
       rake (>= 10.0.0)
@@ -204,7 +204,7 @@ DEPENDENCIES
   awesome_print
   breakpoint (~> 2.7.1)
   bundler
-  capistrano (~> 3.11.0)
+  capistrano (~> 3.11.1)
   capistrano-bundler
   capistrano-jekyll
   capistrano-rbenv (~> 2.1)

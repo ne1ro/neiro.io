@@ -12,7 +12,7 @@ gem 'sass', '~> 3.4.0'
 gem 'sass-globbing', require: true
 gem 'susy'
 gem 'breakpoint', '~> 2.7.1'
-gem 'font-awesome-sass', '~> 5.5.0'
+gem 'font-awesome-sass', '~> 5.9.0'
 gem 'uglifier'
 gem 'json'
 gem 'jekyll-feed'

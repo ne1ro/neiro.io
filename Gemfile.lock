@@ -43,7 +43,7 @@ GEM
       forwardable-extended (~> 2.5)
     fastimage (2.1.5)
     ffi (1.11.1)
-    font-awesome-sass (5.11.1)
+    font-awesome-sass (5.11.2)
       sassc (>= 1.11)
     formatador (0.2.5)
     forwardable-extended (2.6.0)
@@ -208,7 +208,7 @@ DEPENDENCIES
   capistrano-bundler
   capistrano-jekyll
   capistrano-rbenv (~> 2.1)
-  font-awesome-sass (~> 5.11.1)
+  font-awesome-sass (~> 5.11.2)
   guard
   guard-jekyll-plus
   guard-livereload (~> 2.4)

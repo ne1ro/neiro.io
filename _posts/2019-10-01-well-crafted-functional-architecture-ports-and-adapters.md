@@ -1,7 +1,8 @@
-layout: post
-title: Well Crafted Functional Architecture: Ports & Adapters
-crosspost_to_medium: true
-tags: [programming, elixir, functional, architecture]
+---
+  layout: post
+  title: "Well Crafted Functional Architecture: Ports & Adapters"
+  crosspost_to_medium: true
+  tags: [programming,elixir,functional,architecture]
 ---
 
 At [Salam.io](https://salam.io) we are developing a modern social platform containing a humongous amount of features.
@@ -32,7 +33,7 @@ Ports & adapters architecture also has another name: *Hexagonal architecture*. A
 
 The hexagon should not contain any references to another frameworks, real world services, libraries, etc. - all these elements should be adapters. At the same time the architecture doesn't prescribe you to design your hexagon in some certain way - you can use Layer architecture, Onion, DDD or any another suitable architecture inside or it may be a pure business logic without any sophistications - it's up to you.
 
-Why hexagon? Well, any geometric figure with boundaries could work, but the hexagon represents better the concept that you have ports own the edges of your application and adapters behind it. Likewise, it's a symmetric figure and we'll describe below why it's important.
+Why hexagon? Well, any geometric figure with boundaries could work, but the hexagon represents better the concept that you have ports at the edges of your application and adapters behind it. Likewise, it's a symmetric figure and we'll describe below why it's important.
 
 
 # Ports
@@ -103,6 +104,8 @@ Let's assume that we also have a web application that uses our *Core*. If we wan
 
 ```elixir
 defmodule Web.UserController do
+  use Web, :controller
+
   def create(conn, params) do
     result = Core.register_user(params) # will create user and send notifications
    # handle the result somehow

@@ -208,7 +208,7 @@ Now we've covered the basics of ports and adapters architecture. Let's summarise
 ## Cons
 
 * Sometimes it may be an overhead, especially for a small scale software
-* You're pretty sure that the technology stack of your project will remain the same over the years
+* You may not need it if you are pretty sure that the technology stack of your project will remain the same over the years
 
 
 # Conclusion

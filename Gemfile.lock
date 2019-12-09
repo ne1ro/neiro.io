@@ -32,8 +32,6 @@ GEM
     colorize (0.8.1)
     concurrent-ruby (1.1.5)
     daemons (1.3.1)
-    domain_name (0.5.20190701)
-      unf (>= 0.0.5, < 1.0.0)
     em-websocket (0.5.1)
       eventmachine (>= 0.12.9)
       http_parser.rb (~> 0.6.0)
@@ -66,14 +64,6 @@ GEM
       guard (~> 2.8)
       guard-compat (~> 1.0)
       multi_json (~> 1.8)
-    http (2.2.2)
-      addressable (~> 2.3)
-      http-cookie (~> 1.0)
-      http-form_data (~> 1.0.1)
-      http_parser.rb (~> 0.6.0)
-    http-cookie (1.0.3)
-      domain_name (~> 0.5)
-    http-form_data (1.0.3)
     http_parser.rb (0.6.0)
     i18n (0.9.5)
       concurrent-ruby (~> 1.0)
@@ -101,10 +91,6 @@ GEM
       nokogiri (~> 1.8)
       pathutil (~> 0.16)
       sprockets (>= 3.3, < 4.1.beta)
-    jekyll-crosspost-to-medium (0.1.15)
-      http (~> 2.0)
-      jekyll (>= 2.0, < 4.0)
-      json (~> 2.0)
     jekyll-feed (0.13.0)
       jekyll (>= 3.7, < 5.0)
     jekyll-sanity (1.2.0)
@@ -157,7 +143,7 @@ GEM
     rails-assets-jquery (3.4.1)
     rails-assets-normalize-scss (3.0.3)
     rails-assets-rrssb (1.14.0)
-    rake (13.0.0)
+    rake (13.0.1)
     rb-fsevent (0.10.3)
     rb-inotify (0.10.0)
       ffi (~> 1.0)
@@ -191,9 +177,6 @@ GEM
       thread_safe (~> 0.1)
     uglifier (4.2.0)
       execjs (>= 0.3.0, < 3)
-    unf (0.1.4)
-      unf_ext
-    unf_ext (0.0.7.6)
 
 PLATFORMS
   ruby
@@ -212,7 +195,6 @@ DEPENDENCIES
   guard-livereload (~> 2.4)
   jekyll (~> 3.8.5)
   jekyll-assets (~> 3.0.12)
-  jekyll-crosspost-to-medium
   jekyll-feed
   jekyll-sitemap
   jekyll-tagging

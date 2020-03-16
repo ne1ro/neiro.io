@@ -21,7 +21,7 @@ gem 'uglifier'
 
 group :development do
   gem 'awesome_print'
-  gem 'capistrano', '~> 3.12.0'
+  gem 'capistrano', '~> 3.12.1'
   gem 'capistrano-bundler'
   gem 'capistrano-jekyll'
   gem 'capistrano-rbenv', '~> 2.1'

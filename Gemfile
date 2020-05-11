@@ -3,7 +3,7 @@ source 'https://rubygems.org'
 gem 'breakpoint', '~> 2.7.1'
 gem 'bundler'
 gem 'font-awesome-sass', '~> 5.12.0'
-gem 'jekyll', '~> 3.8.5'
+gem 'jekyll', '~> 3.8.7'
 gem 'jekyll-assets', '~> 3.0.12', require: true, group: :jekyll_plugin
 # gem 'jekyll-crosspost-to-medium'
 gem 'jekyll-feed'

@@ -67,7 +67,7 @@ GEM
     http_parser.rb (0.6.0)
     i18n (0.9.5)
       concurrent-ruby (~> 1.0)
-    jekyll (3.8.6)
+    jekyll (3.8.7)
       addressable (~> 2.4)
       colorator (~> 1.0)
       em-websocket (~> 0.5)
@@ -138,13 +138,13 @@ GEM
     pry-bloodline (0.0.2)
       colorize (~> 0.7)
       pry (~> 0.10)
-    public_suffix (4.0.1)
+    public_suffix (4.0.5)
     rack (2.2.1)
     rails-assets-jquery (3.4.1)
     rails-assets-normalize-scss (3.0.3)
     rails-assets-rrssb (1.14.0)
     rake (13.0.1)
-    rb-fsevent (0.10.3)
+    rb-fsevent (0.10.4)
     rb-inotify (0.10.1)
       ffi (~> 1.0)
     rouge (3.18.0)
@@ -193,7 +193,7 @@ DEPENDENCIES
   guard
   guard-jekyll-plus
   guard-livereload (~> 2.4)
-  jekyll (~> 3.8.5)
+  jekyll (~> 3.8.7)
   jekyll-assets (~> 3.0.12)
   jekyll-feed
   jekyll-sitemap

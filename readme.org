@@ -1,0 +1,8 @@
+*** neiro.io
+    :PROPERTIES:
+    :CUSTOM_ID: neiro.io
+    :END:
+
+My personal website.
+
+Uses Org mode and `org-static-blog`.

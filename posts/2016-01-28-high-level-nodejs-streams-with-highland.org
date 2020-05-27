@@ -1,0 +1,164 @@
+#+title: High level Node.JS streams
+#+date: <2016-01-28 10:00>
+#+filetags: :javascript:functional:
+
+Node.js has a simple and powerful stream API. Streams in Node.js are
+unix pipes that let you perform asynchronous I/O operations by reading
+source data and pipe it to destination. If your application operates not
+with streams only, but promises, callbacks or synchronous code, you may
+want to use more deeper abstraction that fits your needs. In this case
+you may take a look at [[http://highlandjs.org/][Highland]].
+
+** Highland
+   :PROPERTIES:
+   :CUSTOM_ID: highland
+   :END:
+
+Highland library allows you to manage asynchronous and synchronous code
+easily both in Node.js and in the browser. With Highland you can simple
+switch between synchronous and asynchronous data sources without
+re-writing your code. You can install Highland with NPM:
+
+#+begin_src shell
+ npm install highland
+#+end_src
+
+and require or import it as yet another Node.js module:
+
+#+begin_src javascript
+ import _ from 'highland';
+#+end_src
+
+** General examples
+   :PROPERTIES:
+   :CUSTOM_ID: general-examples
+   :END:
+
+Converting from arrays to Highland Streams:
+
+#+begin_src javascript
+ _([0, 1, 2]).toArray(xs => console.log(xs));
+// 0, 1, 2
+#+end_src
+
+Map and reduce over a stream:
+
+#+begin_src javascript
+ _([0, 1, 2]).map(x => x + 1).reduce(1, (a,
+b) => a * b); // [6]
+#+end_src
+
+Reading files in parallel:
+
+#+begin_src javascript
+ import fs from 'fs';
+const readFile =
+/.wrapCallback(fs.readFile); const stream = /(['./.babelrc',
+'./.eslintrc']).map(readFile).parallel(2);
+#+end_src
+
+Handling errors:
+
+#+begin_src javascript
+ stream.errors((err, rethrow) => { console.error(err); });
+#+end_src
+
+Pipe to Node.js streams:
+
+#+begin_src javascript
+ stream.pipe(outputStream);
+#+end_src
+
+** Stream objects
+   :PROPERTIES:
+   :CUSTOM_ID: stream-objects
+   :END:
+
+Constructor:
+
+#+begin_src javascript
+ const stream = _(source); // source - Array/Generator/Node Stream/Event Emitter/Promise/Iterator/Iterable
+#+end_src
+
+General functions:
+
+#+begin_src javascript
+stream.destroy(); stream.end();
+stream.pause(); stream.resume(); stream.write(x); // Write x value to
+stream
+#+end_src
+
+** Transformations
+   :PROPERTIES:
+   :CUSTOM_ID: transformations
+   :END:
+
+#+begin_src javascript
+ ([0, 1, 2]).append(3); // [0, 1, 2, 3]
+ ([0, 1, 2, null, undefined]).compact(); // [1, 2]
+ ([1, 2, 5]).filter(x => x
+<= 3); // [1, 2]
+([1, 2, 3]).head(); // 1
+([1, 2, 3]).last(); // 3
+(['ABC']).invoke('toLowerCase', []); // abc
+([{ foo: 'bar' }]).pick(['foo']); // { foo: 'bar' }
+([{ foo: 'bar' }]).pluck(['foo']); // bar
+[0, 1, 2, 3]).slice(2, 4); // [2, 3]
+(['c', 'a', 'b']).sort(); // ['a', 'b', 'c']
+_([0, 0, 2, 3]).uniq(); // [0, 2, 3]
+#+end_src
+
+** High-order Streams
+   :PROPERTIES:
+   :CUSTOM_ID: high-order-streams
+   :END:
+
+#+begin_src javascript
+([0, 1]).concat([2, 3]); // [0, 1, 2, 3]
+([0, 1, [2, [3]]]).flatten(); // [0, 1, 2, 3]
+(/([0, 1]), /([2, 3])).sequence(); // [0, 1, 2, 3]
+(['a', 'b']).zip([1, 2]); // => ['a', 1], ['b', 2]
+
+const fork = stream.fork(); const observer = stream.observe();
+fork.resume();
+#+end_src
+
+** Objects
+   :PROPERTIES:
+   :CUSTOM_ID: objects
+   :END:
+
+#+begin_src javascript
+ .extend({ name: 'foo' }, { type: 'obj' });
+// { name: 'foo', type: 'obj' }
+.get('foo', { foo: 'bar' }); // bar
+.keys({ foo: 'bar' }); // ['foo']
+.values({ foo: 'bar' }); // ['bar']
+_.pairs({ foo: 'bar' }); // ['foo', 'bar']
+#+end_src
+
+** Utils
+   :PROPERTIES:
+   :CUSTOM_ID: utils
+   :END:
+
+#+begin_src javascript
+.isStream([1, 2, 3]); // false
+.isStream(stream); // true
+
+([1, 2, 3]).each(.log); // 1, 2, 3
+
+const readFile = .wrapCallback(fs.readFile); // Wraps callback to Highland stream
+.isStream(readFile); // true
+#+end_src
+
+** Conclusion
+   :PROPERTIES:
+   :CUSTOM_ID: conclusion
+   :END:
+
+If you need to handle your synchronous and asynchronous data with
+differrent abstractions in one way, operate with Node.js streams at
+higher level, you can use Highland high-level streams library to fit
+your needs. You can find more at [[http://highlandjs.org/][Highland
+docs]].

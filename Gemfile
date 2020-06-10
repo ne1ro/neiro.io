@@ -7,6 +7,7 @@ gem 'jekyll', '~> 3.8.5'
 gem 'jekyll-assets', '~> 3.0.12', require: true, group: :jekyll_plugin
 # gem 'jekyll-crosspost-to-medium'
 gem 'jekyll-feed'
+gem 'jekyll-org', '>= 1.1.0'
 gem 'jekyll-sitemap'
 gem 'jekyll-tagging'
 gem 'jekyll-time-to-read'
@@ -21,10 +22,6 @@ gem 'uglifier'
 
 group :development do
   gem 'awesome_print'
-  gem 'capistrano', '~> 3.13.0'
-  gem 'capistrano-bundler'
-  gem 'capistrano-jekyll'
-  gem 'capistrano-rbenv', '~> 2.1'
   gem 'guard'
   gem 'guard-jekyll-plus', require: false
   gem 'guard-livereload', '~> 2.4', require: false
@@ -33,10 +30,4 @@ group :development do
   gem 'terminal-notifier'
   gem 'terminal-notifier-guard', '~> 1.7.0'
   gem 'thin'
-end
-
-source 'https://rails-assets.org' do
-  gem 'rails-assets-jquery'
-  gem 'rails-assets-normalize-scss'
-  gem 'rails-assets-rrssb'
 end

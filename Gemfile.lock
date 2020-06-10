@@ -26,7 +26,7 @@ GEM
       forwardable-extended (~> 2.5)
     fastimage (2.1.7)
     ffi (1.13.1)
-    font-awesome-sass (5.12.0)
+    font-awesome-sass (5.13.0)
       sassc (>= 1.11)
     formatador (0.2.5)
     forwardable-extended (2.6.0)
@@ -169,7 +169,7 @@ DEPENDENCIES
   awesome_print
   breakpoint (~> 2.7.1)
   bundler
-  font-awesome-sass (~> 5.12.0)
+  font-awesome-sass (~> 5.13.0)
   guard
   guard-jekyll-plus
   guard-livereload (~> 2.4)

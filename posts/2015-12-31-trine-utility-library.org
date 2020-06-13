@@ -1,0 +1,145 @@
+#+title: Trine util library
+#+date: <2015-12-31 10:00>
+#+filetags: :javascript:functional:
+
+As we know, functional programming in JavaScript is not the best
+experience, unlike the plain functional languages (/Haskell, Lisp,
+etc/). But new standards of JavaScript - ES6 /(ECMAScript 2015)/ and
+/ES7(ECMAScript 2016)/ introduce some improvements and allows you to
+write code in more functional style:
+
+#+begin_src javascript
+ flatten(collection.filter(func1).map(func2));
+
+#+end_src
+
+But there's more: new
+[[https://github.com/zenparsing/es-function-bind][function bind syntax]]
+performs function binding and method extraction. The previous example
+can be rewritten as:
+
+#+begin_src javascript
+
+collection.filter(func1).map(func2)::flatten();
+#+end_src
+
+ES6 also introduces the concept of iterators - protocol, that most JS
+collection types implement. You can extend your custom collections to
+support the same protocol, and generators functions support it too. So,
+if you looking for utility library that supports new function bind
+syntax, and iterators, you can take a look on
+[[https://github.com/jussi-kalliokoski/trine][Trine]].
+
+** Installing
+   :PROPERTIES:
+   :CUSTOM_ID: installing
+   :END:
+
+First of all, you may want to use all features of ES6 and most of ES7
+standards with [[https://babeljs.io/][Babel]]:
+
+/npm install --save babel babel-preset-stage-0 babel-preset-es2015/
+#+begin_src javascript
+ //.babelrc { "presets": ["stage-0", "es2015"]
+}
+#+end_src
+
+Then install Trine:
+
+/npm install --save trine/
+
+and import to your project required functions:
+
+#+begin_src javascript
+ import { last } from 'trine/iterable/last';
+
+ const lastCh = ['a', 'b', 'c']::last(0); // yields 'c'
+ lastCh.next().value; // c
+#+end_src
+
+** Boolean
+   :PROPERTIES:
+   :CUSTOM_ID: boolean
+   :END:
+
+Trine provides common boolean helpers:
+
+#+begin_src javascript
+true::not() // false
+true::and(false) // false
+true::or(false) // true
+true::xor(false) // true
+0::not() // true
+#+end_src
+
+** Number
+   :PROPERTIES:
+   :CUSTOM_ID: number
+   :END:
+
+#+begin_src javascript
+10::min(100) // 10
+-100::abs() // 100
+4::div(2) // 2
+4::mod(3) // 1
+2::pow(4)::max(15) // 16
+
+** Value
+   :PROPERTIES:
+   :CUSTOM_ID: value
+   :END:
+
+Extract , compare or convert values to functions:
+
+#+begin_src javascript
+'foo'::equals('bar')::is(false); // true
+const func = { foo: 'bar' }::prop('foo')::toFunction();
+func(); // bar
+
+#+end_src
+
+** Partial
+   :PROPERTIES:
+   :CUSTOM_ID: partial
+   :END:
+
+Trine includes partial helper:
+
+#+begin_src javascript
+parseInt::partial(_, 2)('1010') // 10
+#+end_src
+
+** Object
+   :PROPERTIES:
+   :CUSTOM_ID: object
+   :END:
+
+#+begin_src javascript
+let obj = { foo: 'bar' };
+obj::keys().next().value; // foo
+obj::values().next().value; // bar
+#+end_src
+
+** Iterable
+   :PROPERTIES:
+   :CUSTOM_ID: iterable
+   :END:
+
+#+begin_src javascript
+ let nums = [5, 1];
+nums::count().next().value; // 2
+nums::reverse()::to(Array); // 1, 5
+'cab'::sortAlphabetically()::to(Array) // a, b, c
+[nums, [2, 3]]::flatten()::map(function() { return this * 3 })::to(Array); // 15, 3, 6, 9
+#+end_src
+
+** Conclusion
+   :PROPERTIES:
+   :CUSTOM_ID: conclusion
+   :END:
+
+If you like new syntax of ES6, ES7 and want to use iterators, function
+binding, you can use Trine as base utility library. If you want to know
+more about Trine, you can take a look at it's
+[[http://jussi-kalliokoski.github.io/trine/docs/latest/][documentation]]
+.

@@ -1,0 +1,277 @@
+#+TITLE: Building dynamic queries with Ecto
+#+date: <2017-09-16 10:00>
+#+filetags: :elixir:ecto:query:
+
+[[https://github.com/elixir-ecto/ecto][Ecto]] is the most popular,
+robust and solid solution to work with databases in *Elixir* ecosystem.
+Ecto is not ORM, ODM nor it is a /Repository patern/ library. /Ecto/ is
+just a wrapper for common constructions to work with databases, nothing
+less and nothing more than that.
+
+*Ecto.Query* is the core module for operations with database queries. It
+allows us to build easily any queries with predefined conditions that we
+wanted.
+
+But what if we want to build a /really/ dynamic query? A common case can
+be filtering by list of attributes.
+
+Imagine a situation when you have a large set of users in your database.
+Your customers want to filter or exclude users by any attributes that
+can be allowed: =name, nickname, gender= etc. Writing code for all of
+model attributes can be tedious and annoying.
+
+So what can we do about it?
+
+** Filter Query
+   :PROPERTIES:
+   :CUSTOM_ID: filter-query
+   :END:
+
+Let's create a new Elixir module that will implement logic of our future
+dynamic query. I will name it =FilterQuery= :
+
+#+BEGIN_EXAMPLE
+  defmodule FilterQuery do
+    @moduledoc """
+    Query that accepts inclusion or exclusion parameters and filters by this parameters
+    """
+
+    import Ecto.Query
+  end
+#+END_EXAMPLE
+
+This module should have just one public function called =filter= that
+accepts incoming query, inclusion and exclusion parameters as the
+arguments:
+
+#+BEGIN_EXAMPLE
+  @spec filter(Ecto.Query.t, map, map) :: Ecto.Query.t
+  def filter(query, inclusion, exclusion) 
+#+END_EXAMPLE
+
+Now let's implement the core of our future filter function. Assume that
+we need to build two lists of dynamic queries both for inclusion and
+exclusion parameters:
+
+#+BEGIN_EXAMPLE
+  queries = dynamic_query(:inclusion, inclusion) ++ dynamic_query(:exclusion, exclusion)
+#+END_EXAMPLE
+
+Now we need to merge all these dynamic queries into a new big one. It
+can be implemented using =Enum.reduce= :
+
+#+BEGIN_EXAMPLE
+  Enum.reduce(queries, query, fn(q, acc) -> where(acc, ^q) end)
+#+END_EXAMPLE
+
+Now our =filter= function returns a new complex query that can be easily
+composed with another queries using =Ecto.Query= functions or macroses.
+
+** Dynamic filter query
+   :PROPERTIES:
+   :CUSTOM_ID: dynamic-filter-query
+   :END:
+
+We have just created a basic prototype for our future dynamic filter
+query. However, the devil's always in the details. We need to hide
+implementation in private functions:
+
+#+BEGIN_EXAMPLE
+  defp dynamic_query(type, filters) when type in [:inclusion, :exclusion] do
+    for {attr, values} <- filters, present?(values),
+      do: dynamic_query(type, attr, values)
+  end
+
+  defp dynamic_query(:exclusion, exclusion) do
+    for {attr, values} <- exclusion, do: dynamic_query(:exclusion, attr, values)
+  end
+#+END_EXAMPLE
+
+We suppose that inclusion and exclusion filters are keyword lists with
+keys as model attributes and lists as the filter values. Therefore, we
+need to check if these lists contain values or we shall skip building
+query:
+
+#+BEGIN_EXAMPLE
+  defp present?(list) when is_list(list), do: length(list) > 0
+  defp present?(_), do: false
+#+END_EXAMPLE
+
+Now we need to go straight to the implementation. =dynamic_query/3=
+should finally return for us the result.
+
+We will use =dynamic= macro from Ecto.Query that takes any query as
+first argument and builds dynamic query for the second one. Also notice
+that we need to use =field= macro to dynamically access attribute name:
+
+#+BEGIN_EXAMPLE
+  defp dynamic_query(:inclusion, attr, values) do
+    dynamic([q], field(q, ^attr) in ^values)
+  end
+
+  defp dynamic_query(_, attr, values) do
+    dynamic([q], field(q, ^attr) not in ^values)
+  end
+#+END_EXAMPLE
+
+** Restriction of filter keys
+   :PROPERTIES:
+   :CUSTOM_ID: restriction-of-filter-keys
+   :END:
+
+So, looks like our filter query is fully functional and dynamic! But
+this is not enough when you are building a complex logic that
+desperately needs to leave some attributes *unfiltered*.
+
+For example, imagine the case when your =User= model has a
+=relationships_status= attribute. If you're allowing your API customers
+to filter any attributes they are likely to find out lonely users by
+using this loophole. Therefore your customers will be dating, engaging,
+tying the knots and finally will be lost for your application. Is this
+what you really wished? Guess not :)
+
+So let's restrict filtered attributes by using =__using__= macro:
+
+#+BEGIN_EXAMPLE
+  defmacro __using__(attributes: allowed_attributes) do
+  ...
+
+    def filter(query, inclusion, exclusion) do
+      [inclusion, exclusion] = [sanitize(inclusion), sanitize(exclusion)]
+
+      queries = dynamic_query(:inclusion, inclusion) ++ dynamic_query(:exclusion, exclusion)
+      Enum.reduce(queries, query, fn(q, acc) -> where(acc, ^q) end)
+    end
+  ...
+
+     defp sanitize(keyword_list),
+      do: for {key, val} <- keyword_list, allowed_key?(key), do: {key, val}
+
+     defp allowed_key?(key), do: key in unquote(allowed_attributes)
+  ...
+  end
+#+END_EXAMPLE
+
+Voila! No one ever will find out how your users relationships are going.
+
+Now let's take a quick look at our dynamic filter query:
+
+#+BEGIN_EXAMPLE
+  defmodule FilterQuery do
+    @moduledoc """
+    Query that accepts inclusion or exclusion parameters and filters by this parameters
+    """
+
+    import Ecto.Query
+
+    defmacro __using__(attributes: allowed_attributes) do
+      quote do
+        import FilterQuery
+
+        @spec filter(Ecto.Query.t, map, map) :: Ecto.Query.t
+        def filter(query, inclusion, exclusion) do
+          [inclusion, exclusion] = [sanitize(inclusion), sanitize(exclusion)]
+
+          queries = dynamic_query(:inclusion, inclusion) ++ dynamic_query(:exclusion, exclusion)
+          Enum.reduce(queries, query, fn(q, acc) -> where(acc, ^q) end)
+        end
+
+        def filter(query, _) do
+          query
+        end
+
+        defp dynamic_query(type, filters) when type in [:inclusion, :exclusion] do
+          for {attr, values} <- filters, present?(values),
+            do: dynamic_query(type, attr, values)
+        end
+
+        defp dynamic_query(:exclusion, exclusion) do
+          for {attr, values} <- exclusion, do: dynamic_query(:exclusion, attr, values)
+        end
+
+        defp dynamic_query(:inclusion, attr, values) do
+          dynamic([q], field(q, ^attr) in ^values)
+        end
+
+        defp dynamic_query(_, attr, values) do
+          dynamic([q], field(q, ^attr) not in ^values)
+        end
+
+        defp sanitize(keyword_list),
+          do: for {key, val} <- keyword_list, allowed_key?(key), do: {key, val}
+
+        defp allowed_key?(key), do: key in unquote(allowed_attributes)
+
+        defp present?(list) when is_list(list), do: length(list) > 0
+        defp present?(_), do: false
+      end
+    end
+  end
+#+END_EXAMPLE
+
+** Usage
+   :PROPERTIES:
+   :CUSTOM_ID: usage
+   :END:
+
+It's a piece of cake to use our query in another modules. Just include
+our query and set the list of allowed attributes through =use=
+construction:
+
+#+BEGIN_EXAMPLE
+  {:ok, _} = Application.ensure_all_started(:ex_machina)
+
+  defmodule Example do
+    @moduledoc """
+    Example of using dynamic ecto queries
+    """
+
+    import Factory
+    use FilterQuery, attributes: ~w(proficiency name)a
+
+    def run do
+      insert_users()
+
+      IO.inspect(count([])) # 3
+      [relationships_status: ["married"]] |> count([]) |> IO.inspect # 3
+      [proficiency: ["developer"]] |> count([]) |> IO.inspect # 1
+      [proficiency: ["soldier"]] |> count([]) |> IO.inspect # 0
+      IO.inspect(count([], %{proficiency: ["politic"]})) # 2
+    end
+
+    defp insert_users do
+      Repo.delete_all(User)
+
+      insert(:user, relationships_status: "single", proficiency: "developer")
+      insert(:user, relationships_status: "married", proficiency: "politic")
+      insert(:user, relationships_status: "dating", proficiency: "thief")
+    end
+
+    defp count(inclusion, exclusion \\ []) do
+      User
+      |> filter(inclusion, exclusion)
+      |> Repo.aggregate(:count, :id)
+    end
+  end
+#+END_EXAMPLE
+
+** Conclusion
+   :PROPERTIES:
+   :CUSTOM_ID: conclusion
+   :END:
+
+However, this is not at all that we can achieve by using =dynamic= macro
+in Ecto.
+
+You can filter by regex, type or even your own query; sort by ascending
+and descending; do aggregation or pagination; whatever comes to your
+head - it all depends on your imagination and skills. Ecto provides you
+a great tool to build any complex queries by writing minimal lines of
+code without any duplication.
+
+What's next? See the [[https://github.com/ne1ro/dynamic_ecto_query][full
+example]] for this article or read
+[[https://hexdocs.pm/ecto/Ecto.Query.html][Ecto documentation]] to
+deepen your knowledge a little bit more.
+
+Happy hacking!

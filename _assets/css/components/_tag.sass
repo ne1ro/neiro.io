@@ -1,0 +1,14 @@
+ul.tags
+  list-style-type: none
+
+li.tag
+  text-decoration: none
+  position: relative
+  float: left
+  margin: .25em 1.25em 0 -.75em
+  padding: .125em .25em .125em .5em
+  color: $dark
+  font-size: 14px
+
+  &:hover
+    @include color-transition($gray)

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+  {% include head.html %}
+
+  <body style='visibility: hidden'>
+    <div class="wrapper" id="root">
+      {% include header.html %}
+
+      <main>
+        {{ content }}
+        <div id="root_footer"></div>
+      </main>
+    </div>
+
+    {% include footer.html %}
+    {% asset app.sass %}
+  </body>
+</html>

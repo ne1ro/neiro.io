@@ -1,0 +1,33 @@
+.row
+  @include container()
+
+
+.quarter
+  @include span(3)
+
+  &.last
+    @include span(3 last)
+
+
+.third
+  @include span(4)
+
+  &.last
+    @include span(4 last)
+
+
+.half
+  @include span(12 last)
+
+  @include susy-breakpoint($bp-medium, $susy)
+    @include span(6)
+
+    &.last
+      @include span(6 last)
+
+
+.two-third
+  @include span(9)
+
+  &.last
+    @include span(9 last)

@@ -1,0 +1,279 @@
+# List of my projects
+---
+  -
+    name: SmartDrum
+    id: smartdrum
+    skills:
+      - Ruby
+      - Ruby on Rails
+      - HTML
+      - CSS
+      - Twitter Bootstrap
+      - Coffeescript
+      - jQuery
+      - DevOps
+      - SQL
+    date_start: Sep 2012
+    date_end: Dec 2012
+    source: https://github.com/ne1ro/smartdrum-website
+    description: Virtual company website with blog, admin panel, products page
+
+  -
+    name: Megaprint
+    id: megaprint
+    skills:
+      - Ruby
+      - Ruby on  Rails
+      - HTML
+      - CSS
+      - Coffeescript
+      - jQuery
+      - DevOps
+      - SQL
+    date_start: Feb 2013
+    date_end: May 2013
+    url: http://mp31.ru
+    description: Company website full-stack development, admin panel, production list,
+      news blog
+
+  -
+    name: Drupal theme
+    id: drupal_theme
+    skills:
+      - HTML
+      - CSS
+      - Javascript
+      - jQuery
+      - PHP
+    date_start: Apr 2013
+    date_end: Jun 2013
+    url: http://usc.bsu.edu.ru
+    description: Custom Drupal theme with dynamic layout for website
+
+  - name: Kron Network
+    id: kron
+    skills:
+      - Ruby
+      - Ruby on Rails
+      - HTML
+      - CSS
+      - Coffeescript
+      - Angular.js
+      - Node.js
+      - DevOps
+      - NoSQL
+    date_start: Apr 2013
+    date_end: Jun 2013
+    source: https://github.com/ne1ro/kron-prototype
+    description: Social management network, full-stack Ruby on Rails development,
+      Angular.js integration, Node.js realtime updates with websockets
+
+  - name: EnlightenMe
+    id: enlighten_me
+    skills:
+      - Ruby
+      - Ruby on Rails
+      - REST API
+      - SQL
+    date_start: Jul 2013
+    date_end: Feb 2014
+    source: https://github.com/ne1ro/virtualacademy
+    description: Virtual courses academy startup, Ruby on Rails API development
+
+  - name: KartaTruda (TrudVsem)
+    id: kartatruda
+    skills:
+      - Javascript
+      - Coffeescript
+      - HTML
+      - CSS
+      - Angular.js
+      - Twitter Bootstrap
+    date_start: Nov 2013
+    date_end: Jul 2014
+    url: http://rgu.trudvsem.ru/
+    description: Front-end development of SPA applications, admin panel, jobs website, geolocation
+
+  - name: VG Express
+    id: vg
+    skills:
+      - Javascript
+      - HTML
+      - CSS
+      - Angular.js
+      - jQuery
+    date_start: Dec 2013
+    date_end: Jul 2014
+    source: https://www.vgexpress.ru/
+    description: SPA frontend to REST API, jQuery integration, animations, client-side business-logic
+
+  - name: FlyCats
+    id: flycats
+    skills:
+      - Coffeescript
+      - HTML
+      - CSS
+      - Angular.js
+      - jQuery
+    date_start: Mar 2013
+    date_end: Feb 2015
+    url: http://flycats.ru/
+    description: SPA frontend to REST API, client-side business-logic, mobile app prototype
+
+  - name: Sunduk
+    id: sunduk
+    skills:
+      - Coffeescript
+      - HTML
+      - CSS
+      - Django
+      - Angular.js
+      - jQuery
+    date_start: Apr 2014
+    date_end: May 2014
+    url: http://smotrisunduk.ru/
+    description: Frontend development of real estates portal with banner pre-order
+
+  - name: Modatracker
+    id: modatracker
+    skills:
+      - Ruby
+      - Coffeescript
+      - HTML
+      - CSS
+      - Ruby on Rails
+      - jQuery
+      - Twitter Bootstrap
+      - SQL
+    date_start: Jun 2014
+    date_end: Jul 2014
+    description: Full-stack Ruby on Rails app, website prototype, admin page
+
+  - name: InstallBundle
+    id: installbundle
+    skills:
+      - Javascript
+      - Coffeescript
+      - Go
+      - Node.js (io.js)
+      - HTML
+      - CSS
+      - Angular.js
+      - Twitter Bootstrap
+      - DevOps
+      - REST API
+      - NoSQL
+    url: http://installbundle.com/
+    date_start: Jul 2014
+    date_end: Jul 2015
+    description: Admin control panel REST API development and frontend support, full-stack Node.js web development
+
+  - name: Good Deeds
+    id: good_deeds
+    skills:
+      - Ruby
+      - Ruby on Rails
+      - REST API
+      - DevOps
+      - SQL
+    url: http://deeeds.com/
+    date_start: Oct 2014
+    date_end: Mar 2015
+    description: Ruby on Rails API for charity platform with social network abilities
+
+  - name: Neiro.io
+    id: neiroio
+    skills:
+      - Ruby
+      - Javascript
+      - Jekyll
+      - HTML
+      - CSS
+      - jQuery
+    date_start: Apr 2015
+    date_end: May 2015
+    url: http://neiro.io
+    description: My personal website powered by Jekyll
+
+  - name: Power Product
+    id: power_product
+    url: http://engines-honda.ru
+    skills:
+      - Ruby
+      - Ruby on Rails
+      - Javascript
+      - Coffeescript
+      - jQuery
+      - DevOps
+      - SQL
+      - Elasticsearch
+      - NoSQL
+    date_start: Jun 2015
+    date_end: Aug 2016
+    description: Full-stack Ruby on Rails development of commercial web application
+
+  - name: Kinderly
+    id: kinderly
+    url: http://kinderly.ru
+    skills:
+      - Ruby
+      - Ruby on Rails
+      - PostgreSQL
+      - Javascript
+      - Coffeescript
+      - jQuery
+      - Backbone
+      - SQL
+    date_start: Jun 2015
+    date_end: Jan 2016
+    description: ROR-based CMS development of online store
+
+  - name: AzbukaHotels
+    id: azbuka_hotels
+    url: http://azbukahotels.com/
+    skills:
+      - Ruby
+      - Ruby on Rails
+      - Sphinx
+      - Javascript
+      - Coffeescript
+      - Backbone
+      - Marionette
+      - SQL
+    date_start: Nov 2015
+    date_end: Mar 2016
+    description: Full-stack Ruby on Rails development, bugfixes, refactoring
+
+  - name: FlatStack
+    id: flatstack
+    url: https://flatstack.com/
+    skills:
+      - Ruby
+      - Ruby on Rails
+      - DevOps
+      - SQL
+      - PostgreSQL
+      - REST API
+      - Elixir
+      - Phoenix
+      - AWS
+    date_start: Mar 2016
+    date_end: Mar 2017
+    description: Full-stack Ruby on Rails development, testing, deployment
+
+  - name: Salam
+    id: elixir
+    url: https://salam.io
+    skills:
+      - Elixir
+      - Clojure
+      - Phoenix
+      - Ruby
+      - DevOps
+      - SQL
+      - REST API
+      - GraphQL
+      - PostgreSQL
+      - AWS
+    date_start: Apr 2017
+    description: CTO, Back-end team-leader, DevOps, Elixir/Clojure development

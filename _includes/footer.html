@@ -1,0 +1,41 @@
+<footer id="footer">
+  <div class="footer-container">
+    <div class="column">
+      {% include links.html %}
+      <p>
+        <a href="http://neiro.io/feed.xml" class="icon-link" target="_blank">
+          <i class="fa fa-rss"></i>
+          <span>RSS</span>
+        </a>
+      </p>
+    </div>
+
+    <address class="column">
+      {% include contacts.html %}
+    </address>
+
+
+    <div class="column">
+      <p>Powered by <a class="icon-link" href="https://www.ruby-lang.org/" target="_blank">
+        <i class="fa fa-diamond"></i>
+        <span>Ruby</span>
+      </a> and <a href="http://jekyllrb.com/" target="_blank">Jekyll</a></p>
+
+      <p>
+        <a href="{{ site.source_url }}" target="_blank" class="icon-link">
+          <i class="fa fa-github-alt"></i>
+          <span>Website source</span>
+        </a>
+        </p>
+      </p>
+
+        <p>
+          If you find a typo or mistake, please create
+          <a href="{{ site.source_url }}/issues/new"> an issue</a>
+          or <a href="{{ site.source_url }}/compare"> pull request</a>
+        </p>
+
+      <p>Created by neiro © 2015 - 2019</p>
+    </div>
+  </div>
+</footer>

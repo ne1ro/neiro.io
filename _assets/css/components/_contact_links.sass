@@ -1,0 +1,17 @@
+.contact-links
+  @include container()
+
+  p
+    @include span(6)
+
+    &:nth-child(even)
+      @include span(6 last)
+
+    @include susy-breakpoint($bp-medium, $susy)
+      @include span(3)
+
+      &:nth-child(even)
+        @include span(3)
+
+      &:last-child
+        @include span(3 last)

@@ -1,0 +1,53 @@
+ul.portfolio-gallery
+  @include container()
+  list-style-type: none
+  color: white
+  padding: 0
+
+  li.slide
+    @include span(12 last)
+    @include background-size(cover)
+    margin-bottom: gutter()
+    position: relative
+    z-index: 0
+
+    &:before
+      position: absolute
+      background-image: linear-gradient(to top, rgba(0, 0, 0, 0.95), rgba(0, 0, 0, 0.7))
+      width: 100%
+      height: 100%
+      left: 0
+      top: 0
+      content: ''
+      z-index: -1
+
+    &:hover
+      &:before
+        background-image: linear-gradient(to top, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.5))
+        @include transition(all 0.25s ease-in-out)
+
+    a
+      color: white
+      text-decoration: none
+      z-index: 1
+
+    .container
+      padding: .75em
+
+    .date-start, .date-end, ul.tags
+      font-size: .8em
+
+    .date-start
+      @include span(6)
+
+    .date-end
+      @include span(6 last)
+      text-align: right
+
+@include susy-breakpoint($bp-medium, $susy)
+  ul.portfolio-gallery
+    li.slide
+      @include span(6)
+
+      &:nth-child(even)
+        @include span(6 last)

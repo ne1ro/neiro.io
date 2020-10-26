@@ -1,0 +1,209 @@
+#+TITLE: Asynchronous testing in Elixir with Mox
+#+date: <2018-07-29 10:00>
+#+filetags: :elixir:testing:
+
+Testing in Elixir is pretty neat. You can easily test anything written,
+you have instruments like ExUnit or ESpec, you can
+[[https://github.com/lpil/mix-test.watch][practice TDD]] and more and
+more. Functional programming paradigm helps you a lot to make your
+testing even simpler by forcing you to use pure, small functions that
+will be pleasant to test. Concurrency of Elixir allows you to run all
+your tests asynchronously and blazingly fast.
+
+However, there can be some pitfalls.
+
+** Mocks problem
+   :PROPERTIES:
+   :CUSTOM_ID: mocks-problem
+   :END:
+
+If you're programming a big project then I suppose that you will be
+using third-party services anyway. Imagine that you are sending SMS
+through you favorite provider services. This code can look like that:
+
+#+BEGIN_EXAMPLE
+  SmsProvider.send_sms(from, to, "message")
+#+END_EXAMPLE
+
+In this case you are using some external provider API in order to send
+SMS. The HTTP request will go from your application to the destination
+and it will trigger SMS delivery.
+
+Now we need to test this situation. This will be our very first
+approach:
+
+#+BEGIN_EXAMPLE
+  assert {:ok, %Message{}} = SmsProvider.send_sms(from, to, "message")
+#+END_EXAMPLE
+
+As you can see it will behave as if it was on production. Your SMS with
+the nasty fake test message will be delivered to non-existent users with
+absent phone numbers. Sad!
+
+The most popular solution is mocking. You're supposing that call of
+=send_sms= function with the expected arguments which will return the
+expected result:
+
+#+BEGIN_EXAMPLE
+  mock(SmsProvider, :send_sms, fn _, _, _ -> {:ok, %Message{status: :sent}} end)
+  assert {:ok, %Message{status: :sent}} = SmsProvider.send_sms(from, to, "message")
+#+END_EXAMPLE
+
+This approach will work, at least for this test. The problem is simple
+enough - it's not the best solution for asynchronous tests. We have
+mocked SmsProvider so it will be overriden in every next asynchronous
+test:
+
+#+BEGIN_EXAMPLE
+  use MyApp.DataCase, async: true
+
+  # ...
+
+  assert {:error, :wrong_phone_number} = SmsProvider.send_sms(wrong_number, to, "message")
+#+END_EXAMPLE
+
+This test will fail because =send_sms= call was already mocked in
+another test earlier. The entire mocking approach is not suitable for
+concurrent testing, so we need to find another one to serve this
+purpose.
+
+** Asynchronous testing
+   :PROPERTIES:
+   :CUSTOM_ID: asynchronous-testing
+   :END:
+
+Instead of mocking we can try calling the function that will override
+=sms_send/3=. Let's create a =TestProvider= module with the next
+content:
+
+#+BEGIN_EXAMPLE
+  defmodule TestProvider do
+    def send_sms(from, to, message) do
+      {:ok, %Message{status: :sent, from: from, to: to, text: message}}
+    end
+  end
+#+END_EXAMPLE
+
+Now we can try to use this module as an adapter in our =SmsProvider=
+module. It will use default adapter in development, production
+environments and will use =TestProvider= in testing:
+
+#+BEGIN_EXAMPLE
+  # config/test.exs
+  config :my_app, SmsProvider, adapter: TestProvider
+
+  # config/config.exs
+  config :my_app, SmsProvider, adapter: SmsApiService
+
+  # sms_provider.ex
+  defmodule SmsProvider do
+    @adapter Application.fetch_env(:my_app, :sms_provider, :adapter)
+
+    defdelegate send_sms(from, to, message), to: @adapter
+  end
+#+END_EXAMPLE
+
+Let's go straight to the test:
+
+#+BEGIN_EXAMPLE
+  assert {:ok, %Message{}} = SmsProvider.send_sms(from, to, "message") # true
+#+END_EXAMPLE
+
+Now it should work even in concurrent tests. Your SMS will not be
+delivered neither to the real nor fake users, your money will be saved
+and your tests will not suffer more.
+
+** Using Mox
+   :PROPERTIES:
+   :CUSTOM_ID: using-mox
+   :END:
+
+However, there is still a room for improvement.
+
+[[https://github.com/plataformatec/mox][Mox]] is a relatively new
+library that solves the issue of concurrent testing and mocks. It
+follows the next principles:
+
+- You can only create mocks based on behaviours
+- No dynamic generation of mocked modules, every mock should be defined
+  in tests
+- Full concurrency support
+- Use of pattern matching and function clauses for asserting
+
+Now let's add it to our dependencies list:
+
+#+BEGIN_EXAMPLE
+  # mix.exs
+  def deps do
+    [
+      {:mox, "~> 0.4", only: :test}
+    ]
+  end
+#+END_EXAMPLE
+
+It's easy as a pie to rewrite our tests with Mox. We need to create an
+SMS provider behaviour and implement it for different environments:
+
+#+BEGIN_EXAMPLE
+  # sms_provider.ex
+  defmodule SmsProvider do
+    @callback send_sms(String.t, String.t, String.t) :: {:ok, %Message{}} | {:error, :wrong_number}
+  end
+
+  # test_helper.exs
+  Mox.defmock(SmsProviderMock, for: SmsProvider)
+
+  # test.exs
+
+  defmodule Test do
+    use ExUnit.Case, async: true
+
+    import Mox
+
+    # Make sure mocks are verified when the test exits
+    setup :verify_on_exit!
+
+    test "returns message on success" do
+      expect SmsProviderMock, :send_sms, fn _, _, _ -> {:ok, %Message{status: :sent}}
+      assert {:ok, %{status: :sent}} = SmsProvider.send_sms(from, to, message)
+    end
+  end
+#+END_EXAMPLE
+
+If you don't need to check expectations in test you can try
+=stub_with/2= function in order to stub entire module:
+
+#+BEGIN_EXAMPLE
+  # sms_provider.ex
+  defmodule SmsProvider do
+    @callback send_sms(String.t, String.t, String.t) :: {:ok, %Message{}} | {:error, :wrong_number}
+    @callback sent_sms(String.t) :: [%Message{}]
+  end
+
+  # test_provider.ex
+  defmodule TestProvider do
+    @behaviour SmsProvider
+    def send_sms(_from, _to, message), do: {:ok, %Message{status: :sent, message: message}}
+    def sent_sms(number) :: [%Message{}]
+  end
+
+  # test.exs
+  defmock(SmsProviderMock, for: SmsProvider)
+  stub_with(SmsProviderMock, TestProvider)
+#+END_EXAMPLE
+
+Viola! Now your tests are all green, fast and shiny thanks to concurrent
+testing and Mox :)
+
+** Conclusion
+   :PROPERTIES:
+   :CUSTOM_ID: conclusion
+   :END:
+
+If you're definitely interested in concurrent testing, you might want to
+read
+[[http://blog.plataformatec.com.br/2015/10/mocks-and-explicit-contracts/][excellent
+article from Jose Valim]] and dive in into
+[[https://hexdocs.pm/mox/Mox.html][Mox documentation]].
+
+Happy hacking, everyone!

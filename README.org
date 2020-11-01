@@ -1,0 +1,13 @@
+#+TITLE: Neiro.io
+
+My personal website and portfolio.
+
+* Installation
+
+#+begin_shell
+brew install node && npm install gatsby -g && npm install && gatsby develop
+#+end_shell
+
+* Deploying
+
+* (c) neiro 2015-2020

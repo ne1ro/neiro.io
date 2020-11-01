@@ -1,14 +1,16 @@
 module.exports = {
   siteMetadata: {
-    title: `Gatsby Starter Blog`,
+    title: `λ Neiro`,
     author: {
-      name: `Kyle Mathews`,
-      summary: `who lives and works in San Francisco building useful things.`,
+      name: `Aleksei Kuznetsov`,
+      summary: `Functional programming, software architecture, DevOps`,
     },
-    description: `A starter blog demonstrating what Gatsby can do.`,
-    siteUrl: `https://gatsby-starter-blog-demo.netlify.app/`,
+    description: `Neiro's blog`,
+    siteUrl: `https://neiro.io/`,
     social: {
-      twitter: `kylemathews`,
+      linkedin: `neiro`,
+      salam: `neiro`,
+      github: `ne1ro`,
     },
   },
   plugins: [
@@ -60,13 +62,12 @@ module.exports = {
     {
       resolve: `gatsby-plugin-manifest`,
       options: {
-        name: `Gatsby Starter Blog`,
-        short_name: `GatsbyJS`,
+        name: `Neiro.io - functional programming, architecture, DevOps`,
+        short_name: `neiro.io`,
         start_url: `/`,
         background_color: `#ffffff`,
         theme_color: `#663399`,
         display: `minimal-ui`,
-        icon: `content/assets/gatsby-icon.png`,
       },
     },
     `gatsby-plugin-react-helmet`,

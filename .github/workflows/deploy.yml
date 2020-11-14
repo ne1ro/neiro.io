@@ -18,4 +18,12 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
-      - run: npm i && ./node_modules/.bin/gatsby build && ls -al .
+      - run: npm i && ./node_modules/.bin/gatsby build
+      - name: Copy files to the website
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          source: "public"
+          target: "/var/www/neiro.io"

@@ -30,6 +30,16 @@ const BlogPostTemplate = ({ data, location }) => {
           itemProp="articleBody"
         />
         <hr />
+
+        <a href="/tags">Tags:</a>
+        <ul>
+          {post.frontmatter.tags.map(tag => (
+            <li>
+              <a href={"/tags/" + tag}> {tag}</a>
+            </li>
+          ))}
+        </ul>
+
         <footer>
           <Bio />
         </footer>
@@ -85,6 +95,7 @@ export const pageQuery = graphql`
         title
         date(formatString: "MMMM DD, YYYY")
         description
+        tags
       }
     }
     previous: markdownRemark(id: { eq: $previousPostId }) {

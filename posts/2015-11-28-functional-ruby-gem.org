@@ -1,6 +1,6 @@
-#+TITLE:  Functional ruby gem
+#+TITLE: #+title: Functional Ruby gem
 #+date: <2015-11-28 10:00>
-#+filetags: :ruby:functional:
+#+filetags:  ruby functional
 
 Ruby is a great example of multi-paradigm programming language: it
 allows you to write code in object-oriented, imperative or functional

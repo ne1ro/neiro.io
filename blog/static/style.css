@@ -1,13 +1,23 @@
 body {
     font-family: PT Serif, Helvetica, Arial, sans-serif;
-    font-size: 18pt;
+    font-size: 17pt;
     padding: 1em;
     background: #FAFAFA;
     color: #111;
 }
 
+#content {
+    max-width: 50em;
+    margin: 0 auto;
+    
+}
+
 a:link {
     color: #0074D9;
+}
+
+.post-date {
+    text-align: right;
 }
 
 a:visited {
@@ -29,6 +39,5 @@ h1, h2 {
 
 pre.example, pre.src {
     font-family: Fira Code, Menlo, Monaco, monospace;
-    font-size: 14pt;
-    color: #222;
+    font-size: 15pt;
 }

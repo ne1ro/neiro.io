@@ -1,6 +1,6 @@
 #+title:  Well-crafted functional architecture: ports and adapters
 #+date: <2019-10-01 10:00>
-#+filetags: :elixir:functional:architecture:ports:adapters
+#+filetags:  elixir functional architecture ports adapters
 
 At [[https://salam.io][Salam.io]] we are developing a modern social
 platform containing a humongous amount of features.

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://neiro.io/rss.xml"
+      title="RSS feed for https://neiro.io/"/>
+<title>Introduction to Elixir</title>
+<meta name="author" content="Aleksei Kuznetsov">
+    <meta name="referrer" content="no-referrer">
+    <link href= "https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet" type="text/css" />
+    <link href= "static/style.css" rel="stylesheet" type="text/css" />
+    <link rel="icon" href="static/favicon.ico"></head>
+<body>
+<div id="preamble" class="status">
+<div class="header">
+    <a href="https://neiro.io">Neiro - Functional programming, software architecture</a>
+  </div></div>
+<div id="content">
+<div class="post-date">24 Apr 2016</div><h1 class="post-title"><a href="https://neiro.io/2016-04-24-introduction-to-elixir.md.html">Introduction to Elixir</a></h1>
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#what-is-elixir">1. What is Elixir?</a></li>
+<li><a href="#key-principles">2. Key principles</a></li>
+<li><a href="#features">3. Features</a></li>
+<li><a href="#code-examples">4. Code examples</a></li>
+<li><a href="#conclusion">5. Conclusion</a></li>
+</ul>
+</div>
+</nav>
+<p>
+If you want to use all features of functional programming with Ruby-like
+syntax to write modern fast, fault-tolerant applications, you may take a
+look at Elixir programming language.
+</p>
+
+<div id="outline-container-what-is-elixir" class="outline-2">
+<h2 id="what-is-elixir"><span class="section-number-2">1</span> What is Elixir?</h2>
+<div class="outline-text-2" id="text-what-is-elixir">
+<p>
+Elixir is dynamic, functional, concurrent, fast programming language
+that runs on top of the same virtual machine as his ancestor - Erlang -
+<i>(BEAM)</i>. Elixir was created by <i>José Valim</i> and was inspired by Ruby
+syntax, but also was influenced by Clojure.
+</p>
+</div>
+</div>
+
+<div id="outline-container-key-principles" class="outline-2">
+<h2 id="key-principles"><span class="section-number-2">2</span> Key principles</h2>
+<div class="outline-text-2" id="text-key-principles">
+<p>
+Elixir platform itself presents you next availabilities:
+</p>
+
+<ul class="org-ul">
+<li>Scalability - Elixir code can runs in thousands and millions
+lightweight threads that are isolated, but can exchange information
+via messages.</li>
+<li>Fault-tolerance - Elixir provides supervisors that can restart parts
+of your applications on errors</li>
+<li>Functional programming - Elixir code is short, elegant and powerful at
+the same time. You can use pattern matching, immutable constructions,
+first class functions like in any other functional programming
+languages.</li>
+<li>Extensibility, DSL - Elixir supports modules, metaprogramming that
+lets you easily extend language or another modules.</li>
+<li>Erlang compatibility - You can use all of Erlang ecosystem tools and
+modules in Elixir.</li>
+<li>Tooling - Elixir comes with <i>mix</i> build tool, <i>Hex</i> package manager,
+<i>IEx</i> interactive shell, <i>ExUnit</i> testing tool.</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-features" class="outline-2">
+<h2 id="features"><span class="section-number-2">3</span> Features</h2>
+<div class="outline-text-2" id="text-features">
+<ul class="org-ul">
+<li>UTF-8 support by default.</li>
+<li>Modules and namespaces.</li>
+<li>Docstrings documentation support.</li>
+<li>Everything is an expression.</li>
+<li>Pattern matching.</li>
+<li>Immutability.</li>
+<li>Compiling to Erlang virtual machine bytecode.</li>
+<li>Polymorphism via protocols.</li>
+<li>Lazy and async collections with streams.</li>
+<li>Recursion, high-order functions without side-effects.</li>
+<li>Tail call optimizations.</li>
+<li>Metaprogramming, macroses.</li>
+<li>Simple and lightweight concurrency using Erlang&rsquo;s mechanisms.</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-code-examples" class="outline-2">
+<h2 id="code-examples"><span class="section-number-2">4</span> Code examples</h2>
+<div class="outline-text-2" id="text-code-examples">
+<pre class="example" id="org6e160c8">
+    IO.puts "Hello Elixir!" # Hello Elixir!
+
+    # Integers
+    255; 0xFF # 255
+    0b0110 # 6
+
+    # Floats
+    100.0 # 100.0
+    1.0e-10 # 1.0e-10
+
+    # Booleans
+    true == false; false
+
+    # Atoms - string constants whose name is their value
+    :foo == :bar # false
+
+    # Strings are binaries in Elixir and Erlang:
+    "Hello" # Hello
+
+    # Lists
+    [3.14, :pie, "Apple"]
+    [1] ++ [2] # [1, 2]
+    [1, 2] -- [1] # [2]
+    [head | tail] = [1, 2] # head: 1, tail: [2]
+
+    # Tuples
+    { 3.14, :pie, "Apple" }
+
+    # Keywords lists
+    [foo: "bar"] # foo: "bar"
+
+    # Maps
+    map = %{:foo =&gt; "bar"}
+    map[:foo] # "bar"
+
+    # Comprehensions
+    for x &lt;- [1,2,3], do: x * 2 # [2, 4, 6]
+
+    # Pattern matching
+    [1, a] = [1, 2]
+    a # 2
+
+    # Modules
+    defmodule Foo do
+      def bar, do: "bar"
+    end
+    Foo.bar # "bar"
+
+    # Pipe operator
+    "Hello world" |&gt; String.split |&gt; Enum.map(&amp;String.first/1) |&gt; Enum.join # Hw
+
+    # Sigils
+    ~r/abcd/ # Regexp
+    ~s/hello world/ # String
+    ~w/hello world/ # List of words: ["hello", "world"]
+</pre>
+</div>
+</div>
+
+<div id="outline-container-conclusion" class="outline-2">
+<h2 id="conclusion"><span class="section-number-2">5</span> Conclusion</h2>
+<div class="outline-text-2" id="text-conclusion">
+<p>
+If you want to use functional programming language for web-development,
+fault-tolerant , distributed applications, that you may like an Elixir.
+It comes with familiar Ruby syntax, but with all of power and eloquence
+of functional programming languages. Elixir built on top of Erlang
+platform and you can easily use all of Erlang ecosystem tools and
+modules in your projects with modern syntax.
+</p>
+</div>
+</div>
+<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-elixir.html">elixir</a> <a href="https://neiro.io/tag-functional.html">functional</a> </div></div>
+<div id="postamble" class="status"></div>
+</body>
+</html>

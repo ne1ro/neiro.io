@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://neiro.io/rss.xml"
+      title="RSS feed for https://neiro.io/"/>
+<title>#+title: Functional Ruby gem</title>
+<meta name="author" content="Aleksei Kuznetsov">
+    <meta name="referrer" content="no-referrer">
+    <link href= "https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet" type="text/css" />
+    <link href= "static/style.css" rel="stylesheet" type="text/css" />
+    <link rel="icon" href="static/favicon.ico"></head>
+<body>
+<div id="preamble" class="status">
+<div class="header">
+    <a href="https://neiro.io">Neiro - Functional programming, software architecture</a>
+  </div></div>
+<div id="content">
+<div class="post-date">28 Nov 2015</div><h1 class="post-title"><a href="https://neiro.io/2015-11-28-functional-ruby-gem.html">#+title: Functional Ruby gem</a></h1>
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#features">1. Features</a></li>
+<li><a href="#installing">2. Installing</a></li>
+<li><a href="#immutable-data-structures">3. Immutable data structures</a></li>
+<li><a href="#immutable-openstruct">4. Immutable OpenStruct</a></li>
+<li><a href="#tuples">5. Tuples</a></li>
+<li><a href="#protocols">6. Protocols</a></li>
+<li><a href="#pattern-matching">7. Pattern matching</a></li>
+<li><a href="#conclusion">8. Conclusion</a></li>
+</ul>
+</div>
+</nav>
+<p>
+Ruby is a great example of multi-paradigm programming language: it
+allows you to write code in object-oriented, imperative or functional
+styles. Ruby have much in common with functional programming languages:
+<i>high-order functions, closures, anonymous functions, continuations,
+statements all values</i>. If you want to use more functional programming
+patterns and tools, you might want to take a look on
+<a href="https://github.com/jdantonio/functional-ruby">Functional Ruby</a> gem.
+</p>
+
+<div id="outline-container-features" class="outline-2">
+<h2 id="features"><span class="section-number-2">1</span> Features</h2>
+<div class="outline-text-2" id="text-features">
+<ul class="org-ul">
+<li>Thread-safe, immutable data structures</li>
+<li>Protocol specifications</li>
+<li>Functions overloading</li>
+<li><code>Either, Option</code> classes</li>
+<li>Immutable variation of Ruby&rsquo;s <code>OpenStruct</code> class</li>
+<li>Memoization</li>
+<li>Lazy execution</li>
+<li>Tuples</li>
+<li>Pattern matching</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-installing" class="outline-2">
+<h2 id="installing"><span class="section-number-2">2</span> Installing</h2>
+<div class="outline-text-2" id="text-installing">
+<p>
+Install this gem with or without bundler:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell">gem install functional-ruby
+<span style="color: #5a5b5a;">#  </span><span style="color: #5a5b5a;">gem 'functional-ruby'</span>
+</pre>
+</div>
+
+<p>
+And then require it in your project:
+</p>
+
+<p>
+#+begin<sub>src</sub> ruby require &rsquo;functional&rsquo; #+end<sub>src</sub>
+</p>
+</div>
+</div>
+
+<div id="outline-container-immutable-data-structures" class="outline-2">
+<h2 id="immutable-data-structures"><span class="section-number-2">3</span> Immutable data structures</h2>
+<div class="outline-text-2" id="text-immutable-data-structures">
+<p>
+#+begin<sub>src</sub> ruby
+Address = Functional::Record.new(:city, :country, :street, :house) do
+    mandatory :country, :city
+    default :city, &rsquo;Moscow&rsquo;
+    default :country, &rsquo;Russia&rsquo;
+end # &lt;record Address :city=&gt;&ldquo;Moscow&rdquo;, :country=&gt;&ldquo;Russia&rdquo;, :street=&gt;nil, :house=&gt;nil&gt; #+end<sub>src</sub>
+</p>
+</div>
+</div>
+
+<div id="outline-container-immutable-openstruct" class="outline-2">
+<h2 id="immutable-openstruct"><span class="section-number-2">4</span> Immutable OpenStruct</h2>
+<div class="outline-text-2" id="text-immutable-openstruct">
+<p>
+Immutable, thread-safe, write-once and read-only object variation of
+<code>OpenStruct</code>:
+</p>
+
+<p>
+#+begin<sub>src</sub> ruby
+name = Functional::ValueStruct.new firstname: &rsquo;Hodor&rsquo;, lastname: &rsquo;Hodor&rsquo;
+name.get :firstname # Hodor
+name.lastname # Hodor
+name.firstname? # true #+end<sub>src</sub>
+</p>
+</div>
+</div>
+
+<div id="outline-container-tuples" class="outline-2">
+<h2 id="tuples"><span class="section-number-2">5</span> Tuples</h2>
+<div class="outline-text-2" id="text-tuples">
+<p>
+Tuple is a data structure that is similar to array, but is immutable and
+has a fixed length.
+</p>
+
+<p>
+#+begin<sub>src</sub> ruby
+tuple = Functional::Tuple.new %w(one two three)
+tuple.at 0 # one
+tuple.last 0 # three
+tuple.fetch 4, &rsquo;four&rsquo; # four
+tuple.tail.to<sub>a</sub> # [&rsquo;two&rsquo;, &rsquo;three&rsquo;]
+tuple.repeat(2).to<sub>a.join</sub> &rsquo;,&rsquo; # one, two, three, one, two, three #+end<sub>src</sub>
+</p>
+</div>
+</div>
+
+<div id="outline-container-protocols" class="outline-2">
+<h2 id="protocols"><span class="section-number-2">6</span> Protocols</h2>
+<div class="outline-text-2" id="text-protocols">
+<p>
+Protocols are specifications to provide polymorphism and method-dispatch
+mechanism with strong typing, inspired by <a href="http://clojure.org/protocols">Clojure protocols</a>:
+</p>
+
+<p>
+#+begin<sub>src</sub> ruby
+Functional::SpecifyProtocol(:Address) do
+    attr<sub>accessor</sub> :city
+    attr<sub>accessor</sub> :country
+    attr<sub>accessor</sub> :street
+    attr<sub>accessor</sub> :house
+end #+end<sub>src</sub>
+</p>
+</div>
+</div>
+
+<div id="outline-container-pattern-matching" class="outline-2">
+<h2 id="pattern-matching"><span class="section-number-2">7</span> Pattern matching</h2>
+<div class="outline-text-2" id="text-pattern-matching">
+<p>
+#+begin<sub>src</sub> ruby
+</p>
+
+<p>
+class AddressChecker
+  include Functional::PatternMatching
+  include Functional::Protocol
+  include Functional::TypeCheck
+</p>
+
+<p>
+def msg &rsquo;You live in Moscow, Russia&rsquo; end
+</p>
+
+<p>
+defn(:msg, _) do |addr|
+  &ldquo;You live in #{addr}&rdquo;
+end
+</p>
+
+<p>
+defn(:msg, _) { |addr| &ldquo;You live in #{addr.house}, #{addr.street},
+  #{addr.city}, #{addr.country}&rdquo; }
+  .when { |addr| Satisfy?(addr, :Address) }
+</p>
+
+<p>
+defn(:msg, :name, _) do |addr|
+  &ldquo;Somebody live in #{addr}&rdquo;
+end
+</p>
+
+<p>
+  defn(:msg, _) { |zip| &ldquo;Your zip is #{zip}&rdquo; }.when { |addr| Type?(addr, Fixnum) }
+end #+end<sub>src</sub>
+</p>
+</div>
+</div>
+
+<div id="outline-container-conclusion" class="outline-2">
+<h2 id="conclusion"><span class="section-number-2">8</span> Conclusion</h2>
+<div class="outline-text-2" id="text-conclusion">
+<p>
+If you like functional programming, and want to use it&rsquo;s patterns and
+tools with Ruby, then you can use
+<a href="https://github.com/jdantonio/functional-ruby">Functional Ruby</a> gem to
+write code in more functional style. You can find more information in
+<a href="http://jerrydantonio.com/functional-ruby/">API documentation</a>.
+</p>
+</div>
+</div>
+<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-ruby.html">ruby</a> <a href="https://neiro.io/tag-functional.html">functional</a> </div></div>
+<div id="postamble" class="status"></div>
+</body>
+</html>

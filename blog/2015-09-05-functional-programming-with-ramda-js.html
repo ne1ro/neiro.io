@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="alternate" type="application/rss+xml" href=
+  "https://neiro.io/rss.xml" title=
+  "RSS feed for https://neiro.io/">
+
+  <title>Functional programming with Ramda.js</title>
+  <meta name="author" content="Aleksei Kuznetsov">
+  <meta name="referrer" content="no-referrer">
+  <link href=
+  "https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css"
+  rel="stylesheet" type="text/css">
+  <link href="static/style.css" rel="stylesheet" type="text/css">
+  <link rel="icon" href="static/favicon.ico">
+</head>
+
+<body>
+  <div id="preamble" class="status">
+    <div class="header">
+      <a href="https://neiro.io">Neiro - Functional programming,
+      software architecture</a>
+    </div>
+  </div>
+
+  <div id="content">
+    <div class="post-date">
+      05 Sep 2015
+    </div>
+
+    <h1 class="post-title"><a href=
+    "https://neiro.io/2015-09-05-functional-programming-with-ramda-js.html">
+    Functional programming with Ramda.js</a></h1>
+
+    <p>JavaScript is one of the most dynamic, flexible programming
+    languages. It supports multiple programming paradigms -
+    imperative, object (prototype) oriented, scripting, and
+    functional.<br>
+    Let&#8217; see what JavaScript has common with functional
+    programming languages:</p>
+
+    <ul class="org-ul">
+      <li>First-class functions - functions are objects
+      themselves</li>
+
+      <li>Anonymous functions - functions can be unnamed and
+      nested</li>
+
+      <li>Closures - functions that refer to independent variables,
+      that were created in other scope</li>
+
+      <li>Recursion - function can call itself</li>
+    </ul>
+
+    <p>By the way, there are some significant differences:</p>
+
+    <ul class="org-ul">
+      <li>Immutability - objects, functions in JavaScript can be
+      modified after creation</li>
+
+      <li>Pure functions - JavaScript functions often depends on
+      outside scope, and it&#8217;s hard to create function that
+      always returns the same result with given same
+      parameters</li>
+
+      <li>Strong (and static) typing - JavaScript allows use a
+      value of one type as if it were a value of another type, and
+      has not static typing system</li>
+    </ul>
+
+    <p>JavaScript ecosystem has great tools for advanced use of
+    functional programming features, such as <i>Underscore</i> and
+    <i>Lodash</i> - most popular toolkit libraries. But if you want
+    use library, that was specifically designed for functional
+    programming, you may have to look at <a href=
+    "http://ramdajs.com/0.17/index.html">Ramda.js</a> .</p>
+
+    <p>Ramda.js has some distinguishing features:</p>
+
+    <ul class="org-ul">
+      <li>It&#8217;s designed in pure functional style, with
+      immutability and side-effects free functions, that helps you
+      to write simple and effective code.</li>
+
+      <li>Parameters in functions have the same order, with key
+      params at first and data at last</li>
+
+      <li>Ramda.js functions are automatically curried, that allows
+      you to easily build new functions from old ones</li>
+    </ul>
+
+    <p>To show examples of Ramda.js using, i will use io.js 3.2 and
+    Babel, so let&#8217;s create new <i>.js</i> file:</p>
+
+    <div class="org-src-container">
+      <pre class="src src-javascript">
+<span style="color: #5a5b5a;">#!/usr/bin/env babel-node</span>
+
+<span style="color: #b294bb;">import</span> R from <span style=
+"color: #b5bd68;">'ramda'</span>;
+</pre>
+    </div>
+
+    <p>Ramda.js API has some general use functions:</p>
+
+    <div class="org-src-container">
+      <pre class="src src-javascript">
+<span style="color: #5a5b5a;">// </span><span style=
+"color: #5a5b5a;">Typing let str = 'test';</span>
+R.is(String, str); <span style=
+"color: #5a5b5a;">//</span><span style=
+"color: #5a5b5a;">=&gt; true // The same with currying</span>
+R.is(String)(str); <span style=
+"color: #5a5b5a;">//</span><span style=
+"color: #5a5b5a;">=&gt; true</span>
+<span style="color: #b294bb;">let</span> <span style=
+"color: #cc6666;">isString</span> = R.is(String); isString(<span style="color: #b5bd68;">'string'</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; true</span>
+R.type(isString); <span style=
+"color: #5a5b5a;">//</span><span style=
+"color: #5a5b5a;">=&gt; String</span>
+
+<span style="color: #5a5b5a;">// </span><span style=
+"color: #5a5b5a;">Math</span>
+R.add(<span style=
+"color: #de935f; font-weight: bold;">100</span>, <span style=
+"color: #de935f; font-weight: bold;">500</span>); <span style=
+"color: #5a5b5a;">//</span><span style=
+"color: #5a5b5a;">=&gt; 600</span>
+R.add(<span style=
+"color: #de935f; font-weight: bold;">100</span>)(<span style=
+"color: #de935f; font-weight: bold;">500</span>); <span style=
+"color: #5a5b5a;">//</span><span style=
+"color: #5a5b5a;">=&gt; 600</span>
+R.mean([<span style=
+"color: #de935f; font-weight: bold;">2</span>,<span style=
+"color: #de935f; font-weight: bold;">3</span>,<span style=
+"color: #de935f; font-weight: bold;">7</span>]); <span style=
+"color: #5a5b5a;">//</span><span style=
+"color: #5a5b5a;">=&gt; 4 R.sum(R.range(1, 5)); //=&gt; 10</span>
+
+<span style="color: #5a5b5a;">// </span><span style=
+"color: #5a5b5a;">Logic</span>
+R.and(<span style="color: #de935f;">true</span>, <span style=
+"color: #de935f;">false</span>); <span style=
+"color: #5a5b5a;">//</span><span style=
+"color: #5a5b5a;">=&gt; false</span>
+R.and([])(<span style=
+"color: #de935f; font-weight: bold;">0</span>); <span style=
+"color: #5a5b5a;">//</span><span style=
+"color: #5a5b5a;">=&gt; 0</span>
+R.not(<span style=
+"color: #de935f; font-weight: bold;">1</span>);<span style=
+"color: #5a5b5a;">//</span><span style=
+"color: #5a5b5a;">=&gt; false</span>
+R.both(isString, R.is(String))(str); <span style=
+"color: #5a5b5a;">// </span><span style=
+"color: #5a5b5a;">=&gt; true</span>
+</pre>
+    </div>
+
+    <p>Like the <i>Underscore</i> and <i>Lodash</i>, Ramda has
+    collection helper functions:</p>
+
+    <div class="org-src-container">
+      <pre class="src src-javascript">
+<span style="color: #5a5b5a;">// </span><span style=
+"color: #5a5b5a;">Lists</span>
+<span style="color: #b294bb;">let</span> <span style=
+"color: #cc6666;">animals</span> = [ { name: <span style=
+"color: #b5bd68;">'goose'</span>,
+type: <span style=
+"color: #b5bd68;">'bird'</span>, color: <span style=
+"color: #b5bd68;">'white'</span> }, { name: <span style=
+"color: #b5bd68;">'parrot'</span>, type: <span style=
+"color: #b5bd68;">'bird'</span>, color:
+<span style=
+"color: #b5bd68;">'yellow'</span> }, { name: <span style=
+"color: #b5bd68;">'cat'</span>, type: <span style=
+"color: #b5bd68;">'mammal'</span>, color: <span style=
+"color: #b5bd68;">'grey'</span> }];
+
+R.map(animal =&gt; animal.color + <span style=
+"color: #b5bd68;">' '</span> + animal.name, animals); <span style=
+"color: #5a5b5a;">//</span><span style=
+"color: #5a5b5a;">=&gt; [</span>
+<span style="color: #b5bd68;">'white goose'</span>, <span style=
+"color: #b5bd68;">'yellow parrot'</span>, <span style=
+"color: #b5bd68;">'grey cat'</span> ] R.head(animals).name; <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt;</span>
+goose R.last(animals).name; <span style=
+"color: #5a5b5a;">//</span><span style=
+"color: #5a5b5a;">=&gt; cat</span>
+R.uniq(R.pluck(<span style=
+"color: #b5bd68;">'type'</span>, animals)); <span style=
+"color: #5a5b5a;">//</span><span style=
+"color: #5a5b5a;">=&gt; [ 'bird', 'mammal' ]</span>
+R.length(R.filter(animal =&gt; animal.type === <span style=
+"color: #b5bd68;">'bird'</span>, animals)); <span style=
+"color: #5a5b5a;">//</span><span style=
+"color: #5a5b5a;">=&gt; 2</span>
+</pre>
+    </div>
+
+    <p>And object helpers too:</p>
+
+    <div class="org-src-container">
+      <pre class="src src-javascript">
+<span style="color: #5a5b5a;">// </span><span style=
+"color: #5a5b5a;">Objects let cat = { type: 'animal',</span>
+subclass: <span style=
+"color: #b5bd68;">'mammal'</span>, binomialName: <span style=
+"color: #b5bd68;">'Felis catus'</span> };
+R.assoc(<span style="color: #b5bd68;">'status'</span>, <span style=
+"color: #b5bd68;">'domesticated'</span>, cat).status; <span style=
+"color: #5a5b5a;">//</span><span style=
+"color: #5a5b5a;">=&gt; domesticated</span>
+R.dissoc(<span style=
+"color: #b5bd68;">'binomialName'</span>, cat).binomialName; <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; undefined</span>
+R.keys(cat); <span style="color: #5a5b5a;">//</span><span style=
+"color: #5a5b5a;">=&gt; [ 'type', 'subclass', 'binomialName' ]</span>
+R.has(<span style=
+"color: #b5bd68;">'type'</span>, cat); <span style=
+"color: #5a5b5a;">//</span><span style=
+"color: #5a5b5a;">=&gt; true</span>
+R.prop(<span style=
+"color: #b5bd68;">'type'</span>, cat); <span style=
+"color: #5a5b5a;">//</span><span style=
+"color: #5a5b5a;">=&gt; animal</span>
+R.values(cat); <span style="color: #5a5b5a;">//</span><span style=
+"color: #5a5b5a;">=&gt; [ 'animal', 'mammal', 'felis catus' ]</span>
+
+<span style="color: #5a5b5a;">// </span><span style=
+"color: #5a5b5a;">Object transformation</span>
+<span style="color: #b294bb;">let</span> <span style=
+"color: #cc6666;">transformations</span> = { type: R.toUpper, binomialName: R.toLower }
+R.evolve(transformations, cat).type; <span style=
+"color: #5a5b5a;">// </span><span style=
+"color: #5a5b5a;">=&gt; ANIMAL</span>
+
+</pre>
+    </div>
+
+    <p>But key point of Ramda.js is functions. Ramda allows you to
+    easily compose multiple functions in different orders:</p>
+
+    <div class="org-src-container">
+      <pre class="src src-javascript">
+<span style="color: #5a5b5a;">// </span><span style=
+"color: #5a5b5a;">Compose and pipe R.join(' and ',</span>
+R.uniq(R.map(R.toUpper)(R.pluck(<span style=
+"color: #b5bd68;">'type'</span>, animals)))); <span style=
+"color: #5a5b5a;">//</span><span style=
+"color: #5a5b5a;">=&gt; BIRD and MAMMAL</span>
+<span style="color: #5a5b5a;">// </span><span style=
+"color: #5a5b5a;">Performs right-to-left function composition</span>
+R.compose(R.join(<span style=
+"color: #b5bd68;">' and '</span>), R.uniq, R.map(R.toUpper), R.pluck(<span style="color: #b5bd68;">'type'</span>) )(animals);
+<span style="color: #5a5b5a;">//</span><span style=
+"color: #5a5b5a;">=&gt; BIRD and MAMMAL</span>
+
+<span style="color: #5a5b5a;">// </span><span style=
+"color: #5a5b5a;">Performs left-to-right function composition</span>
+R.pipe(R.pluck(<span style=
+"color: #b5bd68;">'type'</span>) R.map(R.toUpper), R.uniq, R.join(<span style="color: #b5bd68;">' and '</span>)
+)(animals); <span style="color: #5a5b5a;">//</span><span style=
+"color: #5a5b5a;">=&gt; BIRD and MAMMAL</span>
+</pre>
+    </div>
+
+    <p>Another power of Ramda is currying. Currying is the process
+    of translating evaluation of function that takes multiple
+    parameters in evaluating a sequence of functions, each with one
+    argument.</p>
+
+    <div class="org-src-container">
+      <pre class="src src-javascript">
+<span style="color: #b294bb;">let</span> <span style=
+"color: #cc6666;">tripleMultiply</span> = (a, b, c) =&gt; a * b * c;
+tripleMultiply(<span style=
+"color: #de935f; font-weight: bold;">3</span>, <span style=
+"color: #de935f; font-weight: bold;">9</span>, <span style=
+"color: #de935f; font-weight: bold;">2</span>); <span style=
+"color: #5a5b5a;">//</span><span style=
+"color: #5a5b5a;">=&gt; 54</span>
+tripleMultiply(<span style=
+"color: #de935f; font-weight: bold;">3</span>, <span style=
+"color: #de935f; font-weight: bold;">9</span>)(<span style=
+"color: #de935f; font-weight: bold;">2</span>); <span style=
+"color: #5a5b5a;">//</span><span style=
+"color: #5a5b5a;">=&gt; TypeError: tripleMultiply(..) is not a function</span>
+<span style="color: #b294bb;">let</span> <span style=
+"color: #cc6666;">curriedMultiply</span> = R.curry(tripleMultiply);
+curriedMultiply(<span style=
+"color: #de935f; font-weight: bold;">3</span>, <span style=
+"color: #de935f; font-weight: bold;">9</span>)(<span style=
+"color: #de935f; font-weight: bold;">2</span>); <span style=
+"color: #5a5b5a;">//</span><span style=
+"color: #5a5b5a;">=&gt; 54</span>
+curriedMultiply(<span style=
+"color: #de935f; font-weight: bold;">3</span>)(<span style=
+"color: #de935f; font-weight: bold;">9</span>)(<span style=
+"color: #de935f; font-weight: bold;">2</span>); <span style=
+"color: #5a5b5a;">//</span><span style=
+"color: #5a5b5a;">=&gt; 54</span>
+</pre>
+    </div>
+
+    <p>Pattern matching is also available through <i>R.cond</i>.
+    That allows you to check sequence of conditions to match
+    different patterns:</p>
+
+    <div class="org-src-container">
+      <pre class="src src-javascript">
+<span style="color: #b294bb;">let</span> <span style=
+"color: #cc6666;">checkNumber</span> = R.cond([ [R.is(Number),
+R.identity], [R.is(String), parseInt], [R.is(Boolean), Number],
+[R.isEmpty, R.always(<span style=
+"color: #de935f; font-weight: bold;">0</span>)], [R.T, R.always(<span style="color: #de935f;">NaN</span>)]]); checkNumber(<span style="color: #de935f; font-weight: bold;">100500</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 100500</span>
+checkNumber(<span style=
+"color: #b5bd68;">'146%'</span>); <span style=
+"color: #5a5b5a;">//</span><span style=
+"color: #5a5b5a;">=&gt; 146</span>
+checkNumber(<span style=
+"color: #b5bd68;">'Hodor'</span>); <span style=
+"color: #5a5b5a;">//</span><span style=
+"color: #5a5b5a;">=&gt; NaN</span>
+checkNumber(<span style=
+"color: #de935f;">true</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 1</span>
+checkNumber(<span style=
+"color: #de935f;">false</span>); <span style=
+"color: #5a5b5a;">//</span><span style=
+"color: #5a5b5a;">=&gt; 0</span>
+checkNumber([]); <span style=
+"color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 0</span>
+checkNumber([<span style=
+"color: #b5bd68;">'test'</span>]); <span style=
+"color: #5a5b5a;">//</span><span style=
+"color: #5a5b5a;">=&gt; NaN</span>
+</pre>
+    </div>
+
+    <p>Ramda.js is one of the best functional programming libraries
+    that exists in JavaScript ecosystem. It can completely replace
+    <i>Underscore</i>, <i>Lodash</i> in your project with own
+    object, lists and others helpers. Immutability, currying and
+    composing allows you to write both efficient and simple code in
+    pure functional style.</p>
+
+    <div class="taglist">
+      <a href="https://neiro.io/tags.html">Tags</a>: <a href=
+      "https://neiro.io/tag-javascript.html">javascript</a>
+      <a href="https://neiro.io/tag-ramda.html">ramda</a> <a href=
+      "https://neiro.io/tag-functional.html">functional</a>
+    </div>
+  </div>
+
+  <div id="postamble" class="status"></div>
+</body>
+</html>

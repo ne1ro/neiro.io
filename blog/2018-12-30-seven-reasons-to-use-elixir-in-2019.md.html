@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://neiro.io/rss.xml"
+      title="RSS feed for https://neiro.io/"/>
+<title>Seven reasons to use Elixir in 2019</title>
+<meta name="author" content="Aleksei Kuznetsov">
+    <meta name="referrer" content="no-referrer">
+    <link href= "https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet" type="text/css" />
+    <link href= "static/style.css" rel="stylesheet" type="text/css" />
+    <link rel="icon" href="static/favicon.ico"></head>
+<body>
+<div id="preamble" class="status">
+<div class="header">
+    <a href="https://neiro.io">Neiro - Functional programming, software architecture</a>
+  </div></div>
+<div id="content">
+<div class="post-date">30 Dec 2018</div><h1 class="post-title"><a href="https://neiro.io/2018-12-30-seven-reasons-to-use-elixir-in-2019.md.html">Seven reasons to use Elixir in 2019</a></h1>
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#reliability">1. Reliability</a></li>
+<li><a href="#syntax-and-simplicity">2. Syntax and simplicity</a></li>
+<li><a href="#scalability">3. Scalability</a></li>
+<li><a href="#performance">4. Performance</a></li>
+<li><a href="#functional-programming">5. Functional programming</a></li>
+<li><a href="#tooling">6. Tooling</a></li>
+<li><a href="#community">7. Community</a></li>
+<li><a href="#summary">8. Summary</a></li>
+</ul>
+</div>
+</nav>
+<p>
+Currently Elixir is not one of the most popular programming languages
+but for sure it is one of the most promising and underrated ones. Elixir
+and it&rsquo;s community has been growing and evolving this year steadily so
+right now I can recommend it to everyone - no matter if you are a
+business owner or you are an experienced developer or a total newbie -
+it&rsquo;s time to learn or adopt the new technology.
+</p>
+
+<div id="outline-container-reliability" class="outline-2">
+<h2 id="reliability"><span class="section-number-2">1</span> Reliability</h2>
+<div class="outline-text-2" id="text-reliability">
+<p>
+Elixir seems to be like a fresh new programming language which was
+created just a few years ago, in 2012, but it&rsquo;s not the full picture:
+Elixir is really a friendly interface and tooling for Erlang virtual
+machine (BEAM). And just to remind you, Erlang has been widely used
+since the 80s to build reliable, fault-tolerant, concurrent and
+distributed systems like backends, telephony, communications - and so
+does Elixir.
+</p>
+
+<p>
+If you want your service or server to be eternally available with
+<i>almost zero</i> downtime then it could be a top match for you. Elixir has
+all the powers of Erlang and provides even more libraries, tools and
+opportunities.
+</p>
+</div>
+</div>
+
+<div id="outline-container-syntax-and-simplicity" class="outline-2">
+<h2 id="syntax-and-simplicity"><span class="section-number-2">2</span> Syntax and simplicity</h2>
+<div class="outline-text-2" id="text-syntax-and-simplicity">
+<p>
+Erlang inherited its syntax and semantics mostly from Prolog - a logic
+programming language associated with artificial
+intelligence and computational linguistics. Right now it seems very aged
+and clunky and not the best suitable for modern functional programming
+language. Elixir, in contradistinction to Erlang, was heavily influenced
+by Ruby and Clojure, and its syntax and semantics looks really fresh,
+eloquent and easy to write and read. Elixir has really collected all the
+best parts of these languages and Erlang to make developers much more
+productive and efficient.
+</p>
+
+<pre class="example" id="org2394e48">
+  defmodule Example do
+    def list_users(ids) do
+        User
+         |&gt; where([u], u.id in ^ids)
+         |&gt; order_by(asc: :inserted_at)
+         |&gt; Repo.all()
+    end
+  end
+</pre>
+
+<p>
+Elixir&rsquo;s syntax is beautiful yet simple enough. Of course it seems like
+syntax sugar for Erlang but it&rsquo;s really enough to let you compose
+programs in most elegant and simple way. There are no sophisticated and
+intricate features that can mislead you. There is less room for mistakes
+but much more possibilities to write a reliable, robust code in the most
+expressive yet simple way. As a developer you can always be sure that
+your Elixir&rsquo;s program will be predictable, explicit, easy to understand
+and extend.
+</p>
+</div>
+</div>
+
+<div id="outline-container-scalability" class="outline-2">
+<h2 id="scalability"><span class="section-number-2">3</span> Scalability</h2>
+<div class="outline-text-2" id="text-scalability">
+<p>
+Elixir VM&rsquo;s model of concurrency allows you to run your programs
+efficiently on multi-core CPUs to use all the powers of your computer,
+but it is not limited to only one machine - you can scale your
+application on multiple machines and there are no any limitations. For
+example,
+<a href="http://phoenixframework.org/blog/the-road-to-2-million-websocket-connections">you
+can have 2 million open web socket connections</a> or
+<a href="https://blog.discordapp.com/scaling-elixir-f9b8e1e7c29b?gi=434344270ffd">5
+000 000 concurrent users</a> .
+</p>
+
+<p>
+Elixir&rsquo;s processes are extremely lightweight and it makes Elixir also
+resource efficient - you don&rsquo;t need so many machines, CPUs or have
+hundreds of GB of RAM to handle your load. But if you really need to
+then your program will always be ready to scale both horizontally and
+vertically.
+</p>
+</div>
+</div>
+
+<div id="outline-container-performance" class="outline-2">
+<h2 id="performance"><span class="section-number-2">4</span> Performance</h2>
+<div class="outline-text-2" id="text-performance">
+<p>
+Elixir is very fast and performant. Its most popular web framework is
+Phoenix
+<a href="https://github.com/mroth/phoenix-showdown/blob/master/README.md#benchmarking">is
+almost 10 times faster than Ruby on Rails and Node.js</a> . Phoenix is
+much more consistent under the high load though. And as I&rsquo;ve said
+before, Elixir is quite resource effective so the same web server
+implemented in Elixir and Phoenix will handle much more load than Ruby
+on Rails application and will consume much less RAM.
+</p>
+
+<p>
+However, Elixir can be not so good when it comes to heavy computations,
+but you can avoid the bottlenecks by using the native implemented
+functions - NIFs - that allow you to
+<a href="https://medium.com/@jacob.lerche/writing-rust-nifs-for-your-elixir-code-with-the-rustler-package-d884a7c0dbe3">rewrite
+problematic code to make it way more performant</a>.
+</p>
+</div>
+</div>
+
+<div id="outline-container-functional-programming" class="outline-2">
+<h2 id="functional-programming"><span class="section-number-2">5</span> Functional programming</h2>
+<div class="outline-text-2" id="text-functional-programming">
+<p>
+Elixir is a functional programming language and it encourages you to
+write pure, side-effect free functions, keep your logic and data
+separated and your variables immutable. Elixir has first-class
+functions, functions composition, closures, high-order functions,
+pattern-matching - all that you really need to write your programs
+according to the functional programming paradigm.
+</p>
+
+<p>
+All these features made Elixir&rsquo;s concurrency model so simple and easy to
+use. You shouldn&rsquo;t be afraid to communicate between different processes,
+nodes, machines but be insured from the most concurrency issues.
+</p>
+</div>
+</div>
+
+<div id="outline-container-tooling" class="outline-2">
+<h2 id="tooling"><span class="section-number-2">6</span> Tooling</h2>
+<div class="outline-text-2" id="text-tooling">
+<p>
+Elixir has a plethora of great tools and instruments that helps
+developers to write, test, build, deploy and debug their applications.
+</p>
+
+<ul class="org-ul">
+<li>Package manager</li>
+<li>Interactive shell</li>
+<li>Code formatter</li>
+<li><a href="https://github.com/bitwalker/distillery">Packing into releases</a></li>
+<li><a href="https://github.com/edeliver/edeliver">Deployment tool</a></li>
+<li><a href="https://medium.com/@neiro/elixir-code-quality-tools-and-checks-315ab9e9d7ea">Linters
+and quality checks</a></li>
+<li><a href="https://github.com/jeremyjh/dialyxir">Discrepancy analyzer</a></li>
+<li><a href="https://github.com/parapluu/Concuerror">Concurrency errors checker</a></li>
+<li><a href="https://github.com/josefs/Gradualizer">Gradual types system</a></li>
+<li><a href="https://github.com/JakeBecker/elixir-ls">Frontend-independent
+language-server</a></li>
+<li>And even more!</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-community" class="outline-2">
+<h2 id="community"><span class="section-number-2">7</span> Community</h2>
+<div class="outline-text-2" id="text-community">
+<p>
+Elixir was invented by Jose Valim who was a former Ruby on Rails
+community participant. Starting from the very beginning many people have
+switched from Ruby and Python to Elixir. Elixir&rsquo;s community is quite
+friendly, responsive and welcoming, it&rsquo;s easy to find help or advice
+there. Elixir could be your first programming language or tenth - it
+doesn&rsquo;t matter, you will get support in any case.
+</p>
+
+<p>
+Right now there are <a href="https://github.com/h4cc/awesome-elixir">so many
+tools and libraries in Elixir</a> and
+<a href="https://github.com/drobakowski/awesome-erlang">so in Erlang</a>.
+</p>
+</div>
+</div>
+
+<div id="outline-container-summary" class="outline-2">
+<h2 id="summary"><span class="section-number-2">8</span> Summary</h2>
+<div class="outline-text-2" id="text-summary">
+<p>
+If you want so start your new 2019 year from a little adventure then you
+can learn Elixir or adopt it in your business. It suits very well for
+any server-side applications, web applications, embedded systems,
+scripts. You can start by reading the
+<a href="https://elixir-lang.org/learning.html">learning resources</a> or try
+<a href="https://elixirschool.com">Elixir School</a>.
+</p>
+
+<p>
+We are 100% happy with Elixir as the core technology in our modern
+social platform <a href="https://salam.io">Salam.io</a> and really want to
+encourage anyone to give Elixir a try in their projects.
+</p>
+
+<p>
+Happy hacking everyone!
+</p>
+</div>
+</div>
+<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-elixir.html">elixir</a> </div></div>
+<div id="postamble" class="status"></div>
+</body>
+</html>

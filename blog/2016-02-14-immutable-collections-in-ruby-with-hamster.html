@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://neiro.io/rss.xml"
+      title="RSS feed for https://neiro.io/"/>
+<title>Immutable collections in Ruby with Hamster</title>
+<meta name="author" content="Aleksei Kuznetsov">
+    <meta name="referrer" content="no-referrer">
+    <link href= "https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet" type="text/css" />
+    <link href= "static/style.css" rel="stylesheet" type="text/css" />
+    <link rel="icon" href="static/favicon.ico"></head>
+<body>
+<div id="preamble" class="status">
+<div class="header">
+    <a href="https://neiro.io">Neiro - Functional programming, software architecture</a>
+  </div></div>
+<div id="content">
+<div class="post-date">14 Feb 2016</div><h1 class="post-title"><a href="https://neiro.io/2016-02-14-immutable-collections-in-ruby-with-hamster.html">Immutable collections in Ruby with Hamster</a></h1>
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#hamster">1. Hamster</a></li>
+<li><a href="#hash">2. Hash</a></li>
+<li><a href="#list">3. List</a></li>
+<li><a href="#set">4. Set</a></li>
+<li><a href="#vector">5. Vector</a></li>
+<li><a href="#conclusion">6. Conclusion</a></li>
+</ul>
+</div>
+</nav>
+<p>
+Ruby has much in common with functional programming languages. For
+example, Ruby supports high-order functions, lambdas, currying and
+recursion, but not the immutability - Ruby&rsquo;s types and data structures
+are mutable and can be changed at any time.
+</p>
+
+<p>
+Why immutability is important? The&rsquo;re many arguments for that:
+</p>
+
+<ul class="org-ul">
+<li>reliability</li>
+<li>thread-safety</li>
+<li>simpler debugging</li>
+<li>purity - immutable data allows you to write side-effects free code</li>
+</ul>
+
+<p>
+If you want to make Ruby hash immutable, you can use freeze it:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ruby">immutable = { <span style="color: #de935f;">foo:</span> <span style="color: #b5bd68;">'bar'</span> } immutable.freeze
+
+immutable[<span style="color: #de935f;">:foo</span>] = <span style="color: #b5bd68;">'tball'</span><span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">RuntimeError: can't modify frozen Hash</span>
+</pre>
+</div>
+
+<p>
+But if you want to use already immutable collections, sets and other
+data structures, you can try
+<a href="https://github.com/hamstergem/hamster">Hamster</a> library.
+</p>
+
+<div id="outline-container-hamster" class="outline-2">
+<h2 id="hamster"><span class="section-number-2">1</span> Hamster</h2>
+<div class="outline-text-2" id="text-hamster">
+<p>
+Hamster provides efficient, immutable and thread-safe collection classes
+for Ruby, such as <i>Hash</i>, <i>Vector</i>, <i>Set</i>, <i>SortedSet</i> and <i>List</i>.
+Hamster collections offers Ruby`s <i>Hash</i>, <i>Array</i>, <i>Enumberable</i>
+compatibility where it possible. You can require all of Hamster
+collection classes:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ruby">gem i hamster
+<span style="color: #81a2be;">require</span> <span style="color: #b5bd68;">'hamster'</span>
+</pre>
+</div>
+
+<p>
+or only certain types:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ruby"><span style="color: #81a2be;">require</span> <span style="color: #b5bd68;">'hamster/hash'</span>
+<span style="color: #81a2be;">require</span> <span style="color: #b5bd68;">'hamster/vector'</span>
+<span style="color: #81a2be;">require</span> <span style="color: #b5bd68;">'hamster/set'</span>
+<span style="color: #81a2be;">require</span> <span style="color: #b5bd68;">'hamster/sorted_set'</span>
+<span style="color: #81a2be;">require</span> <span style="color: #b5bd68;">'hamster/list'</span>
+<span style="color: #81a2be;">require</span> <span style="color: #b5bd68;">'hamster/deque'</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-hash" class="outline-2">
+<h2 id="hash"><span class="section-number-2">2</span> Hash</h2>
+<div class="outline-text-2" id="text-hash">
+<div class="org-src-container">
+<pre class="src src-ruby"><span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">Create new Hamster Hash</span>
+parrot = <span style="color: #f0c674;">Hamster</span>::<span style="color: #f0c674;">Hash</span>[<span style="color: #de935f;">type:</span> <span style="color: #b5bd68;">'bird'</span>, <span style="color: #b294bb;">class</span>: <span style="color: #b5bd68;">'parrot'</span>, <span style="color: #de935f;">color:</span> <span style="color: #b5bd68;">'yellow'</span>]
+
+parrot.get(<span style="color: #de935f;">:color</span>) <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">yellow</span>
+parrot[<span style="color: #de935f;">:type</span>] <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">bird</span>
+
+<span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">You can not change hash because of immutability</span>
+parrot[<span style="color: #de935f;">:subclass</span>] = <span style="color: #b5bd68;">'budgie'</span> <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">NoMethodError: undefined method `[]='</span>
+<span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">But you can create a new</span>
+
+budgie = parrot.put <span style="color: #de935f;">:subclass</span>, <span style="color: #b5bd68;">'budgie'</span>
+budgie == parrot <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">false</span>
+budgie[<span style="color: #de935f;">:subclass</span>] <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">budgie</span>
+parrot[<span style="color: #de935f;">:subclass</span>] <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">nil</span>
+
+budgie.to_hash.class <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">Plain Ruby Hash</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-list" class="outline-2">
+<h2 id="list"><span class="section-number-2">3</span> List</h2>
+<div class="outline-text-2" id="text-list">
+<div class="org-src-container">
+<pre class="src src-ruby">list = <span style="color: #f0c674;">Hamster</span>::<span style="color: #f0c674;">List</span>[<span style="color: #de935f; font-weight: bold;">0</span>, <span style="color: #de935f; font-weight: bold;">1</span>, <span style="color: #de935f; font-weight: bold;">2</span>] list.tail <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">Hamster::List[1, 2]</span>
+list.head <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">0</span>
+</pre>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-set" class="outline-2">
+<h2 id="set"><span class="section-number-2">4</span> Set</h2>
+<div class="outline-text-2" id="text-set">
+<div class="org-src-container">
+<pre class="src src-ruby"><span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">Hamster's set is an unordered collection with no duplicates</span>
+colors = <span style="color: #f0c674;">Hamster</span>::<span style="color: #f0c674;">Set</span>[<span style="color: #de935f;">:green</span>, <span style="color: #de935f;">:white</span>]
+colors.include?(<span style="color: #de935f;">:green</span>) <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">true</span>
+
+palette = colors.add <span style="color: #de935f;">:yellow</span> <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">Hamster::Set[:green, :yellow, :white]</span>
+colors.include?(<span style="color: #de935f;">:yellow</span>) <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">false palette.superset?(colors) # true</span>
+palette.intersection(colors) <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">Hamster::Set[:green, :white]</span>
+palette.difference(colors).first <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">:yellow</span>
+
+palette.to_a <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">Plain Ruby array: [:green, :white, :yellow]</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-vector" class="outline-2">
+<h2 id="vector"><span class="section-number-2">5</span> Vector</h2>
+<div class="outline-text-2" id="text-vector">
+<div class="org-src-container">
+<pre class="src src-ruby"> <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">Vector is an integer-indexed immutable array</span>
+vector = <span style="color: #f0c674;">Hamster</span>::<span style="color: #f0c674;">Vector</span>[<span style="color: #de935f; font-weight: bold;">0</span>, <span style="color: #de935f; font-weight: bold;">1</span>, <span style="color: #de935f; font-weight: bold;">2</span>]
+vector[<span style="color: #de935f; font-weight: bold;">2</span>] <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">2</span>
+vector[-<span style="color: #de935f; font-weight: bold;">1</span>] <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">2</span>
+vector[-<span style="color: #de935f; font-weight: bold;">4</span>] <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">nil</span>
+vector[<span style="color: #de935f; font-weight: bold;">1</span>,<span style="color: #de935f; font-weight: bold;">2</span>] <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">Hamster::Vector[1, 2]</span>
+vector[<span style="color: #de935f; font-weight: bold;">0</span>..<span style="color: #de935f; font-weight: bold;">2</span>] <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">Hamster::Vector[0, 1, 2]</span>
+
+binary_vector = vector.delete_at <span style="color: #de935f; font-weight: bold;">0</span> <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">Hamster::Vector[1, 2]</span>
+vector.size <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">3</span>
+binary_vector.size <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">2</span>
+vector == binary_vector <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">false</span>
+
+(binary_vector + vector).sort.uniq <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">Hamster::Vector[0, 1, 2]</span>
+(binary_vector + vector).sort.uniq == vector <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">true</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-conclusion" class="outline-2">
+<h2 id="conclusion"><span class="section-number-2">6</span> Conclusion</h2>
+<div class="outline-text-2" id="text-conclusion">
+<p>
+If you want to use immutable data structures in Ruby to write more
+reliable, efficient and at the same time thread-safe code, you can take
+a look at Hamster. You can find more in Hamster&rsquo;s
+<a href="http://www.rubydoc.info/github/hamstergem/hamster/master">API
+documentation</a>.
+</p>
+</div>
+</div>
+<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-ruby.html">ruby</a> <a href="https://neiro.io/tag-functional.html">functional</a> <a href="https://neiro.io/tag-immutable.html">immutable</a> </div></div>
+<div id="postamble" class="status"></div>
+</body>
+</html>

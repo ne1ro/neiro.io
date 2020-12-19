@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://neiro.io/rss.xml"
+      title="RSS feed for https://neiro.io/"/>
+<title>Query objects in Ruby on Rails</title>
+<meta name="author" content="Aleksei Kuznetsov">
+    <meta name="referrer" content="no-referrer">
+    <link href= "https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet" type="text/css" />
+    <link href= "static/style.css" rel="stylesheet" type="text/css" />
+    <link rel="icon" href="static/favicon.ico"></head>
+<body>
+<div id="preamble" class="status">
+<div class="header">
+    <a href="https://neiro.io">Neiro - Functional programming, software architecture</a>
+  </div></div>
+<div id="content">
+<div class="post-date">05 Oct 2016</div><h1 class="post-title"><a href="https://neiro.io/2016-10-05-query-objects-in-ruby-on-rails.md.html">Query objects in Ruby on Rails</a></h1>
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#typical-db-queries-application-problems">1. Typical DB queries application problems:</a></li>
+<li><a href="#solution">2. Solution:</a></li>
+<li><a href="#implementation">3. Implementation:</a>
+<ul>
+<li><a href="#heredoc-syntax-for-raw-sql">3.1. HEREDOC syntax for raw SQL:</a></li>
+<li><a href="#extending-scope">3.2. Extending scope:</a></li>
+</ul>
+</li>
+<li><a href="#composing-query-objects">4. Composing Query Objects:</a></li>
+<li><a href="#inheritance-of-query-objects">5. Inheritance of Query Objects:</a></li>
+<li><a href="#testing-query-objects">6. Testing Query Objects:</a></li>
+<li><a href="#summary">7. Summary:</a>
+<ul>
+<li><a href="#good-query-object">7.1. Good Query Object:</a></li>
+<li><a href="#use-query-objects-when">7.2. Use Query Objects when:</a></li>
+<li><a href="#dont-use-query-objects-when">7.3. Don&rsquo;t use Query Objects when:</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</nav>
+<p>
+Database queries are common when you develop web applications. <i>Ruby on
+Rails</i> and it&rsquo;s <i>ActiveRecord</i> liberates you from writing tons of
+boilerplate SQL code and results in creation of elegant, eloquent
+queries in plain Ruby.
+</p>
+
+
+<figure id="org65b1dcd">
+<img src="https://cdn-images-1.medium.com/max/1600/1*-oIlwIWlt0BDN4b5a9rRCQ.png" alt="1*-oIlwIWlt0BDN4b5a9rRCQ.png">
+
+</figure>
+
+<p>
+But plenty of immense possibilities that Ruby and ActiveRecord provide,
+unfortunately, remain unused. I bet that often you see a lot of enormous
+scopes in Ruby on Rails models, endless chains of queries in controllers
+and even bulky chunks of raw SQL.
+</p>
+
+<p>
+#+begin<sub>src</sub> ruby
+@articles = Article.includes(:user)
+                    .order(&ldquo;created<sub>at</sub> DESC&rdquo;)
+                    .where(&ldquo;text IS NOT NULL&rdquo;)
+                    .page(page)
+</p>
+
+<p>
+@articles = Articles.connection
+                     .select<sub>all</sub>(%Q{SELECT articles.* FROM
+articles WHERE (text IS NOT NULL) ORDER BY created<sub>at</sub> DESC LIMIT 5
+OFFSET 0})
+#+end<sub>src</sub> <i>Bad cases of using ActiveRecord queries</i>
+</p>
+
+<p>
+These poor practices may create obstacles and become a reason of
+developer&rsquo;s headaches in the real-world web applications.
+</p>
+
+<div id="outline-container-typical-db-queries-application-problems" class="outline-2">
+<h2 id="typical-db-queries-application-problems"><span class="section-number-2">1</span> Typical DB queries application problems:</h2>
+<div class="outline-text-2" id="text-typical-db-queries-application-problems">
+<ul class="org-ul">
+<li>Big pieces of queries code in controllers/models/services mess up your
+code</li>
+<li>It is hard to understand complex database requests</li>
+<li>Inserts of raw SQL are non-consistent and often mix with ActiveRecord
+queries</li>
+<li>Testing one separate query in isolation is very problematic</li>
+<li>It is difficult to compose, extend or inherit queries</li>
+<li>Often Single Responsibility Principle gets violated</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-solution" class="outline-2">
+<h2 id="solution"><span class="section-number-2">2</span> Solution:</h2>
+<div class="outline-text-2" id="text-solution">
+<p>
+These problems can be solved by using <i>Query Object</i> pattern &#x2014; a
+common technique that isolates your complex queries.
+</p>
+
+<p>
+<i>Query Object</i> in ideal case is a separate class that contains one
+specific query that implements just one business logic rule.
+</p>
+</div>
+</div>
+
+<div id="outline-container-implementation" class="outline-2">
+<h2 id="implementation"><span class="section-number-2">3</span> Implementation:</h2>
+<div class="outline-text-2" id="text-implementation">
+<p>
+For most of the cases <i>Query Object</i> is PORO that accepts relation in
+constructor and defines queries named like an <i>ActiveRecord</i> common
+methods:
+</p>
+
+<p>
+#+begin<sub>src</sub> ruby
+</p>
+
+<p>
+class Article &lt; ActiveRecord::Base
+    scope :by<sub>title</sub>, -&gt;(direction) { order title: direction }
+    scope :by<sub>date</sub>, -&gt;(direction) { order created<sub>at</sub>: direction }
+    scope :by<sub>author</sub>, -&gt;(direction) { order &ldquo;users.full<sub>name</sub> #{direction}&rdquo; }
+</p>
+
+<p>
+SORT<sub>OPTIONS</sub> = %w(by<sub>date</sub> by<sub>title</sub> by<sub>author</sub>).freeze
+</p>
+
+<pre class="example" id="orgcad56d9">
+  def initialize(params = {}, relation = Article.includes(:user))
+    @relation = relation
+    @params = params
+  end
+
+  def all
+    @relation.public_send(sort_by, direction)
+  end
+
+  private
+
+  def sort_by
+    @params[:sort].presence_in(SORT_OPTIONS) || :by_date
+  end
+
+  def direction
+    @params[:direction] == "asc" ? :asc : :desc
+  end
+</pre>
+
+<p>
+end
+</p>
+
+<p>
+index @articles = OrderedArticlesQuery.new(sort<sub>query</sub><sub>params</sub>).all.page(params[:page])
+end
+</p>
+
+<pre class="example" id="org6088d49">
+  private
+
+  def sort_query_params
+    params.slice(:sort_by, :direction)
+  end
+</pre>
+
+<p>
+end
+#+end<sub>src</sub> <i>Query Object implementation and usage in
+controller</i>
+</p>
+</div>
+
+<div id="outline-container-heredoc-syntax-for-raw-sql" class="outline-3">
+<h3 id="heredoc-syntax-for-raw-sql"><span class="section-number-3">3.1</span> HEREDOC syntax for raw SQL:</h3>
+<div class="outline-text-3" id="text-heredoc-syntax-for-raw-sql">
+<p>
+For the cases where you desperately need to use raw SQL code try to
+isolate it using Ruby&rsquo;s <i>HEREDOC syntax:</i>
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ruby"> <span style="color: #b294bb;">class</span> <span style="color: #f0c674;">PopularArticlesQuery</span>
+  <span style="color: #f0c674;">POPULAR_TRESHOLD</span> = <span style="color: #de935f; font-weight: bold;">5</span>
+
+  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">initialize</span>(subscriptions = <span style="color: #f0c674;">Subscription</span>.all)
+    <span style="color: #cc6666;">@subscriptions</span> = subscriptions
+  <span style="color: #b294bb;">end</span>
+
+  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">all</span>
+    <span style="color: #cc6666;">@subscriptions</span>.where(query)
+  <span style="color: #b294bb;">end</span>
+
+  <span style="color: #81a2be;">private</span>
+
+  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">query</span>
+    <span style="color: #b5bd68;">&lt;&lt;-SQL</span>
+<span style="color: #b5bd68;">      articles.comments_count &gt;= </span><span style="color: #cc6666;">#{POPULAR_TRESHOLD}</span>
+<span style="color: #b5bd68;">      AND articles.content IS NOT NULL</span>
+<span style="color: #b5bd68;">      AND articles.status = </span><span style="color: #cc6666;">#{Article::STATUSES[:published]}</span>
+<span style="color: #b5bd68;">      ORDER BY articles.comments_count DESC</span>
+<span style="color: #b5bd68;">    SQL</span>
+  <span style="color: #b294bb;">end</span>
+<span style="color: #b294bb;">end</span>
+</pre>
+</div>
+
+<p>
+<i>HEREDOC syntax example for raw SQL inserts</i>
+</p>
+</div>
+</div>
+
+<div id="outline-container-extending-scope" class="outline-3">
+<h3 id="extending-scope"><span class="section-number-3">3.2</span> Extending scope:</h3>
+<div class="outline-text-3" id="text-extending-scope">
+<p>
+If your scope relates to existing <i>QueryObject</i>, you can easily extend
+its relation instead of cluttering up your models.
+<a href="http://apidock.com/rails/ActiveRecord/QueryMethods/extending">ActiveRecord::QueryMethods.extending</a>
+method will help you:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ruby"><span style="color: #b294bb;">class</span> <span style="color: #f0c674;">OrderedArticlesQuery</span>
+  <span style="color: #f0c674;">SORT_OPTIONS</span> = <span style="color: #b5bd68;">%w(by_date by_title by_author)</span>.freeze
+
+  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">initialize</span>(params = {}, relation = <span style="color: #f0c674;">Article</span>.includes(<span style="color: #de935f;">:user</span>))
+    <span style="color: #cc6666;">@relation</span> = relation.extending(<span style="color: #f0c674;">Scopes</span>)
+
+    <span style="color: #cc6666;">@params</span> = params
+  <span style="color: #b294bb;">end</span>
+
+  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">all</span>
+    <span style="color: #cc6666;">@relation</span>.public_send(sort_by, direction)
+  <span style="color: #b294bb;">end</span>
+
+  <span style="color: #81a2be;">private</span>
+
+  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">sort_by</span>
+    <span style="color: #cc6666;">@params</span>[<span style="color: #de935f;">:sort</span>].presence_in(<span style="color: #f0c674;">SORT_OPTIONS</span>) || <span style="color: #de935f;">:by_date</span>
+  <span style="color: #b294bb;">end</span>
+
+  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">direction</span>
+    <span style="color: #cc6666;">@params</span>[<span style="color: #de935f;">:direction</span>] == <span style="color: #b5bd68;">"asc"</span> ? <span style="color: #de935f;">:asc</span> : <span style="color: #de935f;">:desc</span>
+  <span style="color: #b294bb;">end</span>
+
+  <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">Group additional scope methods in module in order to extend relation</span>
+  <span style="color: #b294bb;">module</span> <span style="color: #f0c674;">Scopes</span>
+    <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">by_title</span>(direction)
+      order(<span style="color: #de935f;">title:</span> direction)
+    <span style="color: #b294bb;">end</span>
+
+    <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">by_date</span>(direction)
+      order(<span style="color: #de935f;">created_at:</span> direction)
+    <span style="color: #b294bb;">end</span>
+
+    <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">by_author</span>
+      order(<span style="color: #b5bd68;">"users.full_name </span><span style="color: #cc6666;">#{direction}</span><span style="color: #b5bd68;">"</span>)
+    <span style="color: #b294bb;">end</span>
+  <span style="color: #b294bb;">end</span>
+<span style="color: #b294bb;">end</span>
+</pre>
+</div>
+
+<p>
+<i>Extending scope for Query Objects relations</i>
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-composing-query-objects" class="outline-2">
+<h2 id="composing-query-objects"><span class="section-number-2">4</span> Composing Query Objects:</h2>
+<div class="outline-text-2" id="text-composing-query-objects">
+<p>
+<i>Query Objects</i> should be devised to support composition with other
+<i>Query Objects</i> and other ActiveRecord relations. In the example below
+two composed Query Objects represent one SQL query:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ruby"><span style="color: #b294bb;">class</span> <span style="color: #f0c674;">FeaturedQuery</span>
+  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">initialize</span>(relation = <span style="color: #f0c674;">Article</span>.all)
+    <span style="color: #cc6666;">@relation</span> = relation
+  <span style="color: #b294bb;">end</span>
+
+  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">all</span>
+    <span style="color: #cc6666;">@relation</span>.where(<span style="color: #de935f;">featured:</span> <span style="color: #de935f;">true</span>).where(<span style="color: #b5bd68;">"views_count &gt; ?"</span>, <span style="color: #de935f; font-weight: bold;">100</span>)
+  <span style="color: #b294bb;">end</span>
+<span style="color: #b294bb;">end</span>
+
+<span style="color: #b294bb;">class</span> <span style="color: #f0c674;">ArticlesController</span>
+  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">index</span>
+    <span style="color: #cc6666;">@articles</span> = <span style="color: #f0c674;">FeaturedArticlesQuery</span>.new(sorted_articles).all <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">SELECT "articles".* FROM "articles" WHERE "articles"."featured" = $1 # AND (views_count &gt;100) ORDER BY "articles"."created_at" DESC LIMIT 10 OFFSET 0</span>
+  <span style="color: #b294bb;">end</span>
+
+  <span style="color: #81a2be;">private</span>
+
+  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">sorted_articles</span>
+    <span style="color: #f0c674;">SortedArticlesQuery</span>.new(sort_query_params).all
+  <span style="color: #b294bb;">end</span>
+
+  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">sort_query_params</span>
+    { <span style="color: #de935f;">sort:</span> <span style="color: #de935f;">:by_title</span>, <span style="color: #de935f;">direction:</span> <span style="color: #de935f;">:desc</span> }
+  <span style="color: #b294bb;">end</span>
+<span style="color: #b294bb;">end</span>
+</pre>
+</div>
+
+<p>
+<i>Composing two Query Objects</i>
+</p>
+</div>
+</div>
+
+<div id="outline-container-inheritance-of-query-objects" class="outline-2">
+<h2 id="inheritance-of-query-objects"><span class="section-number-2">5</span> Inheritance of Query Objects:</h2>
+<div class="outline-text-2" id="text-inheritance-of-query-objects">
+<p>
+If you have similar queries you may want them to be inherited to reduce
+repetition and follow DRY principle:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ruby"><span style="color: #b294bb;">class</span> <span style="color: #f0c674;">ArticlesQuery</span>
+  <span style="color: #f0c674;">TEXT_LENGTH</span> = <span style="color: #de935f; font-weight: bold;">3</span>
+
+<span style="color: #5a5b5a;">#</span><span style="color: #5a5b5a;">+BEGIN_EXAMPLE</span>
+  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">initialize</span>(comments = <span style="color: #f0c674;">Comment</span>.all)
+    <span style="color: #cc6666;">@comments</span> = comments
+  <span style="color: #b294bb;">end</span>
+
+  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">all</span>
+    comments
+      .where(<span style="color: #b5bd68;">"user_id IS NOT NULL"</span>)
+      .where(<span style="color: #b5bd68;">"LENGTH(content) </span><span style="color: #cc6666;">#{condition}</span><span style="color: #b5bd68;">"</span>)
+  <span style="color: #b294bb;">end</span>
+
+  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">condition</span>
+    <span style="color: #b5bd68;">"&gt; </span><span style="color: #cc6666;">#{TEXT_LENGTH}</span><span style="color: #b5bd68;">"</span>
+  <span style="color: #b294bb;">end</span>
+<span style="color: #b294bb;">end</span>
+
+<span style="color: #b294bb;">class</span> <span style="color: #f0c674;">LongArticlesQuery</span> &lt; <span style="color: #f0c674;">ArticlesQuery</span>
+  <span style="color: #f0c674;">TEXT_LENGTH</span> = <span style="color: #de935f; font-weight: bold;">5</span>
+
+  <span style="color: #5a5b5a;">#</span><span style="color: #5a5b5a;">+BEGIN_EXAMPLE</span>
+  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">condition</span>
+    <span style="color: #b5bd68;">"&gt;= </span><span style="color: #cc6666;">#{TEXT_LENGTH}</span><span style="color: #b5bd68;">"</span>
+  <span style="color: #b294bb;">end</span>
+<span style="color: #b294bb;">end</span>
+</pre>
+</div>
+
+<p>
+<i>Inheritance of Query Objects</i>
+</p>
+</div>
+</div>
+
+<div id="outline-container-testing-query-objects" class="outline-2">
+<h2 id="testing-query-objects"><span class="section-number-2">6</span> Testing Query Objects:</h2>
+<div class="outline-text-2" id="text-testing-query-objects">
+<p>
+Query Objects should be designed to be pleasant for testing. In most
+cases you just need to test core methods defined in query for their
+results:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ruby"><span style="color: #81a2be;">require</span> <span style="color: #b5bd68;">"rails_helper"</span>
+
+describe <span style="color: #f0c674;">LongArticlesQuery</span> <span style="color: #b294bb;">do</span>
+  describe <span style="color: #b5bd68;">"#all"</span> <span style="color: #b294bb;">do</span>
+    subject(<span style="color: #de935f;">:all</span>) { described_class.new.all }
+
+    before <span style="color: #b294bb;">do</span>
+      create <span style="color: #de935f;">:article</span>, <span style="color: #de935f;">text:</span> <span style="color: #b5bd68;">"abc"</span>
+      create <span style="color: #de935f;">:article</span>, <span style="color: #de935f;">text:</span> <span style="color: #b5bd68;">"this is long article"</span>
+    <span style="color: #b294bb;">end</span>
+
+    it <span style="color: #b5bd68;">"returns one short comment"</span> <span style="color: #b294bb;">do</span>
+      expect(all.size).to eq(<span style="color: #de935f; font-weight: bold;">1</span>)
+    <span style="color: #b294bb;">end</span>
+  <span style="color: #b294bb;">end</span>
+<span style="color: #b294bb;">end</span>
+</pre>
+</div>
+
+<p>
+<i>Testing Query Objects</i>
+</p>
+</div>
+</div>
+
+<div id="outline-container-summary" class="outline-2">
+<h2 id="summary"><span class="section-number-2">7</span> Summary:</h2>
+<div class="outline-text-2" id="text-summary">
+</div>
+
+<div id="outline-container-good-query-object" class="outline-3">
+<h3 id="good-query-object"><span class="section-number-3">7.1</span> Good Query Object:</h3>
+<div class="outline-text-3" id="text-good-query-object">
+<ul class="org-ul">
+<li>Follows <i>Single Responsibility Principle</i></li>
+<li>Can be easily tested in isolation</li>
+<li>Can be combined/extended with another Query Object</li>
+<li>Can be effortlessly reused in any other parts of an application</li>
+<li>Returns <i>ActiveRecord::Relation</i>, not <i>Array</i></li>
+<li>Represents only database query, not business logic or action</li>
+<li>Methods of Query Object are named like <i>ActiveRecord</i> methods (<i>all,
+last, count, etc</i>)</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-use-query-objects-when" class="outline-3">
+<h3 id="use-query-objects-when"><span class="section-number-3">7.2</span> Use Query Objects when:</h3>
+<div class="outline-text-3" id="text-use-query-objects-when">
+<ul class="org-ul">
+<li>You need to reuse one query in multiple places of application</li>
+<li>You need to extend, compose or inherit queries and their relations</li>
+<li>You need to write a lot of raw SQL, but don&rsquo;t want to mess up your
+code</li>
+<li>Your query is too complex / vast for just one method or scope</li>
+<li>Your query causes <i>feature envy</i></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-dont-use-query-objects-when" class="outline-3">
+<h3 id="dont-use-query-objects-when"><span class="section-number-3">7.3</span> Don&rsquo;t use Query Objects when:</h3>
+<div class="outline-text-3" id="text-dont-use-query-objects-when">
+<ul class="org-ul">
+<li>Your query is simple enough for just one method or scope</li>
+<li>You don&rsquo;t need to extend, compose or inherit your query</li>
+<li>Your query is unique and you don&rsquo;t want to make it reusable</li>
+</ul>
+
+<p>
+I hope this article will help you to build awesome queries in your
+applications. Good luck and happy coding!
+</p>
+</div>
+</div>
+</div>
+<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-ruby.html">ruby</a> <a href="https://neiro.io/tag-rails.html">rails</a> <a href="https://neiro.io/tag-query.html">query</a> </div></div>
+<div id="postamble" class="status"></div>
+</body>
+</html>

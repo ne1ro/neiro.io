@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://neiro.io/rss.xml"
+      title="RSS feed for https://neiro.io/"/>
+<title>High level Node.JS streams</title>
+<meta name="author" content="Aleksei Kuznetsov">
+    <meta name="referrer" content="no-referrer">
+    <link href= "https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet" type="text/css" />
+    <link href= "static/style.css" rel="stylesheet" type="text/css" />
+    <link rel="icon" href="static/favicon.ico"></head>
+<body>
+<div id="preamble" class="status">
+<div class="header">
+    <a href="https://neiro.io">Neiro - Functional programming, software architecture</a>
+  </div></div>
+<div id="content">
+<div class="post-date">28 Jan 2016</div><h1 class="post-title"><a href="https://neiro.io/2016-01-28-high-level-nodejs-streams-with-highland.html">High level Node.JS streams</a></h1>
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#highland">1. Highland</a></li>
+<li><a href="#general-examples">2. General examples</a></li>
+<li><a href="#stream-objects">3. Stream objects</a></li>
+<li><a href="#transformations">4. Transformations</a></li>
+<li><a href="#high-order-streams">5. High-order Streams</a></li>
+<li><a href="#objects">6. Objects</a></li>
+<li><a href="#utils">7. Utils</a></li>
+<li><a href="#conclusion">8. Conclusion</a></li>
+</ul>
+</div>
+</nav>
+<p>
+Node.js has a simple and powerful stream API. Streams in Node.js are
+unix pipes that let you perform asynchronous I/O operations by reading
+source data and pipe it to destination. If your application operates not
+with streams only, but promises, callbacks or synchronous code, you may
+want to use more deeper abstraction that fits your needs. In this case
+you may take a look at <a href="http://highlandjs.org/">Highland</a>.
+</p>
+
+<div id="outline-container-highland" class="outline-2">
+<h2 id="highland"><span class="section-number-2">1</span> Highland</h2>
+<div class="outline-text-2" id="text-highland">
+<p>
+Highland library allows you to manage asynchronous and synchronous code
+easily both in Node.js and in the browser. With Highland you can simple
+switch between synchronous and asynchronous data sources without
+re-writing your code. You can install Highland with NPM:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell"> npm install highland
+</pre>
+</div>
+
+<p>
+and require or import it as yet another Node.js module:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-javascript"> <span style="color: #b294bb;">import</span> _ from <span style="color: #b5bd68;">'highland'</span>;
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-general-examples" class="outline-2">
+<h2 id="general-examples"><span class="section-number-2">2</span> General examples</h2>
+<div class="outline-text-2" id="text-general-examples">
+<p>
+Converting from arrays to Highland Streams:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-javascript"> _([<span style="color: #de935f; font-weight: bold;">0</span>, <span style="color: #de935f; font-weight: bold;">1</span>, <span style="color: #de935f; font-weight: bold;">2</span>]).toArray(xs =&gt; console.log(xs));
+<span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">0, 1, 2</span>
+</pre>
+</div>
+
+<p>
+Map and reduce over a stream:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-javascript"> _([<span style="color: #de935f; font-weight: bold;">0</span>, <span style="color: #de935f; font-weight: bold;">1</span>, <span style="color: #de935f; font-weight: bold;">2</span>]).map(x =&gt; x + <span style="color: #de935f; font-weight: bold;">1</span>).reduce(<span style="color: #de935f; font-weight: bold;">1</span>, (a,
+b) =&gt; a * b); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">[6]</span>
+</pre>
+</div>
+
+<p>
+Reading files in parallel:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-javascript"> <span style="color: #b294bb;">import</span> fs from <span style="color: #b5bd68;">'fs'</span>;
+<span style="color: #b294bb;">const</span> <span style="color: #cc6666;">readFile</span> =
+<span style="color: #b5bd68;">/.wrapCallback(fs.readFile); const stream = /</span>([<span style="color: #b5bd68;">'./.babelrc'</span>,
+<span style="color: #b5bd68;">'./.eslintrc'</span>]).map(readFile).parallel(<span style="color: #de935f; font-weight: bold;">2</span>);
+</pre>
+</div>
+
+<p>
+Handling errors:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-javascript"> stream.errors((err, rethrow) =&gt; { console.error(err); });
+</pre>
+</div>
+
+<p>
+Pipe to Node.js streams:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-javascript"> stream.pipe(outputStream);
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-stream-objects" class="outline-2">
+<h2 id="stream-objects"><span class="section-number-2">3</span> Stream objects</h2>
+<div class="outline-text-2" id="text-stream-objects">
+<p>
+Constructor:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-javascript"> <span style="color: #b294bb;">const</span> <span style="color: #cc6666;">stream</span> = _(source); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">source - Array/Generator/Node Stream/Event Emitter/Promise/Iterator/Iterable</span>
+</pre>
+</div>
+
+<p>
+General functions:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-javascript">stream.destroy(); stream.end();
+stream.pause(); stream.resume(); stream.write(x); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">Write x value to</span>
+stream
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-transformations" class="outline-2">
+<h2 id="transformations"><span class="section-number-2">4</span> Transformations</h2>
+<div class="outline-text-2" id="text-transformations">
+<div class="org-src-container">
+<pre class="src src-javascript"> ([<span style="color: #de935f; font-weight: bold;">0</span>, <span style="color: #de935f; font-weight: bold;">1</span>, <span style="color: #de935f; font-weight: bold;">2</span>]).append(<span style="color: #de935f; font-weight: bold;">3</span>); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">[0, 1, 2, 3]</span>
+ ([<span style="color: #de935f; font-weight: bold;">0</span>, <span style="color: #de935f; font-weight: bold;">1</span>, <span style="color: #de935f; font-weight: bold;">2</span>, <span style="color: #de935f;">null</span>, <span style="color: #de935f;">undefined</span>]).compact(); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">[1, 2]</span>
+ ([<span style="color: #de935f; font-weight: bold;">1</span>, <span style="color: #de935f; font-weight: bold;">2</span>, <span style="color: #de935f; font-weight: bold;">5</span>]).filter(x =&gt; x
+&lt;= <span style="color: #de935f; font-weight: bold;">3</span>); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">[1, 2]</span>
+([<span style="color: #de935f; font-weight: bold;">1</span>, <span style="color: #de935f; font-weight: bold;">2</span>, <span style="color: #de935f; font-weight: bold;">3</span>]).head(); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">1</span>
+([<span style="color: #de935f; font-weight: bold;">1</span>, <span style="color: #de935f; font-weight: bold;">2</span>, <span style="color: #de935f; font-weight: bold;">3</span>]).last(); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">3</span>
+([<span style="color: #b5bd68;">'ABC'</span>]).invoke(<span style="color: #b5bd68;">'toLowerCase'</span>, []); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">abc</span>
+([{ foo: <span style="color: #b5bd68;">'bar'</span> }]).pick([<span style="color: #b5bd68;">'foo'</span>]); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">{ foo: 'bar' }</span>
+([{ foo: <span style="color: #b5bd68;">'bar'</span> }]).pluck([<span style="color: #b5bd68;">'foo'</span>]); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">bar</span>
+[<span style="color: #de935f; font-weight: bold;">0</span>, <span style="color: #de935f; font-weight: bold;">1</span>, <span style="color: #de935f; font-weight: bold;">2</span>, <span style="color: #de935f; font-weight: bold;">3</span>]).slice(<span style="color: #de935f; font-weight: bold;">2</span>, <span style="color: #de935f; font-weight: bold;">4</span>); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">[2, 3]</span>
+([<span style="color: #b5bd68;">'c'</span>, <span style="color: #b5bd68;">'a'</span>, <span style="color: #b5bd68;">'b'</span>]).sort(); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">['a', 'b', 'c']</span>
+_([<span style="color: #de935f; font-weight: bold;">0</span>, <span style="color: #de935f; font-weight: bold;">0</span>, <span style="color: #de935f; font-weight: bold;">2</span>, <span style="color: #de935f; font-weight: bold;">3</span>]).uniq(); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">[0, 2, 3]</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-high-order-streams" class="outline-2">
+<h2 id="high-order-streams"><span class="section-number-2">5</span> High-order Streams</h2>
+<div class="outline-text-2" id="text-high-order-streams">
+<div class="org-src-container">
+<pre class="src src-javascript">([<span style="color: #de935f; font-weight: bold;">0</span>, <span style="color: #de935f; font-weight: bold;">1</span>]).concat([<span style="color: #de935f; font-weight: bold;">2</span>, <span style="color: #de935f; font-weight: bold;">3</span>]); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">[0, 1, 2, 3]</span>
+([<span style="color: #de935f; font-weight: bold;">0</span>, <span style="color: #de935f; font-weight: bold;">1</span>, [<span style="color: #de935f; font-weight: bold;">2</span>, [<span style="color: #de935f; font-weight: bold;">3</span>]]]).flatten(); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">[0, 1, 2, 3]</span>
+(<span style="color: #b5bd68;">/([0, 1]), /</span>([<span style="color: #de935f; font-weight: bold;">2</span>, <span style="color: #de935f; font-weight: bold;">3</span>])).sequence(); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">[0, 1, 2, 3]</span>
+([<span style="color: #b5bd68;">'a'</span>, <span style="color: #b5bd68;">'b'</span>]).zip([<span style="color: #de935f; font-weight: bold;">1</span>, <span style="color: #de935f; font-weight: bold;">2</span>]); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">=&gt; ['a', 1], ['b', 2]</span>
+
+<span style="color: #b294bb;">const</span> <span style="color: #cc6666;">fork</span> = stream.fork(); <span style="color: #b294bb;">const</span> <span style="color: #cc6666;">observer</span> = stream.observe();
+fork.resume();
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-objects" class="outline-2">
+<h2 id="objects"><span class="section-number-2">6</span> Objects</h2>
+<div class="outline-text-2" id="text-objects">
+<div class="org-src-container">
+<pre class="src src-javascript"> .extend({ name: <span style="color: #b5bd68;">'foo'</span> }, { type: <span style="color: #b5bd68;">'obj'</span> });
+<span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">{ name: 'foo', type: 'obj' }</span>
+.get(<span style="color: #b5bd68;">'foo'</span>, { foo: <span style="color: #b5bd68;">'bar'</span> }); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">bar</span>
+.keys({ foo: <span style="color: #b5bd68;">'bar'</span> }); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">['foo']</span>
+.values({ foo: <span style="color: #b5bd68;">'bar'</span> }); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">['bar']</span>
+_.pairs({ foo: <span style="color: #b5bd68;">'bar'</span> }); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">['foo', 'bar']</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-utils" class="outline-2">
+<h2 id="utils"><span class="section-number-2">7</span> Utils</h2>
+<div class="outline-text-2" id="text-utils">
+<div class="org-src-container">
+<pre class="src src-javascript">.isStream([<span style="color: #de935f; font-weight: bold;">1</span>, <span style="color: #de935f; font-weight: bold;">2</span>, <span style="color: #de935f; font-weight: bold;">3</span>]); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">false</span>
+.isStream(stream); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">true</span>
+
+([<span style="color: #de935f; font-weight: bold;">1</span>, <span style="color: #de935f; font-weight: bold;">2</span>, <span style="color: #de935f; font-weight: bold;">3</span>]).each(.log); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">1, 2, 3</span>
+
+<span style="color: #b294bb;">const</span> <span style="color: #cc6666;">readFile</span> = .wrapCallback(fs.readFile); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">Wraps callback to Highland stream</span>
+.isStream(readFile); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">true</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-conclusion" class="outline-2">
+<h2 id="conclusion"><span class="section-number-2">8</span> Conclusion</h2>
+<div class="outline-text-2" id="text-conclusion">
+<p>
+If you need to handle your synchronous and asynchronous data with
+differrent abstractions in one way, operate with Node.js streams at
+higher level, you can use Highland high-level streams library to fit
+your needs. You can find more at <a href="http://highlandjs.org/">Highland
+docs</a>.
+</p>
+</div>
+</div>
+<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-javascript.html">javascript</a> <a href="https://neiro.io/tag-functional.html">functional</a> </div></div>
+<div id="postamble" class="status"></div>
+</body>
+</html>

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://neiro.io/rss.xml"
+      title="RSS feed for https://neiro.io/"/>
+<title>Partial function application and currying in Ruby</title>
+<meta name="author" content="Aleksei Kuznetsov">
+    <meta name="referrer" content="no-referrer">
+    <link href= "https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet" type="text/css" />
+    <link href= "static/style.css" rel="stylesheet" type="text/css" />
+    <link rel="icon" href="static/favicon.ico"></head>
+<body>
+<div id="preamble" class="status">
+<div class="header">
+    <a href="https://neiro.io">Neiro - Functional programming, software architecture</a>
+  </div></div>
+<div id="content">
+<div class="post-date">08 Mar 2016</div><h1 class="post-title"><a href="https://neiro.io/2016-03-08-partial-function-application-and-currying-in-ruby.md.html">Partial function application and currying in Ruby</a></h1>
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#partial-function-application">1. Partial function application</a></li>
+<li><a href="#currying">2. Currying</a></li>
+<li><a href="#conclusion">3. Conclusion</a></li>
+</ul>
+</div>
+</nav>
+<p>
+Currying and partial function application are common concepts of the
+functional programming. They look similar, but have differences in
+realization and using. Ruby allows you to easily operate with both of
+them.
+</p>
+
+<div id="outline-container-partial-function-application" class="outline-2">
+<h2 id="partial-function-application"><span class="section-number-2">1</span> Partial function application</h2>
+<div class="outline-text-2" id="text-partial-function-application">
+<p>
+First we need to know what is really <i>application</i> is: it&rsquo;s the process
+of applying function to <b>all of it&rsquo;s arguments</b> to return value.<br>
+<i>Partial function application</i> is the process of applying function to
+<b>some of it&rsquo;s arguments</b>. This process creates a new function, based on
+the parent function, but with lower arity (<i>with fewer arguments</i>). So,
+if we have an abstract function
+<img src="https://upload.wikimedia.org/math/4/3/a/43a45f58c8f35707c396444463e2ef24.png" alt="43a45f58c8f35707c396444463e2ef24.png">
+with three arguments, then we can create a partial function
+<img src="https://upload.wikimedia.org/math/1/d/5/1d54867424707e76c6f46bf426fc193e.png" alt="1d54867424707e76c6f46bf426fc193e.png">
+with two arguments that both of this functions return the same result.
+</p>
+
+<p>
+For example, we have a simple multiply function that multiplies two
+arguments:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ruby"> multiply = -&gt; (x, y) { x * y } multiply.(<span style="color: #de935f; font-weight: bold;">2</span>, <span style="color: #de935f; font-weight: bold;">2</span>) <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">4</span>
+
+</pre>
+</div>
+
+<p>
+But what if we want just double numbers ? Should we pass the <i>2</i>
+argument each time? Not really. We can use partial function application
+to create a new <i>double</i> function that takes just one argument:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ruby">double = -&gt; (x) { multiply.(<span style="color: #de935f; font-weight: bold;">2</span>, x) }
+double.arity <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">1</span>
+double.(<span style="color: #de935f; font-weight: bold;">2</span>) <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">4</span>
+double.(<span style="color: #de935f; font-weight: bold;">1984</span>) <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">3968</span>
+</pre>
+</div>
+
+<p>
+Ruby has <i>Proc#curry</i> method that allows you to use partial function
+application even more simpler:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ruby">double = multiply.curry.(<span style="color: #de935f; font-weight: bold;">2</span>) double.(<span style="color: #de935f; font-weight: bold;">2</span>) <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">4</span>
+double.(<span style="color: #de935f; font-weight: bold;">300</span>) <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">600</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-currying" class="outline-2">
+<h2 id="currying"><span class="section-number-2">2</span> Currying</h2>
+<div class="outline-text-2" id="text-currying">
+<p>
+Currying is similar to partial function application concept.
+</p>
+
+<p>
+<b>Currying</b> is the process of translating the evaluating of <i>function
+with many arguments</i> into evaluating a sequence of functions, each with
+<i>exactly one parameter</i>. So, if we have a function with two arguments:
+<img src="https://upload.wikimedia.org/math/4/3/b/43ba302d099d623ae50cce466eb1f34d.png" alt="43ba302d099d623ae50cce466eb1f34d.png">
+then we can translate it with
+<img src="https://upload.wikimedia.org/math/0/1/3/0138ee5c8706ca68729e27f0e01e56ee.png" alt="0138ee5c8706ca68729e27f0e01e56ee.png">
+transformation to return a new function with one parameter:
+<img src="https://upload.wikimedia.org/math/7/b/5/7b547dc91687bfb09ee27d4c22f815eb.png" alt="7b547dc91687bfb09ee27d4c22f815eb.png">.
+</p>
+
+<p>
+For example, look back at previous <i>multiply</i> function. What if we want
+to multiply more than two arguments?
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ruby">multiply.(<span style="color: #de935f; font-weight: bold;">2</span>, <span style="color: #de935f; font-weight: bold;">2</span>, <span style="color: #de935f; font-weight: bold;">2</span>) <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">ArgumentError: wrong number of arguments (given 3, expected 2)</span>
+</pre>
+</div>
+
+<p>
+To prevent this, we can change multiply function and use <i>Proc#curry</i>
+method:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ruby">multiply = -&gt; (head, <span style="color: #b5bd68;">/tail) { head /</span> tail.inject(<span style="color: #de935f; font-weight: bold;">1</span>, &amp;<span style="color: #de935f;">:*</span>) }
+multiply.curry.(<span style="color: #de935f; font-weight: bold;">2</span>, <span style="color: #de935f; font-weight: bold;">2</span>, <span style="color: #de935f; font-weight: bold;">2</span>) <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">8</span>
+multiply.curry.(<span style="color: #de935f; font-weight: bold;">2</span>, <span style="color: #de935f; font-weight: bold;">3</span>, <span style="color: #de935f; font-weight: bold;">7</span>) <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">42</span>
+</pre>
+</div>
+
+<p>
+If we want to restrict arguments count, we can use <i>arity</i> optional
+argument in <i>Proc#curry</i> function:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ruby">multiply.curry(<span style="color: #de935f; font-weight: bold;">3</span>)[<span style="color: #de935f; font-weight: bold;">1</span>][<span style="color: #de935f; font-weight: bold;">2</span>][<span style="color: #de935f; font-weight: bold;">3</span>] <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">6</span>
+multiply.curry(<span style="color: #de935f; font-weight: bold;">3</span>)[<span style="color: #de935f; font-weight: bold;">1</span>][<span style="color: #de935f; font-weight: bold;">2</span>][<span style="color: #de935f; font-weight: bold;">3</span>][<span style="color: #de935f; font-weight: bold;">4</span>] <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">0 because of the last argument is nil</span>
+</pre>
+</div>
+
+<p>
+You can also use <i>curry</i> method on plain methods, not only procs with
+Ruby 2.2:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ruby"><span style="color: #b294bb;">def</span> <span style="color: #81a2be;">sum</span>(*args)
+  args.inject(<span style="color: #de935f;">:+</span>)
+<span style="color: #b294bb;">end</span>
+
+plus_two = method(<span style="color: #de935f;">:sum</span>).curry(<span style="color: #de935f; font-weight: bold;">2</span>).(<span style="color: #de935f; font-weight: bold;">2</span>)
+plus_two.(<span style="color: #de935f; font-weight: bold;">3</span>) <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">5</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-conclusion" class="outline-2">
+<h2 id="conclusion"><span class="section-number-2">3</span> Conclusion</h2>
+<div class="outline-text-2" id="text-conclusion">
+<p>
+Partial function application and currying are both great features of
+functional programming that allows you to write clean, simple and
+flexible functions based on anothers. You can use Ruby&rsquo;s <i>#curry</i> method
+with procs or methods to write eloquent and powerful code.
+</p>
+</div>
+</div>
+<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-ruby.html">ruby</a> <a href="https://neiro.io/tag-functional.html">functional</a> </div></div>
+<div id="postamble" class="status"></div>
+</body>
+</html>

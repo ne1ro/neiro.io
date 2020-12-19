@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://neiro.io/rss.xml"
+      title="RSS feed for https://neiro.io/"/>
+<title>Type checking ruby with contracts</title>
+<meta name="author" content="Aleksei Kuznetsov">
+    <meta name="referrer" content="no-referrer">
+    <link href= "https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet" type="text/css" />
+    <link href= "static/style.css" rel="stylesheet" type="text/css" />
+    <link rel="icon" href="static/favicon.ico"></head>
+<body>
+<div id="preamble" class="status">
+<div class="header">
+    <a href="https://neiro.io">Neiro - Functional programming, software architecture</a>
+  </div></div>
+<div id="content">
+<div class="post-date">24 Oct 2015</div><h1 class="post-title"><a href="https://neiro.io/2015-10-24-type-checking-for-ruby-with-contracts.html">Type checking ruby with contracts</a></h1>
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#contracts">1. Contracts</a></li>
+<li><a href="#custom-types">2. Custom types</a></li>
+<li><a href="#pattern-matching">3. Pattern matching</a></li>
+<li><a href="#conclusion">4. Conclusion</a></li>
+</ul>
+</div>
+</nav>
+<p>
+Ruby is dynamically and strong typed programming language. In the most
+of the cases it gives you required level of type safety with minimal
+code. But if you want build more secure applications or you&rsquo;re like
+static typing, then you need to check every variable or method for it&rsquo;s
+type or class:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ruby">
+<span style="color: #b294bb;">def</span> <span style="color: #81a2be;">foo</span>(bar)
+  <span style="color: #b294bb;">fail</span> <span style="color: #b5bd68;">'I supposed it`s not a bar!'</span>
+  <span style="color: #b294bb;">unless</span> bar.is_a?(<span style="color: #f0c674;">String</span>) <span style="color: #81a2be;">p</span> <span style="color: #b5bd68;">'Hi, bar!'</span>
+<span style="color: #b294bb;">end</span>
+
+foo <span style="color: #b5bd68;">'bar'</span> <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">Hi, bar!</span>
+foo 100_500 <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">RuntimeError: I supposed it`s not a bar!</span>
+</pre>
+</div>
+
+<p>
+But what if you&rsquo;re needing more complex type checking on multiple types
+or conditions? Then you need to provide more boilerplate, defensive
+code. If you&rsquo;re want to make your type safety code much cleaner, there
+is the <a href="https://github.com/egonSchiele/contracts.ruby">contracts</a> library.
+</p>
+
+<div id="outline-container-contracts" class="outline-2">
+<h2 id="contracts"><span class="section-number-2">1</span> Contracts</h2>
+<div class="outline-text-2" id="text-contracts">
+<p>
+What is a contract? It&rsquo;s a pattern, that comes from functional
+programming world. In most cases this is one line of code before
+function or method, that validates the arguments and validates return
+value.
+</p>
+
+<p>
+For example, there is a simple contract:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ruby"><span style="color: #81a2be;">require</span> <span style="color: #b5bd68;">'contracts'</span>
+
+<span style="color: #b294bb;">class</span> <span style="color: #f0c674;">Square</span>
+  <span style="color: #81a2be;">include</span> <span style="color: #f0c674;">Contracts</span>::<span style="color: #f0c674;">Core</span>
+  <span style="color: #81a2be;">include</span> <span style="color: #f0c674;">Contracts</span>::<span style="color: #f0c674;">Builtin</span>
+
+  <span style="color: #f0c674;">Contract</span> <span style="color: #f0c674;">Num</span> =&gt; <span style="color: #f0c674;">Num</span>
+  <span style="color: #b294bb;">def</span> <span style="color: #b294bb;">self</span>.<span style="color: #81a2be;">area</span>(a) a**<span style="color: #de935f; font-weight: bold;">2</span> <span style="color: #b294bb;">end</span>
+<span style="color: #b294bb;">end</span>
+
+<span style="color: #f0c674;">Square</span>.area <span style="color: #de935f; font-weight: bold;">10</span> <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">100</span>
+<span style="color: #f0c674;">Square</span>.area <span style="color: #b5bd68;">'a'</span> <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">ParamContractError: Contract violation for argument 1 of 1</span>
+<span style="color: #f0c674;">Square</span>.area [] <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">ParamContractError: Contract violation for argument 1 of 1</span>
+</pre>
+</div>
+
+<p>
+You can also use it on multiple arguments or returns:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ruby"><span style="color: #b294bb;">class</span> <span style="color: #f0c674;">Rectangle</span>
+  <span style="color: #81a2be;">include</span> <span style="color: #f0c674;">Contracts</span>::<span style="color: #f0c674;">Core</span>
+  <span style="color: #81a2be;">include</span> <span style="color: #f0c674;">Contracts</span>::<span style="color: #f0c674;">Builtin</span>
+
+  <span style="color: #f0c674;">Contract</span> <span style="color: #f0c674;">Num</span>, <span style="color: #f0c674;">Num</span> =&gt; <span style="color: #f0c674;">Num</span>
+  <span style="color: #b294bb;">def</span> <span style="color: #b294bb;">self</span>.<span style="color: #81a2be;">area</span>(a, b)
+    a * b
+  <span style="color: #b294bb;">end</span>
+<span style="color: #b294bb;">end</span>
+
+<span style="color: #f0c674;">Rectangle</span>.area <span style="color: #de935f; font-weight: bold;">10</span>, <span style="color: #de935f; font-weight: bold;">10</span> <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">100</span>
+<span style="color: #f0c674;">Rectangle</span>.area [], <span style="color: #de935f;">false</span> <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">ParamContractError: Contract violation for argument 1 of 2</span>
+<span style="color: #f0c674;">Rectangle</span>.area <span style="color: #de935f; font-weight: bold;">10</span>, <span style="color: #b5bd68;">'a'</span> <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">ParamContractError: Contract violation for argument 2 of 2</span>
+</pre>
+</div>
+
+<p>
+If you don&rsquo;t want to throw exception, you can easily override error
+callback:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ruby"><span style="color: #f0c674;">Contract</span>.override_failure_callback <span style="color: #b294bb;">do</span> |data|
+  <span style="color: #81a2be;">puts</span> <span style="color: #b5bd68;">'IT`S AN OM~ ERROR!1'</span>
+  <span style="color: #81a2be;">p</span> data
+<span style="color: #b294bb;">end</span>
+
+<span style="color: #f0c674;">Rectangle</span>.area <span style="color: #de935f; font-weight: bold;">10</span>, <span style="color: #b5bd68;">'a'</span> <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">'IT`S AN OM~ ERROR!1'</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-custom-types" class="outline-2">
+<h2 id="custom-types"><span class="section-number-2">2</span> Custom types</h2>
+<div class="outline-text-2" id="text-custom-types">
+<p>
+<i>Contracts</i> library comes with many built-in type contracts:
+</p>
+
+<ul class="org-ul">
+<li>Basic types: <code>Num, Pos, Neg, Nat, Bool, Any, None</code></li>
+<li>Logical: <code>Maybe, Or, Xor, And, Not</code></li>
+<li>Collections: <code>ArrayOf, SetOf, HashOf, RangeOf, Enum</code></li>
+</ul>
+
+<p>
+and others. But if your want to create your own types or check more
+complex conditions, then you have to use lambdas:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-ruby"><span style="color: #b294bb;">class</span> <span style="color: #f0c674;">CharCounter</span>
+  <span style="color: #81a2be;">include</span> <span style="color: #f0c674;">Contracts</span>::<span style="color: #f0c674;">Core</span>
+  <span style="color: #81a2be;">include</span> <span style="color: #f0c674;">Contracts</span>::<span style="color: #f0c674;">Builtin</span>
+
+  <span style="color: #f0c674;">Char</span> = -&gt; (char) { char.is_a?(<span style="color: #f0c674;">String</span>) &amp;&amp; char.length == <span style="color: #de935f; font-weight: bold;">1</span> &amp;&amp; char =~ <span style="color: #b5bd68;">/\w/</span> }
+
+  <span style="color: #f0c674;">Contract</span> <span style="color: #f0c674;">Maybe</span>[<span style="color: #f0c674;">String</span>], <span style="color: #f0c674;">Char</span> =&gt; <span style="color: #f0c674;">Num</span>
+
+  <span style="color: #b294bb;">def</span> <span style="color: #b294bb;">self</span>.<span style="color: #81a2be;">count_chars</span>(str, ch)
+    str.count ch
+    <span style="color: #b294bb;">end</span>
+<span style="color: #b294bb;">end</span>
+
+<span style="color: #f0c674;">CharCounter</span>.count_chars <span style="color: #b5bd68;">'hello'</span>, <span style="color: #b5bd68;">'N'</span> <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">0</span>
+<span style="color: #f0c674;">CharCounter</span>.count_chars <span style="color: #b5bd68;">'hello'</span>, <span style="color: #b5bd68;">'l'</span> <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">2</span>
+<span style="color: #f0c674;">CharCounter</span>.count_chars <span style="color: #b5bd68;">'hello'</span>, <span style="color: #b5bd68;">'*'</span> <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">ParamContractError: Contract violation for argument 2 of 2</span>
+<span style="color: #f0c674;">CharCounter</span>.count_chars <span style="color: #b5bd68;">'llo'</span>, <span style="color: #b5bd68;">'llo'</span> <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">ParamContractError: Contract violation for argument 2 of 2</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-pattern-matching" class="outline-2">
+<h2 id="pattern-matching"><span class="section-number-2">3</span> Pattern matching</h2>
+<div class="outline-text-2" id="text-pattern-matching">
+<p>
+Pattern matching, like a contract, comes from functional programming.
+You can use your contracts to test if your method matches pattern or
+not. For example, let&rsquo;s find a factorial of number with contracts:
+</p>
+
+<p>
+#+begin<sub>src</sub> ruby
+class Factorial
+  include Contracts::Core
+  include Contracts::Builtin
+</p>
+
+<p>
+Contract 0 =&gt; 1
+def self.factorial(<sub>n</sub>)
+  1
+end
+</p>
+
+<p>
+  Contract Num =&gt; Num
+  def self.factorial(n)
+    n * factorial(n - 1)
+  end
+end
+</p>
+
+<p>
+Factorial.factorial 0 # 0
+Factorial.factorial 10 # 3628800
+Factorial.factorial &rsquo;a&rsquo; # ContractError: Contract violation for argument 1 of 1 #+end<sub>src</sub>
+</p>
+</div>
+</div>
+
+<div id="outline-container-conclusion" class="outline-2">
+<h2 id="conclusion"><span class="section-number-2">4</span> Conclusion</h2>
+<div class="outline-text-2" id="text-conclusion">
+<p>
+Ruby has simple and powerful type system, but if it&rsquo;s not enough or you
+want to use safety type checking and you don&rsquo;t like to write tons of a
+defensive code, then you may like <i>Contracts</i> library. Contracts allows
+you to check many types, conditions for your class methods much cleaner
+and simpler. Also you can define your own types or conditions with plain
+Ruby lambdas, and then use them for pattern-matching.
+</p>
+
+<p>
+If you&rsquo;re like it and want to know more,
+<a href="http://egonschiele.github.io/contracts.ruby/">there is Ruby contracts
+tutorial</a>.
+</p>
+</div>
+</div>
+<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-:ruby:contracts:functional:typing.html">:ruby:contracts:functional:typing</a> </div></div>
+<div id="postamble" class="status"></div>
+</body>
+</html>

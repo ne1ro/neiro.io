@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://neiro.io/rss.xml"
+      title="RSS feed for https://neiro.io/"/>
+<title>Pattern matching in Elixir</title>
+<meta name="author" content="Aleksei Kuznetsov">
+    <meta name="referrer" content="no-referrer">
+    <link href= "https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet" type="text/css" />
+    <link href= "static/style.css" rel="stylesheet" type="text/css" />
+    <link rel="icon" href="static/favicon.ico"></head>
+<body>
+<div id="preamble" class="status">
+<div class="header">
+    <a href="https://neiro.io">Neiro - Functional programming, software architecture</a>
+  </div></div>
+<div id="content">
+<div class="post-date">31 May 2016</div><h1 class="post-title"><a href="https://neiro.io/2016-05-31-pattern-matching-in-elixir.md.html">Pattern matching in Elixir</a></h1>
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#match-operator">1. Match operator</a></li>
+<li><a href="#pattern-matching">2. Pattern matching</a></li>
+<li><a href="#pin-operator">3. Pin operator</a></li>
+<li><a href="#conclusion">4. Conclusion</a></li>
+</ul>
+</div>
+</nav>
+<p>
+Pattern matching is a key feature of functional programming. It allows
+you to check a given sequence of tokens for the presence of the
+constituents of some pattern. Using pattern matching you can easily
+operate with complex data structures in most expressive and eloquent
+way. Elixir provides pattern matching like any other functional
+programming language.
+</p>
+
+<div id="outline-container-match-operator" class="outline-2">
+<h2 id="match-operator"><span class="section-number-2">1</span> Match operator</h2>
+<div class="outline-text-2" id="text-match-operator">
+<p>
+Most of programming languages have assign operator: <code>var x = 10</code> . In
+Elixir equals sign is actually <i>match operator</i>. Using this operator we
+can assign and match values:
+</p>
+
+<pre class="example" id="org5815962">
+  x = 1
+  1 = x
+  x # 1
+</pre>
+
+<p>
+But if we will provide invalid pattern?
+</p>
+
+<pre class="example" id="orgecf5fa2">
+  2 = x # ** (MatchError) no match of right hand side value: 1
+</pre>
+
+<p>
+As you see, Elixir raises <code>MatchError</code> because left and right sides of
+match operator are different - they don&rsquo;t match. You can assign variable
+only on the left side of match operator:
+</p>
+
+<pre class="example" id="org0f7375d">
+  true = undefined # * (CompileError) undefined function undefined/0
+</pre>
+</div>
+</div>
+
+<div id="outline-container-pattern-matching" class="outline-2">
+<h2 id="pattern-matching"><span class="section-number-2">2</span> Pattern matching</h2>
+<div class="outline-text-2" id="text-pattern-matching">
+<p>
+You can use match operator not for assign only - it&rsquo;s useful for
+destructuring operations:
+</p>
+
+<pre class="example" id="orgb9d9eb5">
+    # Lists
+    list = [1, 2]
+    [1 | tail] = list
+    tail # [2]
+    [1 | _] = list # [1, 2]
+    [2 | _] = list # ** (MatchError) no match of right hand side value: [1, 2]
+
+    # Tuples
+    { res, val } = { :ok, 1 } # res =&gt; :ok, val =&gt; 1
+    { :ok, val } = { :ok, 1 } # val =&gt; 1
+    { :ok, val } = { :fail, 1 } # ** (MatchError) no match of right hand side value: {:fail, 1}
+    { :ok, val } = { :fail } # ** (MatchError) no match of right hand side value: {:fail}
+
+    # Maps
+    %{ foo: res } = %{ foo: "bar" } # res =&gt; "foo"
+    %{ bar: res } = %{ foo: "bar" } # ** (MatchError) no match of right hand side value: %{foo: "bar"}
+</pre>
+
+<p>
+You can also use pattern matching with functions:
+</p>
+
+<pre class="example" id="orgfe31baf">
+  defmodule HelloWorld do
+    def hello(:world), do: "Hello, world!"
+    def hello(name), do: "Hello, #{ name }!"
+    def hello, do: "Hello!"
+  end
+
+  HelloWorld.hello :world # "Hello, world!"
+  HelloWorld.hello "Elixir" # "Hello, Elixir!"
+  HelloWorld.hello # "Hello!"
+</pre>
+</div>
+</div>
+
+<div id="outline-container-pin-operator" class="outline-2">
+<h2 id="pin-operator"><span class="section-number-2">3</span> Pin operator</h2>
+<div class="outline-text-2" id="text-pin-operator">
+<p>
+You can rebound Elixir&rsquo;s variables:
+</p>
+
+<pre class="example" id="org78e719f">
+  x = 1
+  x = 2
+  x # 2
+</pre>
+
+<p>
+If you want to provide existing variable&rsquo;s value in pattern matching,
+then you should use <i>pin operator</i>:
+</p>
+
+<pre class="example" id="orgf079b4d">
+  x = 1
+  ^x = 2 # MatchError because 1 != 2
+  [^x, y] = [1, 2] # [1, 2]
+  y # 2
+  [2, ^y] = [2, 1] # ** (MatchError) no match of right hand side value: [2, 1]
+  [_, ^y] = [3, 2] # [3, 2]
+</pre>
+</div>
+</div>
+
+<div id="outline-container-conclusion" class="outline-2">
+<h2 id="conclusion"><span class="section-number-2">4</span> Conclusion</h2>
+<div class="outline-text-2" id="text-conclusion">
+<p>
+Elixir comes with match and pin operators that provide support of
+pattern matching. It allows you to write simple and elegant code to
+operate basic values, complex data structures or even functions.
+</p>
+</div>
+</div>
+<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-elixir.html">elixir</a> <a href="https://neiro.io/tag-functional.html">functional</a> </div></div>
+<div id="postamble" class="status"></div>
+</body>
+</html>

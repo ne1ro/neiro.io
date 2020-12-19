@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://neiro.io/rss.xml"
+      title="RSS feed for https://neiro.io/"/>
+<title>Elixir continious integration with CircleCI</title>
+<meta name="author" content="Aleksei Kuznetsov">
+    <meta name="referrer" content="no-referrer">
+    <link href= "https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet" type="text/css" />
+    <link href= "static/style.css" rel="stylesheet" type="text/css" />
+    <link rel="icon" href="static/favicon.ico"></head>
+<body>
+<div id="preamble" class="status">
+<div class="header">
+    <a href="https://neiro.io">Neiro - Functional programming, software architecture</a>
+  </div></div>
+<div id="content">
+<div class="post-date">19 Jun 2018</div><h1 class="post-title"><a href="https://neiro.io/2018-06-19-elixir-continious-integration-with-circleci.md.html">Elixir continious integration with CircleCI</a></h1>
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#circleci-2.0">1. CircleCI 2.0</a></li>
+<li><a href="#running-tests-and-code-quality">2. Running tests and code quality</a></li>
+<li><a href="#deploying">3. Deploying</a></li>
+<li><a href="#conclusion">4. Conclusion</a></li>
+</ul>
+</div>
+</nav>
+<p>
+Elixir programming language has gained popularity and now it is
+supported at many platforms, including plenty of CI services. In this
+article we will see how we can achieve seamless and <i>(almost)</i> dead
+simple continious integration by using CircleCI in our Elixir projects.
+</p>
+
+<div id="outline-container-circleci-2.0" class="outline-2">
+<h2 id="circleci-2.0"><span class="section-number-2">1</span> CircleCI 2.0</h2>
+<div class="outline-text-2" id="text-circleci-2.0">
+<p>
+<a href="https://circleci.com">CircleCI</a> is one of the most popular and
+user-friendly continious integration solutions. It supports many
+programming languages and tools, including Elixir and Erlang/OTP.
+</p>
+
+<p>
+CircleCI is entirely free when it comes to open-source GitHub
+repositories, but it also provides free 1500 minutes a month for any
+private repos.
+</p>
+
+<p>
+Starting version 2.0 CircleCI can create jobs based on any images from
+<a href="https://hub.docker.com/">DockerHub</a>. This feature makes possible to
+build any programming language or platform that can be placed in Docker
+image.
+</p>
+
+<p>
+Imagine you have a standard Elixir Phoenix / Ecto application. You need
+to run it on the latest versions of Elixir and Erlang/OTP and run the
+tests on PostgreSQL database.
+</p>
+
+<p>
+Let&rsquo;s start by creating a CircleCI configuration file in
+<code>.circleci/config.yml</code>:
+</p>
+
+<pre class="example" id="org786651f">
+  version: 2  # use CircleCI 2.0 instead of CircleCI Classic
+  jobs:  # basic units of work in a run
+    build:  # runs not using Workflows must have a `build` job as entry point
+      parallelism: 1  # run only one instance of this job in parallel
+      docker:  # run the steps with Docker
+        - image: circleci/elixir:1.6 # ...with this image as the primary container; this is where all `steps` will run
+          environment:  # environment variables for primary container
+            MIX_ENV: test
+            SHELL: /bin/bash
+        - image: mdillon/postgis:9.6-alpine  # database image
+          environment:  # environment variables for database
+            POSTGRES_DB: app_test
+
+      steps:  # commands that comprise the `build` job
+        - checkout  # check out source code to working directory
+
+        - run: mix local.hex --force  # install Hex locally (without prompt)
+        - run: mix local.rebar --force  # fetch a copy of rebar (without prompt)
+</pre>
+
+<p>
+As you can see here, we are declaring the <code>build</code> continious integration
+job. Basically we will use the Elixir 1.6 with PostgreSQL 9.6 to run
+tests on the <code>app_test</code> database. After that we will checkout source
+code base to fetch our recent changes into the build. <code>mix local</code> tasks
+are also necessary in order to use any of <i>Mix</i> tasks later.
+</p>
+</div>
+</div>
+
+<div id="outline-container-running-tests-and-code-quality" class="outline-2">
+<h2 id="running-tests-and-code-quality"><span class="section-number-2">2</span> Running tests and code quality</h2>
+<div class="outline-text-2" id="text-running-tests-and-code-quality">
+<p>
+All of us want to run all common continious integration steps such as:
+</p>
+
+<ul class="org-ul">
+<li>Fetch dependencies and compile application</li>
+<li>Run code quality tools and checks (<i>you can read more about it
+<a href="https://neiro.io/2018/04/28/elixir-code-quality-tools-and-checks.html">here</a>)</i></li>
+<li>Execute all tests to make sure that our build is successful and
+infallible</li>
+<li>Run heavy and bulky static analysis tools</li>
+</ul>
+
+<p>
+Also we want to make our builds as fast as possible, so we definitely
+need caching. Let&rsquo;s continue with our config and implement the steps
+above:
+</p>
+
+<p>
+{% raw %}
+</p>
+
+<pre class="example" id="org6aee248">
+        - restore_cache:  # restores saved mix cache
+            keys:  # list of cache keys, in decreasing specificity
+              - v1-mix-cache-{{ .Branch }}-{{ checksum "mix.lock" }}
+              - v1-mix-cache-{{ .Branch }}
+              - v1-mix-cache
+        - restore_cache:  # restores saved build cache
+            keys:
+              - v1-build-cache-{{ .Branch }}
+              - v1-build-cache
+        - restore_cache:  # restores saved plt cache
+            keys:
+              - dialyzer-cache
+
+        - run: mix do deps.get, compile # get updated dependencies &amp; compile them
+
+        - save_cache:  # generate and store cache so `restore_cache` works
+            key: v1-mix-cache-{{ .Branch }}-{{ checksum "mix.lock" }}
+            paths: "deps"
+        - save_cache:  # make another less specific cache
+            key: v1-mix-cache-{{ .Branch }}
+            paths: "deps"
+        - save_cache:  # you should really save one more cache just in case
+            key: v1-mix-cache
+            paths: "deps"
+        - save_cache: # don't forget to save a *build* cache, too
+            key: v1-build-cache-{{ .Branch }}
+            paths: "_build"
+        - save_cache: # and one more build cache for good measure
+            key: v1-build-cache
+            paths: "_build"
+
+        - run: mix do format --check-formatted, credo --strict, security
+        - run: mix do xref deprecated --include-siblings, xref unreachable --include-siblings, xref graph --format stats
+
+        - run:  # special utility that stalls main process until DB is ready
+            name: Wait for DB
+            command: dockerize -wait tcp://localhost:5432 -timeout 1m
+
+        - run: mix do ecto.migrations, ecto.load
+        - run: mix test  # run all tests in project
+
+        - run: mix dialyzer --halt-exit-status
+        - save_cache:
+            key: dialyzer-cache
+            paths: "_build/test/dialyxir*.plt"
+
+        - store_test_results:  # upload test results for display in Test Summary
+            path: _build/test/lib/app/results.xml
+</pre>
+
+<p>
+{% endraw %}
+</p>
+
+<p>
+Now you can start new builds by signing up into CircleCI as it will run
+the configuration and steps from your config. Every commit in any branch
+will run the build job and you will know if something is wrong with your
+code.
+</p>
+</div>
+</div>
+
+<div id="outline-container-deploying" class="outline-2">
+<h2 id="deploying"><span class="section-number-2">3</span> Deploying</h2>
+<div class="outline-text-2" id="text-deploying">
+<p>
+However, having only one build job is not enough even for the simplest
+CI process. Most often we need to make a staging/production release by
+using <a href="https://github.com/bitwalker/distillery">Distillery</a>.
+</p>
+
+<p>
+Let&rsquo;s continue filling up our configuration file by adding a new
+<code>deploy</code> job:
+</p>
+
+<pre class="example" id="orgd295eca">
+    deploy:
+      docker:
+        - image: circleci/elixir:1.6
+          environment:  # environment variables for primary container
+            SHELL: /bin/bash
+            MIX_ENV: staging
+      steps:
+        - checkout  # check out source code to working directory
+
+        - run: mix local.hex --force  # install Hex locally (without prompt)
+        - run: mix local.rebar --force  # fetch a copy of rebar (without prompt)
+
+        - run: mix do deps.get, compile # get updated dependencies &amp; compile them
+
+        # set MIX_ENV to prod or staging value according to the source branch
+        - run:
+            name: Update MIX_ENV environment variable
+            command: |
+              echo "export MIX_ENV=$(if [ '$CIRCLE_BRANCH' '==' 'master' ]; then echo 'prod'; else echo 'staging'; fi)" &gt;&gt; $BASH_ENV
+              source $BASH_ENV
+
+        - run: cd deps/argon2_elixir &amp;&amp; make clean &amp;&amp; make &amp;&amp; cd -
+        - run: MIX_ENV=staging mix release --env $MIX_ENV
+
+        - run: tar -zcvf $CIRCLE_SHA1.tar.gz bin appspec.yml VERSION _build/$MIX_ENV/rel/app/releases/$(cat VERSION)/app.tar.gz
+</pre>
+
+<p>
+This will be enough to create a separate deploy job that will run on a
+separate Docker image. However, we will need to run it only on develop
+and master branches in order to upload staging/production releases
+accordingly. We can achieve this by using CircleCI workflow and
+providing a simple configuration at the bottom of our config file:
+</p>
+
+<pre class="example" id="orga144a8e">
+  workflows:
+    version: 2
+    build-and-deploy:
+      jobs:
+        - build
+        - deploy:
+            requires:
+              - build
+            filters:
+              branches:
+                only:
+                  - develop
+                  - master
+</pre>
+
+<p>
+After that you are free to upload the built release to any server or any
+platform you want. You can use Edeliver, Ansible, Chef, Docker - it&rsquo;s up
+to you.
+</p>
+</div>
+</div>
+
+<div id="outline-container-conclusion" class="outline-2">
+<h2 id="conclusion"><span class="section-number-2">4</span> Conclusion</h2>
+<div class="outline-text-2" id="text-conclusion">
+<p>
+As you can see above, it&rsquo;s not so hard to build and deploy Elixir
+applications with CircleCI 2.0. This platform is flexible and fast
+enough to make your continious integration bright and shiny.
+</p>
+
+<p>
+If you want to discover even more on the topic then let&rsquo;s read
+<a href="https://circleci.com/docs/2.0/">CircleCI 2.0 documentation</a> and
+<a href="https://circleci.com/docs/2.0/language-elixir/">Elixir Language
+Guide</a>.
+</p>
+
+<p>
+Happy hacking, everyone!
+</p>
+</div>
+</div>
+<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-elixir.html">elixir</a> <a href="https://neiro.io/tag-quality.html">quality</a> <a href="https://neiro.io/tag-ci.html">ci</a> </div></div>
+<div id="postamble" class="status"></div>
+</body>
+</html>

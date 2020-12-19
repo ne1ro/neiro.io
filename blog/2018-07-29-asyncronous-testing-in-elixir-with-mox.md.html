@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://neiro.io/rss.xml"
+      title="RSS feed for https://neiro.io/"/>
+<title>Asynchronous testing in Elixir with Mox</title>
+<meta name="author" content="Aleksei Kuznetsov">
+    <meta name="referrer" content="no-referrer">
+    <link href= "https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet" type="text/css" />
+    <link href= "static/style.css" rel="stylesheet" type="text/css" />
+    <link rel="icon" href="static/favicon.ico"></head>
+<body>
+<div id="preamble" class="status">
+<div class="header">
+    <a href="https://neiro.io">Neiro - Functional programming, software architecture</a>
+  </div></div>
+<div id="content">
+<div class="post-date">29 Jul 2018</div><h1 class="post-title"><a href="https://neiro.io/2018-07-29-asyncronous-testing-in-elixir-with-mox.md.html">Asynchronous testing in Elixir with Mox</a></h1>
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#mocks-problem">1. Mocks problem</a></li>
+<li><a href="#asynchronous-testing">2. Asynchronous testing</a></li>
+<li><a href="#using-mox">3. Using Mox</a></li>
+<li><a href="#conclusion">4. Conclusion</a></li>
+</ul>
+</div>
+</nav>
+<p>
+Testing in Elixir is pretty neat. You can easily test anything written,
+you have instruments like ExUnit or ESpec, you can
+<a href="https://github.com/lpil/mix-test.watch">practice TDD</a> and more and
+more. Functional programming paradigm helps you a lot to make your
+testing even simpler by forcing you to use pure, small functions that
+will be pleasant to test. Concurrency of Elixir allows you to run all
+your tests asynchronously and blazingly fast.
+</p>
+
+<p>
+However, there can be some pitfalls.
+</p>
+
+<div id="outline-container-mocks-problem" class="outline-2">
+<h2 id="mocks-problem"><span class="section-number-2">1</span> Mocks problem</h2>
+<div class="outline-text-2" id="text-mocks-problem">
+<p>
+If you&rsquo;re programming a big project then I suppose that you will be
+using third-party services anyway. Imagine that you are sending SMS
+through you favorite provider services. This code can look like that:
+</p>
+
+<pre class="example" id="org37b18fd">
+  SmsProvider.send_sms(from, to, "message")
+</pre>
+
+<p>
+In this case you are using some external provider API in order to send
+SMS. The HTTP request will go from your application to the destination
+and it will trigger SMS delivery.
+</p>
+
+<p>
+Now we need to test this situation. This will be our very first
+approach:
+</p>
+
+<pre class="example" id="org4c3cf63">
+  assert {:ok, %Message{}} = SmsProvider.send_sms(from, to, "message")
+</pre>
+
+<p>
+As you can see it will behave as if it was on production. Your SMS with
+the nasty fake test message will be delivered to non-existent users with
+absent phone numbers. Sad!
+</p>
+
+<p>
+The most popular solution is mocking. You&rsquo;re supposing that call of
+<code>send_sms</code> function with the expected arguments which will return the
+expected result:
+</p>
+
+<pre class="example" id="org0ccb225">
+  mock(SmsProvider, :send_sms, fn _, _, _ -&gt; {:ok, %Message{status: :sent}} end)
+  assert {:ok, %Message{status: :sent}} = SmsProvider.send_sms(from, to, "message")
+</pre>
+
+<p>
+This approach will work, at least for this test. The problem is simple
+enough - it&rsquo;s not the best solution for asynchronous tests. We have
+mocked SmsProvider so it will be overriden in every next asynchronous
+test:
+</p>
+
+<pre class="example" id="org644ab62">
+  use MyApp.DataCase, async: true
+
+  # ...
+
+  assert {:error, :wrong_phone_number} = SmsProvider.send_sms(wrong_number, to, "message")
+</pre>
+
+<p>
+This test will fail because <code>send_sms</code> call was already mocked in
+another test earlier. The entire mocking approach is not suitable for
+concurrent testing, so we need to find another one to serve this
+purpose.
+</p>
+</div>
+</div>
+
+<div id="outline-container-asynchronous-testing" class="outline-2">
+<h2 id="asynchronous-testing"><span class="section-number-2">2</span> Asynchronous testing</h2>
+<div class="outline-text-2" id="text-asynchronous-testing">
+<p>
+Instead of mocking we can try calling the function that will override
+<code>sms_send/3</code>. Let&rsquo;s create a <code>TestProvider</code> module with the next
+content:
+</p>
+
+<pre class="example" id="orgb1ee506">
+  defmodule TestProvider do
+    def send_sms(from, to, message) do
+      {:ok, %Message{status: :sent, from: from, to: to, text: message}}
+    end
+  end
+</pre>
+
+<p>
+Now we can try to use this module as an adapter in our <code>SmsProvider</code>
+module. It will use default adapter in development, production
+environments and will use <code>TestProvider</code> in testing:
+</p>
+
+<pre class="example" id="orgf0e6635">
+  # config/test.exs
+  config :my_app, SmsProvider, adapter: TestProvider
+
+  # config/config.exs
+  config :my_app, SmsProvider, adapter: SmsApiService
+
+  # sms_provider.ex
+  defmodule SmsProvider do
+    @adapter Application.fetch_env(:my_app, :sms_provider, :adapter)
+
+    defdelegate send_sms(from, to, message), to: @adapter
+  end
+</pre>
+
+<p>
+Let&rsquo;s go straight to the test:
+</p>
+
+<pre class="example" id="org7e11043">
+  assert {:ok, %Message{}} = SmsProvider.send_sms(from, to, "message") # true
+</pre>
+
+<p>
+Now it should work even in concurrent tests. Your SMS will not be
+delivered neither to the real nor fake users, your money will be saved
+and your tests will not suffer more.
+</p>
+</div>
+</div>
+
+<div id="outline-container-using-mox" class="outline-2">
+<h2 id="using-mox"><span class="section-number-2">3</span> Using Mox</h2>
+<div class="outline-text-2" id="text-using-mox">
+<p>
+However, there is still a room for improvement.
+</p>
+
+<p>
+<a href="https://github.com/plataformatec/mox">Mox</a> is a relatively new
+library that solves the issue of concurrent testing and mocks. It
+follows the next principles:
+</p>
+
+<ul class="org-ul">
+<li>You can only create mocks based on behaviours</li>
+<li>No dynamic generation of mocked modules, every mock should be defined
+in tests</li>
+<li>Full concurrency support</li>
+<li>Use of pattern matching and function clauses for asserting</li>
+</ul>
+
+<p>
+Now let&rsquo;s add it to our dependencies list:
+</p>
+
+<pre class="example" id="orgf26d7a4">
+  # mix.exs
+  def deps do
+    [
+      {:mox, "~&gt; 0.4", only: :test}
+    ]
+  end
+</pre>
+
+<p>
+It&rsquo;s easy as a pie to rewrite our tests with Mox. We need to create an
+SMS provider behaviour and implement it for different environments:
+</p>
+
+<pre class="example" id="orga5b4933">
+  # sms_provider.ex
+  defmodule SmsProvider do
+    @callback send_sms(String.t, String.t, String.t) :: {:ok, %Message{}} | {:error, :wrong_number}
+  end
+
+  # test_helper.exs
+  Mox.defmock(SmsProviderMock, for: SmsProvider)
+
+  # test.exs
+
+  defmodule Test do
+    use ExUnit.Case, async: true
+
+    import Mox
+
+    # Make sure mocks are verified when the test exits
+    setup :verify_on_exit!
+
+    test "returns message on success" do
+      expect SmsProviderMock, :send_sms, fn _, _, _ -&gt; {:ok, %Message{status: :sent}}
+      assert {:ok, %{status: :sent}} = SmsProvider.send_sms(from, to, message)
+    end
+  end
+</pre>
+
+<p>
+If you don&rsquo;t need to check expectations in test you can try
+<code>stub_with/2</code> function in order to stub entire module:
+</p>
+
+<pre class="example" id="org6748c04">
+  # sms_provider.ex
+  defmodule SmsProvider do
+    @callback send_sms(String.t, String.t, String.t) :: {:ok, %Message{}} | {:error, :wrong_number}
+    @callback sent_sms(String.t) :: [%Message{}]
+  end
+
+  # test_provider.ex
+  defmodule TestProvider do
+    @behaviour SmsProvider
+    def send_sms(_from, _to, message), do: {:ok, %Message{status: :sent, message: message}}
+    def sent_sms(number) :: [%Message{}]
+  end
+
+  # test.exs
+  defmock(SmsProviderMock, for: SmsProvider)
+  stub_with(SmsProviderMock, TestProvider)
+</pre>
+
+<p>
+Viola! Now your tests are all green, fast and shiny thanks to concurrent
+testing and Mox :)
+</p>
+</div>
+</div>
+
+<div id="outline-container-conclusion" class="outline-2">
+<h2 id="conclusion"><span class="section-number-2">4</span> Conclusion</h2>
+<div class="outline-text-2" id="text-conclusion">
+<p>
+If you&rsquo;re definitely interested in concurrent testing, you might want to
+read
+<a href="http://blog.plataformatec.com.br/2015/10/mocks-and-explicit-contracts/">excellent
+article from Jose Valim</a> and dive in into
+<a href="https://hexdocs.pm/mox/Mox.html">Mox documentation</a>.
+</p>
+
+<p>
+Happy hacking, everyone!
+</p>
+</div>
+</div>
+<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-elixir.html">elixir</a> <a href="https://neiro.io/tag-testing.html">testing</a> </div></div>
+<div id="postamble" class="status"></div>
+</body>
+</html>

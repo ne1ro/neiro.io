@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://neiro.io/rss.xml"
+      title="RSS feed for https://neiro.io/"/>
+<title>Elixir code quality tools and checks</title>
+<meta name="author" content="Aleksei Kuznetsov">
+    <meta name="referrer" content="no-referrer">
+    <link href= "https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet" type="text/css" />
+    <link href= "static/style.css" rel="stylesheet" type="text/css" />
+    <link rel="icon" href="static/favicon.ico"></head>
+<body>
+<div id="preamble" class="status">
+<div class="header">
+    <a href="https://neiro.io">Neiro - Functional programming, software architecture</a>
+  </div></div>
+<div id="content">
+<div class="post-date">28 Apr 2018</div><h1 class="post-title"><a href="https://neiro.io/2018-04-28-elixir-code-quality-tools-and-checks.md.html">Elixir code quality tools and checks</a></h1>
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#mix-compile-warnings-as-errors">1. mix compile &#x2013;warnings-as-errors</a></li>
+<li><a href="#mix-format-check-formatted">2. mix format &#x2013;check-formatted</a></li>
+<li><a href="#credo">3. Credo</a></li>
+<li><a href="#xref">4. Xref</a></li>
+<li><a href="#sobelow">5. Sobelow</a></li>
+<li><a href="#dialyzer">6. Dialyzer</a></li>
+<li><a href="#conclusion">7. Conclusion</a></li>
+</ul>
+</div>
+</nav>
+<p>
+Elixir programming language has its great, huge community and ecosystem.
+As for now, we can easily do static code analysis and code quality
+checks by using plenty of standard or external tools. This allows us to
+write robust solid Elixir code in a uniform way according to the
+<a href="https://github.com/christopheradams/elixir_style_guide">style guide</a>
+.
+</p>
+
+<p>
+Let&rsquo;s start with the most popular tools and solutions:
+</p>
+
+<div id="outline-container-mix-compile-warnings-as-errors" class="outline-2">
+<h2 id="mix-compile-warnings-as-errors"><span class="section-number-2">1</span> mix compile &#x2013;warnings-as-errors</h2>
+<div class="outline-text-2" id="text-mix-compile-warnings-as-errors">
+<p>
+The first and the simplest check that could possibly exist. Elixir
+compiler is smart enough to detect easily harsh mistakes like unused
+variables or mismatched module names. At the same time it is pretty
+friendly, because compiler just warns you about these problems, but does
+not stop compilation. For some reasons, especially if we are running the
+CI, we want to make it more obvious and stop any further checks. This
+can be achieved by running <code>mix compile</code> task with related option:
+</p>
+
+<pre class="example" id="orgeafade4">
+  mix compile --warnings-as-errors
+</pre>
+</div>
+</div>
+
+<div id="outline-container-mix-format-check-formatted" class="outline-2">
+<h2 id="mix-format-check-formatted"><span class="section-number-2">2</span> mix format &#x2013;check-formatted</h2>
+<div class="outline-text-2" id="text-mix-format-check-formatted">
+<p>
+Elixir 1.6 introduced yet another useful tool - the formatter. After
+that we can keep our codebase consistent in one uniform code style
+without any contradictions. However, in the real life, not everyone uses
+the formatter and we need to force this option by running <code>mix format</code>
+task with the <code>--check-formatted</code> option during CI.
+</p>
+
+<pre class="example" id="org89abf6b">
+  mix format --check-formatted
+</pre>
+</div>
+</div>
+
+<div id="outline-container-credo" class="outline-2">
+<h2 id="credo"><span class="section-number-2">3</span> Credo</h2>
+<div class="outline-text-2" id="text-credo">
+<p>
+<a href="https://github.com/rrrene/credo">Credo</a> is a static analysis code
+tool for Elixir. It&rsquo;s more than just a usual code checker - it can teach
+you how to write your code better, show refactoring possibilities and
+inconsistencies in naming.
+</p>
+
+<p>
+In order to start using Credo you need to add this line to your
+<code>mix.exs</code> deps:
+</p>
+
+<pre class="example" id="org3c36121">
+  {:credo, "~&gt; 0.9.1", only: ~w(dev test)a, runtime: false}
+</pre>
+
+<p>
+You can enforce your own code style for your team by using Credo
+configuration file. For example, you can create <code>config/.credo.exs</code> file
+with this content:
+</p>
+
+<pre class="example" id="org2b9dbd1">
+  %{
+    #
+    # You can have as many configs as you like in the `configs:` field.
+    configs: [
+      %{
+        #
+        # Run any exec using `mix credo -C &lt;name&gt;`. If no exec name is given
+        # "default" is used.
+        name: "default",
+        #
+        # These are the files included in the analysis:
+        files: %{
+          #
+          # You can give explicit globs or simply directories.
+          # In the latter case `**/*.{ex,exs}` will be used.
+          excluded: [~r"/_build/", ~r"/deps/", ~r"/priv/"]
+        },
+        #
+        # If you create your own checks, you must specify the source files for
+        # them here, so they can be loaded by Credo before running the analysis.
+        requires: [],
+        #
+        # Credo automatically checks for updates, like e.g. Hex does.
+        # You can disable this behaviour below:
+        check_for_updates: true,
+        #
+        # If you want to enforce a style guide and need a more traditional linting
+        # experience, you can change `strict` to `true` below:
+        strict: true,
+        #
+        # If you want to use uncolored output by default, you can change `color`
+        # to `false` below:
+        color: true,
+        #
+        # You can customize the parameters of any check by adding a second element
+        # to the tuple.
+        #
+        # To disable a check put `false` as second element:
+        #
+        #     {Credo.Check.Design.DuplicatedCode, false}
+        #
+        checks: [
+          {Credo.Check.Readability.Specs, priority: :low},
+          {Credo.Check.Design.TagTODO, exit_status: 0},
+          {Credo.Check.Design.TagFIXME, exit_status: 0},
+          {Credo.Check.Readability.MaxLineLength, priority: :low, max_length: 100}
+        ]
+      }
+    ]
+  }
+</pre>
+
+<p>
+After that, it would be nice to force these settings by running Credo
+mix task with <code>--strict</code> option:
+</p>
+
+<pre class="example" id="org494f771">
+  mix credo --strict
+</pre>
+</div>
+</div>
+
+<div id="outline-container-xref" class="outline-2">
+<h2 id="xref"><span class="section-number-2">4</span> Xref</h2>
+<div class="outline-text-2" id="text-xref">
+<p>
+Elixir has a <code>mix xref</code> task that performs cross-reference checks
+between modules. This check can print all unavailable or deprecated
+references, create a dependencies graph and show callers of the given
+function. During the CI we want to check if we have any unavailable or
+deprecated functions/modules:
+</p>
+
+<pre class="example" id="orge2c8392">
+  mix xref unavailable
+  mix xref deprecated
+</pre>
+
+<p>
+Don&rsquo;t forget to include <code>--include-siblings</code> option if you are using
+this in umbrella application.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sobelow" class="outline-2">
+<h2 id="sobelow"><span class="section-number-2">5</span> Sobelow</h2>
+<div class="outline-text-2" id="text-sobelow">
+<p>
+<a href="https://github.com/nccgroup/sobelow">Sobelow</a> is a security-based
+static analysis tool. Unfortunately, it comes just for the Phoenix
+framework, so you can use it only in your web applications. Sobelow can
+detect the following types of security issues:
+</p>
+
+<ul class="org-ul">
+<li>Insecure configuration</li>
+<li>Known-vulnerable Dependencies</li>
+<li>Cross-Site Scripting</li>
+<li>SQL injection</li>
+<li>Command injection</li>
+<li>Denial of Service</li>
+<li>Directory traversal</li>
+<li>Unsafe serialization</li>
+</ul>
+
+<p>
+To install Sobelow you can use the next command:
+</p>
+
+<pre class="example" id="orgd2c29a8">
+  mix archive.install hex sobelow
+</pre>
+
+<p>
+To run Sobelow just start the related mix task:
+</p>
+
+<pre class="example" id="org79dc9c8">
+  mix sobelow
+</pre>
+</div>
+</div>
+
+<div id="outline-container-dialyzer" class="outline-2">
+<h2 id="dialyzer"><span class="section-number-2">6</span> Dialyzer</h2>
+<div class="outline-text-2" id="text-dialyzer">
+<p>
+<a href="http://erlang.org/doc/man/dialyzer.html">Dialyzer</a> is the most
+powerful and yet complex analysis tool for the BEAM platform. Dialyzer
+means DIscrepancy AnaLYZer for ERlang programs, but it could be used in
+Elixir too. It identifies software discrepancies like definite type
+errors, dead or unreachable code.
+</p>
+
+<p>
+To use Dialyzer in your Elixir application you may want to use
+<a href="identifies%20software%20discrepancies">Dialyxir</a>. Just add this
+line to your <code>mix.exs</code> file:
+</p>
+
+<pre class="example" id="orgd43aaa3">
+  defp deps do
+    [{:dialyxir, "~&gt; 0.5", only: [:dev], runtime: false}]
+  end
+</pre>
+
+<p>
+You can also configure warnings, dependencies and paths in <code>mix.exs</code>:
+</p>
+
+<pre class="example" id="orgd2a8119">
+  def project do
+    [
+    dialyzer: [plt_add_deps: :apps_direct, plt_add_apps: [:wx]]
+    # flags: ["-Wunmatched_returns", :error_handling, :race_conditions, :underspecs]
+    # paths: ["_build/dev/lib/my_app/ebin", "_build/dev/lib/foo/ebin"]
+      ]
+  end
+</pre>
+
+<p>
+You can ignore any unwanted warnings by providing <code>ignore_warnings</code>
+option:
+</p>
+
+<pre class="example" id="org15a636f">
+  def project do
+    [dialyzer: [ignore_warnings: "dialyzer.ignore-warnings"]]
+  end
+</pre>
+
+<p>
+To run dialyzer on the CI add the next option to make sure that the
+build fails in case of any errors:
+</p>
+
+<pre class="example" id="org5cf65e2">
+  mix dialyzer --halt-exit-status
+</pre>
+</div>
+</div>
+
+<div id="outline-container-conclusion" class="outline-2">
+<h2 id="conclusion"><span class="section-number-2">7</span> Conclusion</h2>
+<div class="outline-text-2" id="text-conclusion">
+<p>
+As you can see, Elixir by itself and by its ecosystem has many useful
+checks and tools that allow you to keep your code nice, simple, robust
+and consistent. These checks are also highly configurable and
+extensible. You can easily use them for any CI platforms to keep your
+development workflow bright and shiny.
+</p>
+
+<p>
+Happy hacking!
+</p>
+</div>
+</div>
+<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-elixir.html">elixir</a> <a href="https://neiro.io/tag-quality.html">quality</a> <a href="https://neiro.io/tag-ci.html">ci</a> </div></div>
+<div id="postamble" class="status"></div>
+</body>
+</html>

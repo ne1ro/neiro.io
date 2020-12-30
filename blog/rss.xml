@@ -1,20 +1,252 @@
 <?xml version="1.0" encoding="utf-8"?>
 <rss version="2.0">
-  <channel>
-    <title>
-      <![CDATA[Neiro - Functional programming, software architecture]]>
-</title>
-    <description>
-      <![CDATA[Neiro - Functional programming, software architecture]]>
-</description>
-    <link>https://neiro.io/</link>
-    <lastBuildDate>Sun, 06 Dec 2020 18:48:05 +0100</lastBuildDate>
-    <item>
-      <title>
-        <![CDATA[Well-crafted functional architecture: ports and adapters]]>
-</title>
-      <description>
-        <![CDATA[
+<channel>
+<title><![CDATA[Neiro - Functional programming, software architecture]]></title>
+<description><![CDATA[Neiro - Functional programming, software architecture]]></description>
+<link>https://neiro.io/</link>
+<lastBuildDate>Wed, 30 Dec 2020 14:23:48 +0100</lastBuildDate>
+<item>
+  <title><![CDATA[Migrating from Jekyll to org-static-blog]]></title>
+  <description><![CDATA[
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org6e5fc4e">1. Org-mode support in existing blog engines</a>
+<ul>
+<li><a href="#org389f3c0">1.1. Jekyll</a></li>
+<li><a href="#org6c3c8e1">1.2. Gatsby</a></li>
+<li><a href="#orga24336f">1.3. Emacs itself</a></li>
+</ul>
+</li>
+<li><a href="#org73fabf0">2. Migration from Jekyll</a>
+<ul>
+<li><a href="#orgb89449c">2.1. Installation of the org-static-blog</a></li>
+<li><a href="#org5314a3d">2.2. Configuration</a></li>
+<li><a href="#orgca55f31">2.3. Convert markdown to org</a></li>
+<li><a href="#org9dad459">2.4. Writing a new post</a></li>
+<li><a href="#org4db3481">2.5. CI/CD</a></li>
+</ul>
+</li>
+<li><a href="#org78bb84b">3. Issues that are still not solved by migration</a>
+<ul>
+<li><a href="#org057ed3d">3.1. Better code highlighting</a></li>
+<li><a href="#org90a8b0b">3.2. Better CI/CD experience</a></li>
+<li><a href="#org6b2899e">3.3. Assets management</a></li>
+</ul>
+</li>
+<li><a href="#orgaef5396">4. Conclusion</a></li>
+</ul>
+</div>
+</nav>
+<p>
+One of the biggest (and positive) discoveries this year for me was definitely an Emacs.
+I&rsquo;ve decided to switch to this editor after using Vim for almost 8 years as I&rsquo;ve started embracing
+Lisps (especially Clojure) and wanted an editor where I can have a first-class integration.
+</p>
+
+<p>
+Besides the nice integration I&rsquo;ve found out a lot of very interesting related things,
+e.g. REPL-driven development, Org-mode, org-roam, and plenty of others.
+For sure, one of the biggest benefits is the <b>org-mode</b> - which is a most powerful, elegant
+and nicely integrated in Emacs ecosystem markdown language and extensions, in my opinion.
+</p>
+
+<p>
+After some time I&rsquo;ve started to thinking about improving my blogging experience.
+The ergonomics of typing, ease of use are quite important to me, so the ideal solution
+would be to embrace the power of the org-mode, evil mode (to keep vim bindings in place) and
+apply it for my personal blog. However, this was not as simple as I&rsquo;ve expected - and there were
+a lot of options.
+</p>
+
+<div id="outline-container-org6e5fc4e" class="outline-2">
+<h2 id="org6e5fc4e"><span class="section-number-2">1</span> Org-mode support in existing blog engines</h2>
+<div class="outline-text-2" id="text-1">
+</div>
+<div id="outline-container-org389f3c0" class="outline-3">
+<h3 id="org389f3c0"><span class="section-number-3">1.1</span> Jekyll</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+Jekyll has <a href="https://github.com/eggcaker/jekyll-org">a support for org mode</a> , however, it&rsquo;s based on an outdated
+<b>org-ruby</b> gem which might not have a full support of all `org-mode` features.
+</p>
+</div>
+</div>
+<div id="outline-container-org6c3c8e1" class="outline-3">
+<h3 id="org6c3c8e1"><span class="section-number-3">1.2</span> Gatsby</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+Gatsby.js seems to be a relatively popular choice for building static websites - and it has all
+modern and shiny technologies on the front side, like React, server-side rendering, GraphQL, etc.
+Gatsby also has an <a href="https://www.gatsbyjs.com/plugins/gatsby-transformer-orga/">org-mode plugin</a>, and it looks more or less fully-featured.
+</p>
+</div>
+</div>
+<div id="outline-container-orga24336f" class="outline-3">
+<h3 id="orga24336f"><span class="section-number-3">1.3</span> Emacs itself</h3>
+<div class="outline-text-3" id="text-1-3">
+<p>
+Emacs has a variety of solutions to have some static website or a small blog built from org-mode.
+So far I&rsquo;ve liked <a href="https://github.com/bastibe/org-static-blog">an org-static-blog</a> solution which can be installed right to an emacs and could be
+an extension to the org-mode.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org73fabf0" class="outline-2">
+<h2 id="org73fabf0"><span class="section-number-2">2</span> Migration from Jekyll</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+I&rsquo;ve had a lot of issues with outdated Jekyll version and my attempts to update it with assets have failed.
+As for the Gatsby, I&rsquo;ve gave it a try, but it looked like that it focuses more on Markdown and it took a lot of
+efforts to make something tangible with org-mode.
+I&rsquo;ve wanted to re-organise the current assets structure to make it way more minimalistic, so I&rsquo;ve decided to switch
+to the <b>org-static-blog</b>.
+</p>
+</div>
+
+<div id="outline-container-orgb89449c" class="outline-3">
+<h3 id="orgb89449c"><span class="section-number-3">2.1</span> Installation of the org-static-blog</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+It&rsquo;s quite simple - you just need to run from your Emacs
+</p>
+
+<div class="emacs" id="org4c5db52">
+<p>
+package-install
+</p>
+
+</div>
+
+<p>
+and choose
+</p>
+
+<pre class="example">
+org-static-blog
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org5314a3d" class="outline-3">
+<h3 id="org5314a3d"><span class="section-number-3">2.2</span> Configuration</h3>
+<div class="outline-text-3" id="text-2-2">
+<p>
+org-static blog has a lot of configuration options, so it&rsquo;s better to refer the <a href="https://github.com/bastibe/org-static-blog#examples">examples and documentation on the website</a>.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgca55f31" class="outline-3">
+<h3 id="orgca55f31"><span class="section-number-3">2.3</span> Convert markdown to org</h3>
+<div class="outline-text-3" id="text-2-3">
+<p>
+This is required step which can be quickly done by simple script, assuming that you have pandoc installed:
+</p>
+
+<div class="shell" id="org9dbc909">
+<p>
+for f in `ls *.md`; do 
+    pandoc -f markdown -t org -o ${f}.org ${f}; 
+done
+</p>
+
+</div>
+</div>
+</div>
+
+<div id="outline-container-org9dad459" class="outline-3">
+<h3 id="org9dad459"><span class="section-number-3">2.4</span> Writing a new post</h3>
+<div class="outline-text-3" id="text-2-4">
+<div class="emacs" id="org1c9e6aa">
+<p>
+org-static-blog-mode
+org-static-blog-create-new-post
+</p>
+
+</div>
+
+<p>
+These commands will create a new post with some default template. Run <span class="underline">org-static-blog-publish</span> once you have your post ready.
+This will build a new HTML page in the <b>/blog</b> directory.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org4db3481" class="outline-3">
+<h3 id="org4db3481"><span class="section-number-3">2.5</span> CI/CD</h3>
+<div class="outline-text-3" id="text-2-5">
+<p>
+So far the simplest solution I&rsquo;ve found is just to keep built HTML version of the website in the repo and deploy it on
+each change. <a href="https://gitlab.com/_zngguvnf/org-static-blog-example">There&rsquo;s an example</a> of how the CI/CD can be improved.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org78bb84b" class="outline-2">
+<h2 id="org78bb84b"><span class="section-number-2">3</span> Issues that are still not solved by migration</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+The migration was not ideal, and there are still some pain points and issues not solved:
+</p>
+</div>
+
+<div id="outline-container-org057ed3d" class="outline-3">
+<h3 id="org057ed3d"><span class="section-number-3">3.1</span> Better code highlighting</h3>
+<div class="outline-text-3" id="text-3-1">
+<p>
+Some programming languages are highlighted quite poorly.
+</p>
+</div>
+</div>
+<div id="outline-container-org90a8b0b" class="outline-3">
+<h3 id="org90a8b0b"><span class="section-number-3">3.2</span> Better CI/CD experience</h3>
+<div class="outline-text-3" id="text-3-2">
+<p>
+There is a way to build the website right from CI, e.g. by executing Emacs Lisp code from the container,
+though it may require some setup &amp; efforts spent before.
+</p>
+</div>
+</div>
+<div id="outline-container-org6b2899e" class="outline-3">
+<h3 id="org6b2899e"><span class="section-number-3">3.3</span> Assets management</h3>
+<div class="outline-text-3" id="text-3-3">
+<p>
+Probably I&rsquo;ll still need to configure Webpack, stylesheets, javascripts to make the website looking more neat
+and more fully featured.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgaef5396" class="outline-2">
+<h2 id="orgaef5396"><span class="section-number-2">4</span> Conclusion</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+Switching from Jekyll to <b>org-static-mode</b> definitely improved the blogging experience, and now it&rsquo;s a way more
+simpler, faster and enjoyable process. There are still some painful issues which were resolved in other mainstream
+blog engines, but the benefits of having everything typed in <b>org-mode</b> and managed by the Emacs are more significant for me.
+</p>
+
+<p>
+Happy new year and keep hacking!
+</p>
+</div>
+</div>
+<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-blog.html">blog</a> <a href="https://neiro.io/tag-emacs.html">emacs</a> <a href="https://neiro.io/tag-jekyll.html">jekyll</a> </div>]]></description>
+  <category><![CDATA[blog]]></category>
+  <category><![CDATA[emacs]]></category>
+  <category><![CDATA[jekyll]]></category>
+  <link>https://neiro.io/2020-12-30-migrating-from-jekyll-to-org-static-blog.html</link>
+  <pubDate>Wed, 30 Dec 2020 13:20:00 +0100</pubDate>
+</item>
+<item>
+  <title><![CDATA[Well-crafted functional architecture: ports and adapters]]></title>
+  <description><![CDATA[
 <nav id="table-of-contents">
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
@@ -104,7 +336,7 @@ while your adapters are placed surround it.
 </p>
 
 
-<figure id="orgd7360ed">
+<figure id="org428f623">
 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Hexagonal_Architecture.svg/1000px-Hexagonal_Architecture.svg.png" alt="1000px-Hexagonal_Architecture.svg.png">
 
 <figcaption><span class="figure-number">Figure 1: </span>Hexagon</figcaption>
@@ -160,7 +392,7 @@ now let&rsquo;s see how we can implement the realisation of port for Elixir
 using its&rsquo; capability to create <b>behaviours</b>:
 </p>
 
-<pre class="example" id="org619475e">
+<pre class="example" id="org4e61846">
   defmodule Core.PushNotifications do
     @moduledoc """
     Port for sending push notifications.
@@ -170,7 +402,7 @@ using its&rsquo; capability to create <b>behaviours</b>:
     @type payload :: Keyword.t
     @type recipients :: [map]
 
-    @adapter :core |&gt; Application.fetch_env!(__MODULE__) |&gt; Keyword.fetch!(:adapter)
+    @adapter :core |&gt; Application.fetch_env!(__MODULE__) |&gt; Keyword.fetch!(:adapter) 
 
     @callback send_notifications(message, recipients, payload) :: {:ok, [map]} | {:error, any}
 
@@ -186,7 +418,7 @@ exact implementation - adapter - should be placed in your app
 configuration like:
 </p>
 
-<pre class="example" id="org81abda8">
+<pre class="example" id="orgd41bdb2">
   config :core, Core.PushNotifications, adapter: PushNotifications.APNS
 </pre>
 
@@ -195,7 +427,7 @@ If you want to call this port from your application you just need to use
 the delegated function:
 </p>
 
-<pre class="example" id="orgbbe0dba">
+<pre class="example" id="orgbac3faf">
   defmodule Core do
     alias Core.PushNotifications
 
@@ -247,7 +479,7 @@ role of specification of driver port so you&rsquo;ll always be able to see
 what we need to send and what we should expect in response.
 </p>
 
-<pre class="example" id="org577196b">
+<pre class="example" id="orgfd0d5d5">
   defmodule Web.UserController do
     use Web, :controller
 
@@ -297,7 +529,7 @@ adapt realisation of sending push notifications over APNS by the
 specification that was given us by this port:
 </p>
 
-<pre class="example" id="org94a3d86">
+<pre class="example" id="org3903076">
   defmodule PushNotifications.APNS do
     @moduledoc "APNS adapter for push notifications"
     @behaviour Core.PushNotifications
@@ -337,7 +569,7 @@ should be tested. Let&rsquo;s write a test adapter for the PushNotifications
 port then:
 </p>
 
-<pre class="example" id="org70a4699">
+<pre class="example" id="org978f69e">
   defmodule PushNotifications.TestAdapter do
     @moduledoc "Test adapter for push notifications"
     @behaviour Core.PushNotifications
@@ -358,7 +590,7 @@ interface. In Elixir ecosystem we have a great library called <code>Mox</code> t
 can be used for such case:
 </p>
 
-<pre class="example" id="orgb018b6f">
+<pre class="example" id="orgcdc87b3">
   Mox.defmock(PushNotifications.TestMock, for: Core.PushNotifications)
 
   defmodule CoreTest do
@@ -370,7 +602,7 @@ can be used for such case:
 
     test "register/1" do
        stub_with(PushNotifications.TestMock, PushNotifications.TestAdapter)
-       assert {:ok, _} = Core.register_user(some_params)
+       assert {:ok, _} = Core.register_user(some_params) 
     end
   end
 </pre>
@@ -456,33 +688,18 @@ Stay tuned!
 </p>
 </div>
 </div>
-<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-elixir.html">elixir</a> <a href="https://neiro.io/tag-functional.html">functional</a> <a href="https://neiro.io/tag-architecture.html">architecture</a> <a href="https://neiro.io/tag-ports.html">ports</a> <a href="https://neiro.io/tag-adapters.html">adapters</a> </div>]]>
-</description>
-      <category>
-        <![CDATA[elixir]]>
-</category>
-      <category>
-        <![CDATA[functional]]>
-</category>
-      <category>
-        <![CDATA[architecture]]>
-</category>
-      <category>
-        <![CDATA[ports]]>
-</category>
-      <category>
-        <![CDATA[adapters]]>
-</category>
-      <link>
-      https://neiro.io/2019-10-01-well-crafted-functional-architecture-ports-and-adapters.md.html</link>
-      <pubDate>Tue, 01 Oct 2019 10:00:00 +0200</pubDate>
-    </item>
-    <item>
-      <title>
-        <![CDATA[Seven reasons to use Elixir in 2019]]>
-</title>
-      <description>
-        <![CDATA[
+<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-elixir.html">elixir</a> <a href="https://neiro.io/tag-functional.html">functional</a> <a href="https://neiro.io/tag-architecture.html">architecture</a> <a href="https://neiro.io/tag-ports.html">ports</a> <a href="https://neiro.io/tag-adapters.html">adapters</a> </div>]]></description>
+  <category><![CDATA[elixir]]></category>
+  <category><![CDATA[functional]]></category>
+  <category><![CDATA[architecture]]></category>
+  <category><![CDATA[ports]]></category>
+  <category><![CDATA[adapters]]></category>
+  <link>https://neiro.io/2019-10-01-well-crafted-functional-architecture-ports-and-adapters.md.html</link>
+  <pubDate>Tue, 01 Oct 2019 10:00:00 +0200</pubDate>
+</item>
+<item>
+  <title><![CDATA[Seven reasons to use Elixir in 2019]]></title>
+  <description><![CDATA[
 <nav id="table-of-contents">
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
@@ -544,7 +761,7 @@ best parts of these languages and Erlang to make developers much more
 productive and efficient.
 </p>
 
-<pre class="example" id="org2394e48">
+<pre class="example" id="org40c82f0">
   defmodule Example do
     def list_users(ids) do
         User
@@ -706,21 +923,14 @@ Happy hacking everyone!
 </p>
 </div>
 </div>
-<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-elixir.html">elixir</a> </div>]]>
-</description>
-      <category>
-        <![CDATA[elixir]]>
-</category>
-      <link>
-      https://neiro.io/2018-12-30-seven-reasons-to-use-elixir-in-2019.md.html</link>
-      <pubDate>Sun, 30 Dec 2018 10:00:00 +0100</pubDate>
-    </item>
-    <item>
-      <title>
-        <![CDATA[Asynchronous testing in Elixir with Mox]]>
-</title>
-      <description>
-        <![CDATA[
+<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-elixir.html">elixir</a> </div>]]></description>
+  <category><![CDATA[elixir]]></category>
+  <link>https://neiro.io/2018-12-30-seven-reasons-to-use-elixir-in-2019.md.html</link>
+  <pubDate>Sun, 30 Dec 2018 10:00:00 +0100</pubDate>
+</item>
+<item>
+  <title><![CDATA[Asynchronous testing in Elixir with Mox]]></title>
+  <description><![CDATA[
 <nav id="table-of-contents">
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
@@ -755,7 +965,7 @@ using third-party services anyway. Imagine that you are sending SMS
 through you favorite provider services. This code can look like that:
 </p>
 
-<pre class="example" id="org37b18fd">
+<pre class="example" id="org7cd08c6">
   SmsProvider.send_sms(from, to, "message")
 </pre>
 
@@ -770,7 +980,7 @@ Now we need to test this situation. This will be our very first
 approach:
 </p>
 
-<pre class="example" id="org4c3cf63">
+<pre class="example" id="orgdbebb77">
   assert {:ok, %Message{}} = SmsProvider.send_sms(from, to, "message")
 </pre>
 
@@ -786,7 +996,7 @@ The most popular solution is mocking. You&rsquo;re supposing that call of
 expected result:
 </p>
 
-<pre class="example" id="org0ccb225">
+<pre class="example" id="org9b09e66">
   mock(SmsProvider, :send_sms, fn _, _, _ -&gt; {:ok, %Message{status: :sent}} end)
   assert {:ok, %Message{status: :sent}} = SmsProvider.send_sms(from, to, "message")
 </pre>
@@ -798,7 +1008,7 @@ mocked SmsProvider so it will be overriden in every next asynchronous
 test:
 </p>
 
-<pre class="example" id="org644ab62">
+<pre class="example" id="org40c5378">
   use MyApp.DataCase, async: true
 
   # ...
@@ -824,7 +1034,7 @@ Instead of mocking we can try calling the function that will override
 content:
 </p>
 
-<pre class="example" id="orgb1ee506">
+<pre class="example" id="org2ad4fa6">
   defmodule TestProvider do
     def send_sms(from, to, message) do
       {:ok, %Message{status: :sent, from: from, to: to, text: message}}
@@ -838,7 +1048,7 @@ module. It will use default adapter in development, production
 environments and will use <code>TestProvider</code> in testing:
 </p>
 
-<pre class="example" id="orgf0e6635">
+<pre class="example" id="orgaa28592">
   # config/test.exs
   config :my_app, SmsProvider, adapter: TestProvider
 
@@ -857,7 +1067,7 @@ environments and will use <code>TestProvider</code> in testing:
 Let&rsquo;s go straight to the test:
 </p>
 
-<pre class="example" id="org7e11043">
+<pre class="example" id="orgff8754b">
   assert {:ok, %Message{}} = SmsProvider.send_sms(from, to, "message") # true
 </pre>
 
@@ -894,7 +1104,7 @@ in tests</li>
 Now let&rsquo;s add it to our dependencies list:
 </p>
 
-<pre class="example" id="orgf26d7a4">
+<pre class="example" id="orgfed7081">
   # mix.exs
   def deps do
     [
@@ -908,7 +1118,7 @@ It&rsquo;s easy as a pie to rewrite our tests with Mox. We need to create an
 SMS provider behaviour and implement it for different environments:
 </p>
 
-<pre class="example" id="orga5b4933">
+<pre class="example" id="org4e41ebe">
   # sms_provider.ex
   defmodule SmsProvider do
     @callback send_sms(String.t, String.t, String.t) :: {:ok, %Message{}} | {:error, :wrong_number}
@@ -939,7 +1149,7 @@ If you don&rsquo;t need to check expectations in test you can try
 <code>stub_with/2</code> function in order to stub entire module:
 </p>
 
-<pre class="example" id="org6748c04">
+<pre class="example" id="orgb43f988">
   # sms_provider.ex
   defmodule SmsProvider do
     @callback send_sms(String.t, String.t, String.t) :: {:ok, %Message{}} | {:error, :wrong_number}
@@ -981,24 +1191,15 @@ Happy hacking, everyone!
 </p>
 </div>
 </div>
-<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-elixir.html">elixir</a> <a href="https://neiro.io/tag-testing.html">testing</a> </div>]]>
-</description>
-      <category>
-        <![CDATA[elixir]]>
-</category>
-      <category>
-        <![CDATA[testing]]>
-</category>
-      <link>
-      https://neiro.io/2018-07-29-asyncronous-testing-in-elixir-with-mox.md.html</link>
-      <pubDate>Sun, 29 Jul 2018 10:00:00 +0200</pubDate>
-    </item>
-    <item>
-      <title>
-        <![CDATA[Elixir continious integration with CircleCI]]>
-</title>
-      <description>
-        <![CDATA[
+<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-elixir.html">elixir</a> <a href="https://neiro.io/tag-testing.html">testing</a> </div>]]></description>
+  <category><![CDATA[elixir]]></category>
+  <category><![CDATA[testing]]></category>
+  <link>https://neiro.io/2018-07-29-asyncronous-testing-in-elixir-with-mox.md.html</link>
+  <pubDate>Sun, 29 Jul 2018 10:00:00 +0200</pubDate>
+</item>
+<item>
+  <title><![CDATA[Elixir continious integration with CircleCI]]></title>
+  <description><![CDATA[
 <nav id="table-of-contents">
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
@@ -1050,7 +1251,7 @@ Let&rsquo;s start by creating a CircleCI configuration file in
 <code>.circleci/config.yml</code>:
 </p>
 
-<pre class="example" id="org786651f">
+<pre class="example" id="org8226fa8">
   version: 2  # use CircleCI 2.0 instead of CircleCI Classic
   jobs:  # basic units of work in a run
     build:  # runs not using Workflows must have a `build` job as entry point
@@ -1107,7 +1308,7 @@ above:
 {% raw %}
 </p>
 
-<pre class="example" id="org6aee248">
+<pre class="example" id="orge96e9a8">
         - restore_cache:  # restores saved mix cache
             keys:  # list of cache keys, in decreasing specificity
               - v1-mix-cache-{{ .Branch }}-{{ checksum "mix.lock" }}
@@ -1185,7 +1386,7 @@ Let&rsquo;s continue filling up our configuration file by adding a new
 <code>deploy</code> job:
 </p>
 
-<pre class="example" id="orgd295eca">
+<pre class="example" id="org19c3a68">
     deploy:
       docker:
         - image: circleci/elixir:1.6
@@ -1221,7 +1422,7 @@ accordingly. We can achieve this by using CircleCI workflow and
 providing a simple configuration at the bottom of our config file:
 </p>
 
-<pre class="example" id="orga144a8e">
+<pre class="example" id="org13a0ea2">
   workflows:
     version: 2
     build-and-deploy:
@@ -1266,27 +1467,16 @@ Happy hacking, everyone!
 </p>
 </div>
 </div>
-<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-elixir.html">elixir</a> <a href="https://neiro.io/tag-quality.html">quality</a> <a href="https://neiro.io/tag-ci.html">ci</a> </div>]]>
-</description>
-      <category>
-        <![CDATA[elixir]]>
-</category>
-      <category>
-        <![CDATA[quality]]>
-</category>
-      <category>
-        <![CDATA[ci]]>
-</category>
-      <link>
-      https://neiro.io/2018-06-19-elixir-continious-integration-with-circleci.md.html</link>
-      <pubDate>Tue, 19 Jun 2018 10:00:00 +0200</pubDate>
-    </item>
-    <item>
-      <title>
-        <![CDATA[Elixir code quality tools and checks]]>
-</title>
-      <description>
-        <![CDATA[
+<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-elixir.html">elixir</a> <a href="https://neiro.io/tag-quality.html">quality</a> <a href="https://neiro.io/tag-ci.html">ci</a> </div>]]></description>
+  <category><![CDATA[elixir]]></category>
+  <category><![CDATA[quality]]></category>
+  <category><![CDATA[ci]]></category>
+  <link>https://neiro.io/2018-06-19-elixir-continious-integration-with-circleci.md.html</link>
+  <pubDate>Tue, 19 Jun 2018 10:00:00 +0200</pubDate>
+</item>
+<item>
+  <title><![CDATA[Elixir code quality tools and checks]]></title>
+  <description><![CDATA[
 <nav id="table-of-contents">
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
@@ -1327,7 +1517,7 @@ CI, we want to make it more obvious and stop any further checks. This
 can be achieved by running <code>mix compile</code> task with related option:
 </p>
 
-<pre class="example" id="orgeafade4">
+<pre class="example" id="org6da334f">
   mix compile --warnings-as-errors
 </pre>
 </div>
@@ -1344,7 +1534,7 @@ the formatter and we need to force this option by running <code>mix format</code
 task with the <code>--check-formatted</code> option during CI.
 </p>
 
-<pre class="example" id="org89abf6b">
+<pre class="example" id="orgdfc6f00">
   mix format --check-formatted
 </pre>
 </div>
@@ -1365,7 +1555,7 @@ In order to start using Credo you need to add this line to your
 <code>mix.exs</code> deps:
 </p>
 
-<pre class="example" id="org3c36121">
+<pre class="example" id="orgd4e8bde">
   {:credo, "~&gt; 0.9.1", only: ~w(dev test)a, runtime: false}
 </pre>
 
@@ -1375,7 +1565,7 @@ configuration file. For example, you can create <code>config/.credo.exs</code> f
 with this content:
 </p>
 
-<pre class="example" id="org2b9dbd1">
+<pre class="example" id="orgcb98730">
   %{
     #
     # You can have as many configs as you like in the `configs:` field.
@@ -1433,7 +1623,7 @@ After that, it would be nice to force these settings by running Credo
 mix task with <code>--strict</code> option:
 </p>
 
-<pre class="example" id="org494f771">
+<pre class="example" id="org885f4af">
   mix credo --strict
 </pre>
 </div>
@@ -1450,7 +1640,7 @@ function. During the CI we want to check if we have any unavailable or
 deprecated functions/modules:
 </p>
 
-<pre class="example" id="orge2c8392">
+<pre class="example" id="org8adccf7">
   mix xref unavailable
   mix xref deprecated
 </pre>
@@ -1487,7 +1677,7 @@ detect the following types of security issues:
 To install Sobelow you can use the next command:
 </p>
 
-<pre class="example" id="orgd2c29a8">
+<pre class="example" id="orgf4b3a43">
   mix archive.install hex sobelow
 </pre>
 
@@ -1495,7 +1685,7 @@ To install Sobelow you can use the next command:
 To run Sobelow just start the related mix task:
 </p>
 
-<pre class="example" id="org79dc9c8">
+<pre class="example" id="org19fbbd4">
   mix sobelow
 </pre>
 </div>
@@ -1518,7 +1708,7 @@ To use Dialyzer in your Elixir application you may want to use
 line to your <code>mix.exs</code> file:
 </p>
 
-<pre class="example" id="orgd43aaa3">
+<pre class="example" id="org975f41c">
   defp deps do
     [{:dialyxir, "~&gt; 0.5", only: [:dev], runtime: false}]
   end
@@ -1528,7 +1718,7 @@ line to your <code>mix.exs</code> file:
 You can also configure warnings, dependencies and paths in <code>mix.exs</code>:
 </p>
 
-<pre class="example" id="orgd2a8119">
+<pre class="example" id="orgb1cb9f9">
   def project do
     [
     dialyzer: [plt_add_deps: :apps_direct, plt_add_apps: [:wx]]
@@ -1543,7 +1733,7 @@ You can ignore any unwanted warnings by providing <code>ignore_warnings</code>
 option:
 </p>
 
-<pre class="example" id="org15a636f">
+<pre class="example" id="orga590891">
   def project do
     [dialyzer: [ignore_warnings: "dialyzer.ignore-warnings"]]
   end
@@ -1554,7 +1744,7 @@ To run dialyzer on the CI add the next option to make sure that the
 build fails in case of any errors:
 </p>
 
-<pre class="example" id="org5cf65e2">
+<pre class="example" id="org5be4b77">
   mix dialyzer --halt-exit-status
 </pre>
 </div>
@@ -1576,27 +1766,16 @@ Happy hacking!
 </p>
 </div>
 </div>
-<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-elixir.html">elixir</a> <a href="https://neiro.io/tag-quality.html">quality</a> <a href="https://neiro.io/tag-ci.html">ci</a> </div>]]>
-</description>
-      <category>
-        <![CDATA[elixir]]>
-</category>
-      <category>
-        <![CDATA[quality]]>
-</category>
-      <category>
-        <![CDATA[ci]]>
-</category>
-      <link>
-      https://neiro.io/2018-04-28-elixir-code-quality-tools-and-checks.md.html</link>
-      <pubDate>Sat, 28 Apr 2018 10:00:00 +0200</pubDate>
-    </item>
-    <item>
-      <title>
-        <![CDATA[Postgres full-text search using Ecto]]>
-</title>
-      <description>
-        <![CDATA[
+<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-elixir.html">elixir</a> <a href="https://neiro.io/tag-quality.html">quality</a> <a href="https://neiro.io/tag-ci.html">ci</a> </div>]]></description>
+  <category><![CDATA[elixir]]></category>
+  <category><![CDATA[quality]]></category>
+  <category><![CDATA[ci]]></category>
+  <link>https://neiro.io/2018-04-28-elixir-code-quality-tools-and-checks.md.html</link>
+  <pubDate>Sat, 28 Apr 2018 10:00:00 +0200</pubDate>
+</item>
+<item>
+  <title><![CDATA[Postgres full-text search using Ecto]]></title>
+  <description><![CDATA[
 <nav id="table-of-contents">
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
@@ -1642,7 +1821,7 @@ Let&rsquo;s start by creating a migration. Create a new Elixir project and a
 new migration in priv/repo/migrations:
 </p>
 
-<pre class="example" id="org25645b0">
+<pre class="example" id="orgfec87fe">
   defmodule App.Repo.Migrations.IntroducePgSearch do
     @moduledoc """
     Create postgres extension and indices
@@ -1678,7 +1857,7 @@ defined. In that case we can implement a simple search query that can be
 used in your contexts or controllers:
 </p>
 
-<pre class="example" id="org95ea0e2">
+<pre class="example" id="orgc63abab">
   defmodule App.Users.Search do
     @moduledoc """
     Implementation of the full-text user search
@@ -1702,7 +1881,7 @@ though.
 We need to escape all of non-words characters from user&rsquo;s input:
 </p>
 
-<pre class="example" id="orgcd96ea5">
+<pre class="example" id="orgeef22cf">
   String.replace(term, ~r/\W/u, "")
 </pre>
 
@@ -1711,7 +1890,7 @@ Also we need to allow to search by prefix - beginning of the word. Let&rsquo;s
 add :* to our search term*:
 </p>
 
-<pre class="example" id="org926a5e6">
+<pre class="example" id="org6829647">
   defp prefix_search(term), do: String.replace(term, ~r/\W/u, "") &lt;&gt; ":*"
 </pre>
 
@@ -1720,7 +1899,7 @@ Now we need to implement the search by using Ecto&rsquo;s fragment macro and
 to<sub>tsquery</sub> PostgreSQL function:
 </p>
 
-<pre class="example" id="org8f71e7a">
+<pre class="example" id="orgde667c7">
   def run(query, search_term) do
       where(
         query,
@@ -1738,7 +1917,7 @@ Let&rsquo;s take a look at the implementation. At first, we need to compose a
 search token by joining columns:
 </p>
 
-<pre class="example" id="orgc557b10">
+<pre class="example" id="org44ec9be">
   to_tsvector('english', username || ' ' || first_name || ' ' || coalesce(last_name, ' ')) @@ to_tsquery(?)
 </pre>
 
@@ -1752,7 +1931,7 @@ But this result won&rsquo;t be as fast as we wanted. Let&rsquo;s suppose that we
 have <i>11K</i> users:
 </p>
 
-<pre class="example" id="org3ef957c">
+<pre class="example" id="orge13fce4">
   User |&gt; App.Users.Search.run("meta") |&gt; Repo.explain
 
   ###
@@ -1760,7 +1939,7 @@ have <i>11K</i> users:
   (((((username)::text || ' '::text) || (first_name)::text) || ' '::text)
   || (COALESCE(last_name, ' '::character varying))::text)
   @@ to_tsquery('meta:*'::text))
-
+   
   Rows Removed by Filter: 11285
   Planning time: 1.640 ms
   Execution time: 62.235 ms
@@ -1778,7 +1957,7 @@ order to improve performance of full-text queries. Let&rsquo;s modify our
 transaction:
 </p>
 
-<pre class="example" id="orgc40f26c">
+<pre class="example" id="org3806592">
   defmodule App.Repo.Migrations.IntroducePgSearch do
     @moduledoc """
     Create postgres extension and indices
@@ -1806,7 +1985,7 @@ transaction:
 Now run mix do ecto.rollback, eco.migrate and try to run the search:
 </p>
 
-<pre class="example" id="orgec04c0a">
+<pre class="example" id="orgaa915df">
   User |&gt; App.Users.Search.run("meta") |&gt; Repo.explain
 
   ###
@@ -1844,30 +2023,17 @@ Happy hacking!
 </p>
 </div>
 </div>
-<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-elixir.html">elixir</a> <a href="https://neiro.io/tag-query.html">query</a> <a href="https://neiro.io/tag-postgres.html">postgres</a> <a href="https://neiro.io/tag-search.html">search</a> </div>]]>
-</description>
-      <category>
-        <![CDATA[elixir]]>
-</category>
-      <category>
-        <![CDATA[query]]>
-</category>
-      <category>
-        <![CDATA[postgres]]>
-</category>
-      <category>
-        <![CDATA[search]]>
-</category>
-      <link>
-      https://neiro.io/2018-01-21-postgres-full-text-search-using-ecto.md.html</link>
-      <pubDate>Sun, 21 Jan 2018 10:00:00 +0100</pubDate>
-    </item>
-    <item>
-      <title>
-        <![CDATA[Building dynamic queries with Ecto]]>
-</title>
-      <description>
-        <![CDATA[
+<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-elixir.html">elixir</a> <a href="https://neiro.io/tag-query.html">query</a> <a href="https://neiro.io/tag-postgres.html">postgres</a> <a href="https://neiro.io/tag-search.html">search</a> </div>]]></description>
+  <category><![CDATA[elixir]]></category>
+  <category><![CDATA[query]]></category>
+  <category><![CDATA[postgres]]></category>
+  <category><![CDATA[search]]></category>
+  <link>https://neiro.io/2018-01-21-postgres-full-text-search-using-ecto.md.html</link>
+  <pubDate>Sun, 21 Jan 2018 10:00:00 +0100</pubDate>
+</item>
+<item>
+  <title><![CDATA[Building dynamic queries with Ecto]]></title>
+  <description><![CDATA[
 <nav id="table-of-contents">
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
@@ -1918,7 +2084,7 @@ Let&rsquo;s create a new Elixir module that will implement logic of our future
 dynamic query. I will name it <code>FilterQuery</code> :
 </p>
 
-<pre class="example" id="org86be31b">
+<pre class="example" id="org7f2fa77">
   defmodule FilterQuery do
     @moduledoc """
     Query that accepts inclusion or exclusion parameters and filters by this parameters
@@ -1934,9 +2100,9 @@ accepts incoming query, inclusion and exclusion parameters as the
 arguments:
 </p>
 
-<pre class="example" id="orgeaea6de">
+<pre class="example" id="orgdd4474f">
   @spec filter(Ecto.Query.t, map, map) :: Ecto.Query.t
-  def filter(query, inclusion, exclusion)
+  def filter(query, inclusion, exclusion) 
 </pre>
 
 <p>
@@ -1945,7 +2111,7 @@ we need to build two lists of dynamic queries both for inclusion and
 exclusion parameters:
 </p>
 
-<pre class="example" id="org3135658">
+<pre class="example" id="orgbc468d7">
   queries = dynamic_query(:inclusion, inclusion) ++ dynamic_query(:exclusion, exclusion)
 </pre>
 
@@ -1954,7 +2120,7 @@ Now we need to merge all these dynamic queries into a new big one. It
 can be implemented using <code>Enum.reduce</code> :
 </p>
 
-<pre class="example" id="orgaf0e8e7">
+<pre class="example" id="org87772e3">
   Enum.reduce(queries, query, fn(q, acc) -&gt; where(acc, ^q) end)
 </pre>
 
@@ -1974,7 +2140,7 @@ query. However, the devil&rsquo;s always in the details. We need to hide
 implementation in private functions:
 </p>
 
-<pre class="example" id="org97cebb0">
+<pre class="example" id="orgb3b7884">
   defp dynamic_query(type, filters) when type in [:inclusion, :exclusion] do
     for {attr, values} &lt;- filters, present?(values),
       do: dynamic_query(type, attr, values)
@@ -1992,7 +2158,7 @@ need to check if these lists contain values or we shall skip building
 query:
 </p>
 
-<pre class="example" id="org15233fa">
+<pre class="example" id="org18e7b36">
   defp present?(list) when is_list(list), do: length(list) &gt; 0
   defp present?(_), do: false
 </pre>
@@ -2008,7 +2174,7 @@ first argument and builds dynamic query for the second one. Also notice
 that we need to use <code>field</code> macro to dynamically access attribute name:
 </p>
 
-<pre class="example" id="org44c62e9">
+<pre class="example" id="org7f2eedc">
   defp dynamic_query(:inclusion, attr, values) do
     dynamic([q], field(q, ^attr) in ^values)
   end
@@ -2042,7 +2208,7 @@ what you really wished? Guess not :)
 So let&rsquo;s restrict filtered attributes by using <code>__using__</code> macro:
 </p>
 
-<pre class="example" id="orgb52c252">
+<pre class="example" id="orgc565302">
   defmacro __using__(attributes: allowed_attributes) do
   ...
 
@@ -2070,7 +2236,7 @@ Voila! No one ever will find out how your users relationships are going.
 Now let&rsquo;s take a quick look at our dynamic filter query:
 </p>
 
-<pre class="example" id="org28d1371">
+<pre class="example" id="orgd77907d">
   defmodule FilterQuery do
     @moduledoc """
     Query that accepts inclusion or exclusion parameters and filters by this parameters
@@ -2134,7 +2300,7 @@ our query and set the list of allowed attributes through <code>use</code>
 construction:
 </p>
 
-<pre class="example" id="org56bbda5">
+<pre class="example" id="org0c9db4b">
   {:ok, _} = Application.ensure_all_started(:ex_machina)
 
   defmodule Example do
@@ -2201,27 +2367,16 @@ Happy hacking!
 </p>
 </div>
 </div>
-<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-elixir.html">elixir</a> <a href="https://neiro.io/tag-ecto.html">ecto</a> <a href="https://neiro.io/tag-query.html">query</a> </div>]]>
-</description>
-      <category>
-        <![CDATA[elixir]]>
-</category>
-      <category>
-        <![CDATA[ecto]]>
-</category>
-      <category>
-        <![CDATA[query]]>
-</category>
-      <link>
-      https://neiro.io/2017-09-16-building-dynamic-queries-with-ecto.md.html</link>
-      <pubDate>Sat, 16 Sep 2017 10:00:00 +0200</pubDate>
-    </item>
-    <item>
-      <title>
-        <![CDATA[How are are using Elixir]]>
-</title>
-      <description>
-        <![CDATA[
+<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-elixir.html">elixir</a> <a href="https://neiro.io/tag-ecto.html">ecto</a> <a href="https://neiro.io/tag-query.html">query</a> </div>]]></description>
+  <category><![CDATA[elixir]]></category>
+  <category><![CDATA[ecto]]></category>
+  <category><![CDATA[query]]></category>
+  <link>https://neiro.io/2017-09-16-building-dynamic-queries-with-ecto.md.html</link>
+  <pubDate>Sat, 16 Sep 2017 10:00:00 +0200</pubDate>
+</item>
+<item>
+  <title><![CDATA[How are are using Elixir]]></title>
+  <description><![CDATA[
 <nav id="table-of-contents">
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
@@ -2258,7 +2413,7 @@ We&rsquo;re operating the huge amount of photos distributed in time by hours,
 days, months or even years. It would be nice if we could see these
 photos through time to see progress, changes or development of
 something. Therefore we can just clue these images into one
-videoâ¬`&#x2014;â¬`time lapse. However, this feature isn&rsquo;t that simple as it
+videoâ€Š&#x2014;â€Štime lapse. However, this feature isn&rsquo;t that simple as it
 sounds. The entire build process is multi-staged and sophisticated
 because it requires operations with external resources, data storages,
 system utilities. We need to make several steps before we get the time
@@ -2273,7 +2428,7 @@ following this conditions.</li>
 <li>We need to download preferred images each one by one in the fastest
 and most reliable way. We need to fetch them in parallel but at the
 same time we must be sure that all of downloads have been completed
-successfullyâ¬`&#x2014;â¬`we can&rsquo;t make time lapse with broken files or
+successfullyâ€Š&#x2014;â€Šwe can&rsquo;t make time lapse with broken files or
 incomplete data.</li>
 <li>Finally we need to create a video from downloaded images. It&rsquo;s an
 external process that is most important and fragile in entire
@@ -2435,21 +2590,14 @@ information about this in our next post.
 </p>
 </div>
 </div>
-<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-elixir.html">elixir</a> </div>]]>
-</description>
-      <category>
-        <![CDATA[elixir]]>
-</category>
-      <link>
-      https://neiro.io/2017-03-14-how-we-are-using-elixir.md.html</link>
-      <pubDate>Tue, 14 Mar 2017 10:00:00 +0100</pubDate>
-    </item>
-    <item>
-      <title>
-        <![CDATA[Query objects in Ruby on Rails]]>
-</title>
-      <description>
-        <![CDATA[
+<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-elixir.html">elixir</a> </div>]]></description>
+  <category><![CDATA[elixir]]></category>
+  <link>https://neiro.io/2017-03-14-how-we-are-using-elixir.md.html</link>
+  <pubDate>Tue, 14 Mar 2017 10:00:00 +0100</pubDate>
+</item>
+<item>
+  <title><![CDATA[Query objects in Ruby on Rails]]></title>
+  <description><![CDATA[
 <nav id="table-of-contents">
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
@@ -2483,7 +2631,7 @@ queries in plain Ruby.
 </p>
 
 
-<figure id="org65b1dcd">
+<figure id="org80086cc">
 <img src="https://cdn-images-1.medium.com/max/1600/1*-oIlwIWlt0BDN4b5a9rRCQ.png" alt="1*-oIlwIWlt0BDN4b5a9rRCQ.png">
 
 </figure>
@@ -2571,7 +2719,7 @@ class Article &lt; ActiveRecord::Base
 SORT<sub>OPTIONS</sub> = %w(by<sub>date</sub> by<sub>title</sub> by<sub>author</sub>).freeze
 </p>
 
-<pre class="example" id="orgcad56d9">
+<pre class="example" id="org19e36d0">
   def initialize(params = {}, relation = Article.includes(:user))
     @relation = relation
     @params = params
@@ -2601,7 +2749,7 @@ index @articles = OrderedArticlesQuery.new(sort<sub>query</sub><sub>params</sub>
 end
 </p>
 
-<pre class="example" id="org6088d49">
+<pre class="example" id="org1b08963">
   private
 
   def sort_query_params
@@ -2890,27 +3038,16 @@ applications. Good luck and happy coding!
 </div>
 </div>
 </div>
-<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-ruby.html">ruby</a> <a href="https://neiro.io/tag-rails.html">rails</a> <a href="https://neiro.io/tag-query.html">query</a> </div>]]>
-</description>
-      <category>
-        <![CDATA[ruby]]>
-</category>
-      <category>
-        <![CDATA[rails]]>
-</category>
-      <category>
-        <![CDATA[query]]>
-</category>
-      <link>
-      https://neiro.io/2016-10-05-query-objects-in-ruby-on-rails.md.html</link>
-      <pubDate>Wed, 05 Oct 2016 10:00:00 +0200</pubDate>
-    </item>
-    <item>
-      <title>
-        <![CDATA[Markov chains in Elixir]]>
-</title>
-      <description>
-        <![CDATA[
+<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-ruby.html">ruby</a> <a href="https://neiro.io/tag-rails.html">rails</a> <a href="https://neiro.io/tag-query.html">query</a> </div>]]></description>
+  <category><![CDATA[ruby]]></category>
+  <category><![CDATA[rails]]></category>
+  <category><![CDATA[query]]></category>
+  <link>https://neiro.io/2016-10-05-query-objects-in-ruby-on-rails.md.html</link>
+  <pubDate>Wed, 05 Oct 2016 10:00:00 +0200</pubDate>
+</item>
+<item>
+  <title><![CDATA[Markov chains in Elixir]]></title>
+  <description><![CDATA[
 <nav id="table-of-contents">
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
@@ -2934,7 +3071,7 @@ chains as statistical models for real-world processes.
 </p>
 
 
-<figure id="orgcf23e08">
+<figure id="org8091ed3">
 <img src="https://upload.wikimedia.org/wikipedia/commons/7/7a/Markov_Chain_weather_model_matrix_as_a_graph.png" alt="Markov_Chain_weather_model_matrix_as_a_graph.png">
 
 <figcaption><span class="figure-number">Figure 1: </span>Simple Markov chain</figcaption>
@@ -2954,7 +3091,7 @@ within Markov chain.
 Let&rsquo;s create an entry point of new application:
 </p>
 
-<pre class="example" id="orgc0b3545">
+<pre class="example" id="org1075367">
     # lib/elixir markov chain.ex
     defmodule ElixirMarkovChain do
       alias ElixirMarkovChain.Model
@@ -2979,7 +3116,7 @@ At first, to process the source file for output sentences, we need to
 tokenize it:
 </p>
 
-<pre class="example" id="orgb018172">
+<pre class="example" id="org7cd34df">
     # lib/elixir_markov_chain/tokenizer.ex
     defmodule ElixirMarkovChain.Tokenizer do
       def tokenize(text) do
@@ -2996,7 +3133,7 @@ Next we need to realize Markov model. We&rsquo;ll use agents to share state in
 application:
 </p>
 
-<pre class="example" id="org42ab4c1">
+<pre class="example" id="orgb4597e7">
     # lib/elixir_markov_chain/model.ex
     defmodule ElixirMarkovChain.Model do
       import ElixirMarkovChain.Tokenizer
@@ -3054,7 +3191,7 @@ When our Markov model is done, we can use it in application. For this
 example, we&rsquo;ll build a random sentence generator based on text source:
 </p>
 
-<pre class="example" id="orgcdf82e1">
+<pre class="example" id="org88069ef">
     # lib/elixir_markov_chain/generator.ex
     defmodule ElixirMarkovChain.Generator do
       alias ElixirMarkovChain.Model
@@ -3102,7 +3239,7 @@ Now, when basic logic is implemented, we need to fill <code>process_source</code
 function:
 </p>
 
-<pre class="example" id="org98ebf08">
+<pre class="example" id="org5c71903">
     # lib/elixir_markov_chain.ex
     defp process_source(text) do
       {:ok, model} = Model.start_link
@@ -3166,24 +3303,15 @@ application please visit
 </p>
 </div>
 </div>
-<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-elixir.html">elixir</a> <a href="https://neiro.io/tag-functional.html">functional</a> </div>]]>
-</description>
-      <category>
-        <![CDATA[elixir]]>
-</category>
-      <category>
-        <![CDATA[functional]]>
-</category>
-      <link>
-      https://neiro.io/2016-07-31-markov-chains-in-elixir.md.html</link>
-      <pubDate>Sun, 31 Jul 2016 10:00:00 +0200</pubDate>
-    </item>
-    <item>
-      <title>
-        <![CDATA[Pattern matching in Elixir]]>
-</title>
-      <description>
-        <![CDATA[
+<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-elixir.html">elixir</a> <a href="https://neiro.io/tag-functional.html">functional</a> </div>]]></description>
+  <category><![CDATA[elixir]]></category>
+  <category><![CDATA[functional]]></category>
+  <link>https://neiro.io/2016-07-31-markov-chains-in-elixir.md.html</link>
+  <pubDate>Sun, 31 Jul 2016 10:00:00 +0200</pubDate>
+</item>
+<item>
+  <title><![CDATA[Pattern matching in Elixir]]></title>
+  <description><![CDATA[
 <nav id="table-of-contents">
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
@@ -3213,7 +3341,7 @@ Elixir equals sign is actually <i>match operator</i>. Using this operator we
 can assign and match values:
 </p>
 
-<pre class="example" id="org5815962">
+<pre class="example" id="org73d8c2f">
   x = 1
   1 = x
   x # 1
@@ -3223,7 +3351,7 @@ can assign and match values:
 But if we will provide invalid pattern?
 </p>
 
-<pre class="example" id="orgecf5fa2">
+<pre class="example" id="org4903563">
   2 = x # ** (MatchError) no match of right hand side value: 1
 </pre>
 
@@ -3233,7 +3361,7 @@ match operator are different - they don&rsquo;t match. You can assign variable
 only on the left side of match operator:
 </p>
 
-<pre class="example" id="org0f7375d">
+<pre class="example" id="org24ebd13">
   true = undefined # * (CompileError) undefined function undefined/0
 </pre>
 </div>
@@ -3247,7 +3375,7 @@ You can use match operator not for assign only - it&rsquo;s useful for
 destructuring operations:
 </p>
 
-<pre class="example" id="orgb9d9eb5">
+<pre class="example" id="org34ff6bd">
     # Lists
     list = [1, 2]
     [1 | tail] = list
@@ -3270,7 +3398,7 @@ destructuring operations:
 You can also use pattern matching with functions:
 </p>
 
-<pre class="example" id="orgfe31baf">
+<pre class="example" id="org9219484">
   defmodule HelloWorld do
     def hello(:world), do: "Hello, world!"
     def hello(name), do: "Hello, #{ name }!"
@@ -3291,7 +3419,7 @@ You can also use pattern matching with functions:
 You can rebound Elixir&rsquo;s variables:
 </p>
 
-<pre class="example" id="org78e719f">
+<pre class="example" id="orgd4bb0db">
   x = 1
   x = 2
   x # 2
@@ -3302,7 +3430,7 @@ If you want to provide existing variable&rsquo;s value in pattern matching,
 then you should use <i>pin operator</i>:
 </p>
 
-<pre class="example" id="orgf079b4d">
+<pre class="example" id="org1c13be6">
   x = 1
   ^x = 2 # MatchError because 1 != 2
   [^x, y] = [1, 2] # [1, 2]
@@ -3323,24 +3451,15 @@ operate basic values, complex data structures or even functions.
 </p>
 </div>
 </div>
-<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-elixir.html">elixir</a> <a href="https://neiro.io/tag-functional.html">functional</a> </div>]]>
-</description>
-      <category>
-        <![CDATA[elixir]]>
-</category>
-      <category>
-        <![CDATA[functional]]>
-</category>
-      <link>
-      https://neiro.io/2016-05-31-pattern-matching-in-elixir.md.html</link>
-      <pubDate>Tue, 31 May 2016 10:00:00 +0200</pubDate>
-    </item>
-    <item>
-      <title>
-        <![CDATA[Introduction to Elixir]]>
-</title>
-      <description>
-        <![CDATA[
+<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-elixir.html">elixir</a> <a href="https://neiro.io/tag-functional.html">functional</a> </div>]]></description>
+  <category><![CDATA[elixir]]></category>
+  <category><![CDATA[functional]]></category>
+  <link>https://neiro.io/2016-05-31-pattern-matching-in-elixir.md.html</link>
+  <pubDate>Tue, 31 May 2016 10:00:00 +0200</pubDate>
+</item>
+<item>
+  <title><![CDATA[Introduction to Elixir]]></title>
+  <description><![CDATA[
 <nav id="table-of-contents">
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
@@ -3422,7 +3541,7 @@ modules in Elixir.</li>
 <div id="outline-container-code-examples" class="outline-2">
 <h2 id="code-examples"><span class="section-number-2">4</span> Code examples</h2>
 <div class="outline-text-2" id="text-code-examples">
-<pre class="example" id="org6e160c8">
+<pre class="example" id="orgf4b5de0">
     IO.puts "Hello Elixir!" # Hello Elixir!
 
     # Integers
@@ -3495,24 +3614,15 @@ modules in your projects with modern syntax.
 </p>
 </div>
 </div>
-<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-elixir.html">elixir</a> <a href="https://neiro.io/tag-functional.html">functional</a> </div>]]>
-</description>
-      <category>
-        <![CDATA[elixir]]>
-</category>
-      <category>
-        <![CDATA[functional]]>
-</category>
-      <link>
-      https://neiro.io/2016-04-24-introduction-to-elixir.md.html</link>
-      <pubDate>Sun, 24 Apr 2016 10:00:00 +0200</pubDate>
-    </item>
-    <item>
-      <title>
-        <![CDATA[Partial function application and currying in Ruby]]>
-</title>
-      <description>
-        <![CDATA[
+<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-elixir.html">elixir</a> <a href="https://neiro.io/tag-functional.html">functional</a> </div>]]></description>
+  <category><![CDATA[elixir]]></category>
+  <category><![CDATA[functional]]></category>
+  <link>https://neiro.io/2016-04-24-introduction-to-elixir.md.html</link>
+  <pubDate>Sun, 24 Apr 2016 10:00:00 +0200</pubDate>
+</item>
+<item>
+  <title><![CDATA[Partial function application and currying in Ruby]]></title>
+  <description><![CDATA[
 <nav id="table-of-contents">
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
@@ -3663,24 +3773,15 @@ with procs or methods to write eloquent and powerful code.
 </p>
 </div>
 </div>
-<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-ruby.html">ruby</a> <a href="https://neiro.io/tag-functional.html">functional</a> </div>]]>
-</description>
-      <category>
-        <![CDATA[ruby]]>
-</category>
-      <category>
-        <![CDATA[functional]]>
-</category>
-      <link>
-      https://neiro.io/2016-03-08-partial-function-application-and-currying-in-ruby.md.html</link>
-      <pubDate>Tue, 08 Mar 2016 10:00:00 +0100</pubDate>
-    </item>
-    <item>
-      <title>
-        <![CDATA[Immutable collections in Ruby with Hamster]]>
-</title>
-      <description>
-        <![CDATA[
+<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-ruby.html">ruby</a> <a href="https://neiro.io/tag-functional.html">functional</a> </div>]]></description>
+  <category><![CDATA[ruby]]></category>
+  <category><![CDATA[functional]]></category>
+  <link>https://neiro.io/2016-03-08-partial-function-application-and-currying-in-ruby.md.html</link>
+  <pubDate>Tue, 08 Mar 2016 10:00:00 +0100</pubDate>
+</item>
+<item>
+  <title><![CDATA[Immutable collections in Ruby with Hamster]]></title>
+  <description><![CDATA[
 <nav id="table-of-contents">
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
@@ -3854,27 +3955,16 @@ documentation</a>.
 </p>
 </div>
 </div>
-<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-ruby.html">ruby</a> <a href="https://neiro.io/tag-functional.html">functional</a> <a href="https://neiro.io/tag-immutable.html">immutable</a> </div>]]>
-</description>
-      <category>
-        <![CDATA[ruby]]>
-</category>
-      <category>
-        <![CDATA[functional]]>
-</category>
-      <category>
-        <![CDATA[immutable]]>
-</category>
-      <link>
-      https://neiro.io/2016-02-14-immutable-collections-in-ruby-with-hamster.html</link>
-      <pubDate>Sun, 14 Feb 2016 10:00:00 +0100</pubDate>
-    </item>
-    <item>
-      <title>
-        <![CDATA[High level Node.JS streams]]>
-</title>
-      <description>
-        <![CDATA[
+<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-ruby.html">ruby</a> <a href="https://neiro.io/tag-functional.html">functional</a> <a href="https://neiro.io/tag-immutable.html">immutable</a> </div>]]></description>
+  <category><![CDATA[ruby]]></category>
+  <category><![CDATA[functional]]></category>
+  <category><![CDATA[immutable]]></category>
+  <link>https://neiro.io/2016-02-14-immutable-collections-in-ruby-with-hamster.html</link>
+  <pubDate>Sun, 14 Feb 2016 10:00:00 +0100</pubDate>
+</item>
+<item>
+  <title><![CDATA[High level Node.JS streams]]></title>
+  <description><![CDATA[
 <nav id="table-of-contents">
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
@@ -4085,24 +4175,15 @@ docs</a>.
 </p>
 </div>
 </div>
-<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-javascript.html">javascript</a> <a href="https://neiro.io/tag-functional.html">functional</a> </div>]]>
-</description>
-      <category>
-        <![CDATA[javascript]]>
-</category>
-      <category>
-        <![CDATA[functional]]>
-</category>
-      <link>
-      https://neiro.io/2016-01-28-high-level-nodejs-streams-with-highland.html</link>
-      <pubDate>Thu, 28 Jan 2016 10:00:00 +0100</pubDate>
-    </item>
-    <item>
-      <title>
-        <![CDATA[Trine util library]]>
-</title>
-      <description>
-        <![CDATA[
+<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-javascript.html">javascript</a> <a href="https://neiro.io/tag-functional.html">functional</a> </div>]]></description>
+  <category><![CDATA[javascript]]></category>
+  <category><![CDATA[functional]]></category>
+  <link>https://neiro.io/2016-01-28-high-level-nodejs-streams-with-highland.html</link>
+  <pubDate>Thu, 28 Jan 2016 10:00:00 +0100</pubDate>
+</item>
+<item>
+  <title><![CDATA[Trine util library]]></title>
+  <description><![CDATA[
 <nav id="table-of-contents">
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
@@ -4294,24 +4375,15 @@ more about Trine, you can take a look at it&rsquo;s
 </p>
 </div>
 </div>
-<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-javascript.html">javascript</a> <a href="https://neiro.io/tag-functional.html">functional</a> </div>]]>
-</description>
-      <category>
-        <![CDATA[javascript]]>
-</category>
-      <category>
-        <![CDATA[functional]]>
-</category>
-      <link>
-      https://neiro.io/2015-12-31-trine-utility-library.html</link>
-      <pubDate>Thu, 31 Dec 2015 10:00:00 +0100</pubDate>
-    </item>
-    <item>
-      <title>
-        <![CDATA[#+title: Functional Ruby gem]]>
-</title>
-      <description>
-        <![CDATA[
+<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-javascript.html">javascript</a> <a href="https://neiro.io/tag-functional.html">functional</a> </div>]]></description>
+  <category><![CDATA[javascript]]></category>
+  <category><![CDATA[functional]]></category>
+  <link>https://neiro.io/2015-12-31-trine-utility-library.html</link>
+  <pubDate>Thu, 31 Dec 2015 10:00:00 +0100</pubDate>
+</item>
+<item>
+  <title><![CDATA[#+title: Functional Ruby gem]]></title>
+  <description><![CDATA[
 <nav id="table-of-contents">
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
@@ -4504,24 +4576,15 @@ write code in more functional style. You can find more information in
 </p>
 </div>
 </div>
-<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-ruby.html">ruby</a> <a href="https://neiro.io/tag-functional.html">functional</a> </div>]]>
-</description>
-      <category>
-        <![CDATA[ruby]]>
-</category>
-      <category>
-        <![CDATA[functional]]>
-</category>
-      <link>
-      https://neiro.io/2015-11-28-functional-ruby-gem.html</link>
-      <pubDate>Sat, 28 Nov 2015 10:00:00 +0100</pubDate>
-    </item>
-    <item>
-      <title>
-        <![CDATA[Type checking ruby with contracts]]>
-</title>
-      <description>
-        <![CDATA[
+<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-ruby.html">ruby</a> <a href="https://neiro.io/tag-functional.html">functional</a> </div>]]></description>
+  <category><![CDATA[ruby]]></category>
+  <category><![CDATA[functional]]></category>
+  <link>https://neiro.io/2015-11-28-functional-ruby-gem.html</link>
+  <pubDate>Sat, 28 Nov 2015 10:00:00 +0100</pubDate>
+</item>
+<item>
+  <title><![CDATA[Type checking ruby with contracts]]></title>
+  <description><![CDATA[
 <nav id="table-of-contents">
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
@@ -4728,641 +4791,446 @@ tutorial</a>.
 </p>
 </div>
 </div>
-<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-:ruby:contracts:functional:typing.html">:ruby:contracts:functional:typing</a> </div>]]>
-</description>
-      <category>
-        <![CDATA[:ruby:contracts:functional:typing]]>
-</category>
-      <link>
-      https://neiro.io/2015-10-24-type-checking-for-ruby-with-contracts.html</link>
-      <pubDate>Sat, 24 Oct 2015 10:00:00 +0200</pubDate>
-    </item>
-    <item>
-      <title>
-        <![CDATA[Functional programming with Ramda.js]]>
-</title>
-      <description>
-        <![CDATA[
+<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-:ruby:contracts:functional:typing.html">:ruby:contracts:functional:typing</a> </div>]]></description>
+  <category><![CDATA[:ruby:contracts:functional:typing]]></category>
+  <link>https://neiro.io/2015-10-24-type-checking-for-ruby-with-contracts.html</link>
+  <pubDate>Sat, 24 Oct 2015 10:00:00 +0200</pubDate>
+</item>
+<item>
+  <title><![CDATA[Functional programming with Ramda.js]]></title>
+  <description><![CDATA[
+<p>
+JavaScript is one of the most dynamic, flexible programming
+languages. It supports multiple programming paradigms - imperative,
+object (prototype) oriented, scripting, and functional.<br>
+Let&rsquo; see what JavaScript has common with functional programming
+languages:
+</p>
 
-    <p>JavaScript is one of the most dynamic, flexible programming
-    languages. It supports multiple programming paradigms -
-    imperative, object (prototype) oriented, scripting, and
-    functional.<br>
-    Let&#8217; see what JavaScript has common with functional
-    programming languages:</p>
+<ul class="org-ul">
+<li>First-class functions - functions are objects themselves</li>
+<li>Anonymous functions - functions can be unnamed and nested</li>
+<li>Closures - functions that refer to independent variables, that were
+created in other scope</li>
+<li>Recursion - function can call itself</li>
+</ul>
 
-    <ul class="org-ul">
-      <li>First-class functions - functions are objects
-      themselves</li>
+<p>
+By the way, there are some significant differences:
+</p>
 
-      <li>Anonymous functions - functions can be unnamed and
-      nested</li>
+<ul class="org-ul">
+<li>Immutability - objects, functions in JavaScript can be modified after
+creation</li>
+<li>Pure functions - JavaScript functions often depends on outside scope,
+and it&rsquo;s hard to create function that always returns the same result
+with given same parameters</li>
+<li>Strong (and static) typing - JavaScript allows use a value of one type
+as if it were a value of another type, and has not static typing
+system</li>
+</ul>
 
-      <li>Closures - functions that refer to independent variables,
-      that were created in other scope</li>
+<p>
+JavaScript ecosystem has great tools for advanced use of functional
+programming features, such as <i>Underscore</i> and <i>Lodash</i> - most popular
+toolkit libraries. But if you want use library, that was specifically
+designed for functional programming, you may have to look at
+<a href="http://ramdajs.com/0.17/index.html">Ramda.js</a> .
+</p>
 
-      <li>Recursion - function can call itself</li>
-    </ul>
+<p>
+Ramda.js has some distinguishing features:
+</p>
 
-    <p>By the way, there are some significant differences:</p>
+<ul class="org-ul">
+<li>It&rsquo;s designed in pure functional style, with immutability and
+side-effects free functions, that helps you to write simple and
+effective code.</li>
+<li>Parameters in functions have the same order, with key params at first
+and data at last</li>
+<li>Ramda.js functions are automatically curried, that allows you to
+easily build new functions from old ones</li>
+</ul>
 
-    <ul class="org-ul">
-      <li>Immutability - objects, functions in JavaScript can be
-      modified after creation</li>
+<p>
+To show examples of Ramda.js using, i will use io.js 3.2 and Babel, so
+let&rsquo;s create new <i>.js</i> file:
+</p>
 
-      <li>Pure functions - JavaScript functions often depends on
-      outside scope, and it&#8217;s hard to create function that
-      always returns the same result with given same
-      parameters</li>
+<div class="org-src-container">
+<pre class="src src-javascript"><span style="color: #5a5b5a;">#!/usr/bin/env babel-node</span>
 
-      <li>Strong (and static) typing - JavaScript allows use a
-      value of one type as if it were a value of another type, and
-      has not static typing system</li>
-    </ul>
-
-    <p>JavaScript ecosystem has great tools for advanced use of
-    functional programming features, such as <i>Underscore</i> and
-    <i>Lodash</i> - most popular toolkit libraries. But if you want
-    use library, that was specifically designed for functional
-    programming, you may have to look at <a href=
-    "http://ramdajs.com/0.17/index.html">Ramda.js</a> .</p>
-
-    <p>Ramda.js has some distinguishing features:</p>
-
-    <ul class="org-ul">
-      <li>It&#8217;s designed in pure functional style, with
-      immutability and side-effects free functions, that helps you
-      to write simple and effective code.</li>
-
-      <li>Parameters in functions have the same order, with key
-      params at first and data at last</li>
-
-      <li>Ramda.js functions are automatically curried, that allows
-      you to easily build new functions from old ones</li>
-    </ul>
-
-    <p>To show examples of Ramda.js using, i will use io.js 3.2 and
-    Babel, so let&#8217;s create new <i>.js</i> file:</p>
-
-    <div class="org-src-container">
-      <pre class="src src-javascript">
-<span style="color: #5a5b5a;">#!/usr/bin/env babel-node</span>
-
-<span style="color: #b294bb;">import</span> R from <span style=
-"color: #b5bd68;">'ramda'</span>;
+<span style="color: #b294bb;">import</span> R from <span style="color: #b5bd68;">'ramda'</span>;
 </pre>
-    </div>
+</div>
 
-    <p>Ramda.js API has some general use functions:</p>
+<p>
+Ramda.js API has some general use functions:
+</p>
 
-    <div class="org-src-container">
-      <pre class="src src-javascript">
-<span style="color: #5a5b5a;">// </span><span style=
-"color: #5a5b5a;">Typing let str = 'test';</span>
-R.is(String, str); <span style=
-"color: #5a5b5a;">//</span><span style=
-"color: #5a5b5a;">=&gt; true // The same with currying</span>
-R.is(String)(str); <span style=
-"color: #5a5b5a;">//</span><span style=
-"color: #5a5b5a;">=&gt; true</span>
-<span style="color: #b294bb;">let</span> <span style=
-"color: #cc6666;">isString</span> = R.is(String); isString(<span style="color: #b5bd68;">'string'</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; true</span>
-R.type(isString); <span style=
-"color: #5a5b5a;">//</span><span style=
-"color: #5a5b5a;">=&gt; String</span>
+<div class="org-src-container">
+<pre class="src src-javascript">
+<span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">Typing let str = 'test';</span>
+R.is(String, str); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; true // The same with currying</span>
+R.is(String)(str); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; true</span>
+<span style="color: #b294bb;">let</span> <span style="color: #cc6666;">isString</span> = R.is(String); isString(<span style="color: #b5bd68;">'string'</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; true</span>
+R.type(isString); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; String</span>
 
-<span style="color: #5a5b5a;">// </span><span style=
-"color: #5a5b5a;">Math</span>
-R.add(<span style=
-"color: #de935f; font-weight: bold;">100</span>, <span style=
-"color: #de935f; font-weight: bold;">500</span>); <span style=
-"color: #5a5b5a;">//</span><span style=
-"color: #5a5b5a;">=&gt; 600</span>
-R.add(<span style=
-"color: #de935f; font-weight: bold;">100</span>)(<span style=
-"color: #de935f; font-weight: bold;">500</span>); <span style=
-"color: #5a5b5a;">//</span><span style=
-"color: #5a5b5a;">=&gt; 600</span>
-R.mean([<span style=
-"color: #de935f; font-weight: bold;">2</span>,<span style=
-"color: #de935f; font-weight: bold;">3</span>,<span style=
-"color: #de935f; font-weight: bold;">7</span>]); <span style=
-"color: #5a5b5a;">//</span><span style=
-"color: #5a5b5a;">=&gt; 4 R.sum(R.range(1, 5)); //=&gt; 10</span>
+<span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">Math</span>
+R.add(<span style="color: #de935f; font-weight: bold;">100</span>, <span style="color: #de935f; font-weight: bold;">500</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 600</span>
+R.add(<span style="color: #de935f; font-weight: bold;">100</span>)(<span style="color: #de935f; font-weight: bold;">500</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 600</span>
+R.mean([<span style="color: #de935f; font-weight: bold;">2</span>,<span style="color: #de935f; font-weight: bold;">3</span>,<span style="color: #de935f; font-weight: bold;">7</span>]); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 4 R.sum(R.range(1, 5)); //=&gt; 10</span>
 
-<span style="color: #5a5b5a;">// </span><span style=
-"color: #5a5b5a;">Logic</span>
-R.and(<span style="color: #de935f;">true</span>, <span style=
-"color: #de935f;">false</span>); <span style=
-"color: #5a5b5a;">//</span><span style=
-"color: #5a5b5a;">=&gt; false</span>
-R.and([])(<span style=
-"color: #de935f; font-weight: bold;">0</span>); <span style=
-"color: #5a5b5a;">//</span><span style=
-"color: #5a5b5a;">=&gt; 0</span>
-R.not(<span style=
-"color: #de935f; font-weight: bold;">1</span>);<span style=
-"color: #5a5b5a;">//</span><span style=
-"color: #5a5b5a;">=&gt; false</span>
-R.both(isString, R.is(String))(str); <span style=
-"color: #5a5b5a;">// </span><span style=
-"color: #5a5b5a;">=&gt; true</span>
+<span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">Logic</span>
+R.and(<span style="color: #de935f;">true</span>, <span style="color: #de935f;">false</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; false</span>
+R.and([])(<span style="color: #de935f; font-weight: bold;">0</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 0</span>
+R.not(<span style="color: #de935f; font-weight: bold;">1</span>);<span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; false</span>
+R.both(isString, R.is(String))(str); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">=&gt; true</span>
 </pre>
-    </div>
+</div>
 
-    <p>Like the <i>Underscore</i> and <i>Lodash</i>, Ramda has
-    collection helper functions:</p>
+<p>
+Like the <i>Underscore</i> and <i>Lodash</i>, Ramda has collection helper
+functions:
+</p>
 
-    <div class="org-src-container">
-      <pre class="src src-javascript">
-<span style="color: #5a5b5a;">// </span><span style=
-"color: #5a5b5a;">Lists</span>
-<span style="color: #b294bb;">let</span> <span style=
-"color: #cc6666;">animals</span> = [ { name: <span style=
-"color: #b5bd68;">'goose'</span>,
-type: <span style=
-"color: #b5bd68;">'bird'</span>, color: <span style=
-"color: #b5bd68;">'white'</span> }, { name: <span style=
-"color: #b5bd68;">'parrot'</span>, type: <span style=
-"color: #b5bd68;">'bird'</span>, color:
-<span style=
-"color: #b5bd68;">'yellow'</span> }, { name: <span style=
-"color: #b5bd68;">'cat'</span>, type: <span style=
-"color: #b5bd68;">'mammal'</span>, color: <span style=
-"color: #b5bd68;">'grey'</span> }];
+<div class="org-src-container">
+<pre class="src src-javascript">
+<span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">Lists</span>
+<span style="color: #b294bb;">let</span> <span style="color: #cc6666;">animals</span> = [ { name: <span style="color: #b5bd68;">'goose'</span>,
+type: <span style="color: #b5bd68;">'bird'</span>, color: <span style="color: #b5bd68;">'white'</span> }, { name: <span style="color: #b5bd68;">'parrot'</span>, type: <span style="color: #b5bd68;">'bird'</span>, color:
+<span style="color: #b5bd68;">'yellow'</span> }, { name: <span style="color: #b5bd68;">'cat'</span>, type: <span style="color: #b5bd68;">'mammal'</span>, color: <span style="color: #b5bd68;">'grey'</span> }];
 
-R.map(animal =&gt; animal.color + <span style=
-"color: #b5bd68;">' '</span> + animal.name, animals); <span style=
-"color: #5a5b5a;">//</span><span style=
-"color: #5a5b5a;">=&gt; [</span>
-<span style="color: #b5bd68;">'white goose'</span>, <span style=
-"color: #b5bd68;">'yellow parrot'</span>, <span style=
-"color: #b5bd68;">'grey cat'</span> ] R.head(animals).name; <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt;</span>
-goose R.last(animals).name; <span style=
-"color: #5a5b5a;">//</span><span style=
-"color: #5a5b5a;">=&gt; cat</span>
-R.uniq(R.pluck(<span style=
-"color: #b5bd68;">'type'</span>, animals)); <span style=
-"color: #5a5b5a;">//</span><span style=
-"color: #5a5b5a;">=&gt; [ 'bird', 'mammal' ]</span>
-R.length(R.filter(animal =&gt; animal.type === <span style=
-"color: #b5bd68;">'bird'</span>, animals)); <span style=
-"color: #5a5b5a;">//</span><span style=
-"color: #5a5b5a;">=&gt; 2</span>
+R.map(animal =&gt; animal.color + <span style="color: #b5bd68;">' '</span> + animal.name, animals); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; [</span>
+<span style="color: #b5bd68;">'white goose'</span>, <span style="color: #b5bd68;">'yellow parrot'</span>, <span style="color: #b5bd68;">'grey cat'</span> ] R.head(animals).name; <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt;</span>
+goose R.last(animals).name; <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; cat</span>
+R.uniq(R.pluck(<span style="color: #b5bd68;">'type'</span>, animals)); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; [ 'bird', 'mammal' ]</span>
+R.length(R.filter(animal =&gt; animal.type === <span style="color: #b5bd68;">'bird'</span>, animals)); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 2</span>
 </pre>
-    </div>
+</div>
 
-    <p>And object helpers too:</p>
+<p>
+And object helpers too:
+</p>
 
-    <div class="org-src-container">
-      <pre class="src src-javascript">
-<span style="color: #5a5b5a;">// </span><span style=
-"color: #5a5b5a;">Objects let cat = { type: 'animal',</span>
-subclass: <span style=
-"color: #b5bd68;">'mammal'</span>, binomialName: <span style=
-"color: #b5bd68;">'Felis catus'</span> };
-R.assoc(<span style="color: #b5bd68;">'status'</span>, <span style=
-"color: #b5bd68;">'domesticated'</span>, cat).status; <span style=
-"color: #5a5b5a;">//</span><span style=
-"color: #5a5b5a;">=&gt; domesticated</span>
-R.dissoc(<span style=
-"color: #b5bd68;">'binomialName'</span>, cat).binomialName; <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; undefined</span>
-R.keys(cat); <span style="color: #5a5b5a;">//</span><span style=
-"color: #5a5b5a;">=&gt; [ 'type', 'subclass', 'binomialName' ]</span>
-R.has(<span style=
-"color: #b5bd68;">'type'</span>, cat); <span style=
-"color: #5a5b5a;">//</span><span style=
-"color: #5a5b5a;">=&gt; true</span>
-R.prop(<span style=
-"color: #b5bd68;">'type'</span>, cat); <span style=
-"color: #5a5b5a;">//</span><span style=
-"color: #5a5b5a;">=&gt; animal</span>
-R.values(cat); <span style="color: #5a5b5a;">//</span><span style=
-"color: #5a5b5a;">=&gt; [ 'animal', 'mammal', 'felis catus' ]</span>
+<div class="org-src-container">
+<pre class="src src-javascript">
+<span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">Objects let cat = { type: 'animal',</span>
+subclass: <span style="color: #b5bd68;">'mammal'</span>, binomialName: <span style="color: #b5bd68;">'Felis catus'</span> };
+R.assoc(<span style="color: #b5bd68;">'status'</span>, <span style="color: #b5bd68;">'domesticated'</span>, cat).status; <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; domesticated</span>
+R.dissoc(<span style="color: #b5bd68;">'binomialName'</span>, cat).binomialName; <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; undefined</span>
+R.keys(cat); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; [ 'type', 'subclass', 'binomialName' ]</span>
+R.has(<span style="color: #b5bd68;">'type'</span>, cat); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; true</span>
+R.prop(<span style="color: #b5bd68;">'type'</span>, cat); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; animal</span>
+R.values(cat); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; [ 'animal', 'mammal', 'felis catus' ]</span>
 
-<span style="color: #5a5b5a;">// </span><span style=
-"color: #5a5b5a;">Object transformation</span>
-<span style="color: #b294bb;">let</span> <span style=
-"color: #cc6666;">transformations</span> = { type: R.toUpper, binomialName: R.toLower }
-R.evolve(transformations, cat).type; <span style=
-"color: #5a5b5a;">// </span><span style=
-"color: #5a5b5a;">=&gt; ANIMAL</span>
+<span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">Object transformation</span>
+<span style="color: #b294bb;">let</span> <span style="color: #cc6666;">transformations</span> = { type: R.toUpper, binomialName: R.toLower }
+R.evolve(transformations, cat).type; <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">=&gt; ANIMAL</span>
 
 </pre>
-    </div>
+</div>
+<p>
+But key point of Ramda.js is functions. Ramda allows you to easily
+compose multiple functions in different orders:
+</p>
 
-    <p>But key point of Ramda.js is functions. Ramda allows you to
-    easily compose multiple functions in different orders:</p>
+<div class="org-src-container">
+<pre class="src src-javascript"><span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">Compose and pipe R.join(' and ',</span>
+R.uniq(R.map(R.toUpper)(R.pluck(<span style="color: #b5bd68;">'type'</span>, animals)))); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; BIRD and MAMMAL</span>
+<span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">Performs right-to-left function composition</span>
+R.compose(R.join(<span style="color: #b5bd68;">' and '</span>), R.uniq, R.map(R.toUpper), R.pluck(<span style="color: #b5bd68;">'type'</span>) )(animals);
+<span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; BIRD and MAMMAL</span>
 
-    <div class="org-src-container">
-      <pre class="src src-javascript">
-<span style="color: #5a5b5a;">// </span><span style=
-"color: #5a5b5a;">Compose and pipe R.join(' and ',</span>
-R.uniq(R.map(R.toUpper)(R.pluck(<span style=
-"color: #b5bd68;">'type'</span>, animals)))); <span style=
-"color: #5a5b5a;">//</span><span style=
-"color: #5a5b5a;">=&gt; BIRD and MAMMAL</span>
-<span style="color: #5a5b5a;">// </span><span style=
-"color: #5a5b5a;">Performs right-to-left function composition</span>
-R.compose(R.join(<span style=
-"color: #b5bd68;">' and '</span>), R.uniq, R.map(R.toUpper), R.pluck(<span style="color: #b5bd68;">'type'</span>) )(animals);
-<span style="color: #5a5b5a;">//</span><span style=
-"color: #5a5b5a;">=&gt; BIRD and MAMMAL</span>
-
-<span style="color: #5a5b5a;">// </span><span style=
-"color: #5a5b5a;">Performs left-to-right function composition</span>
-R.pipe(R.pluck(<span style=
-"color: #b5bd68;">'type'</span>) R.map(R.toUpper), R.uniq, R.join(<span style="color: #b5bd68;">' and '</span>)
-)(animals); <span style="color: #5a5b5a;">//</span><span style=
-"color: #5a5b5a;">=&gt; BIRD and MAMMAL</span>
+<span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">Performs left-to-right function composition</span>
+R.pipe(R.pluck(<span style="color: #b5bd68;">'type'</span>) R.map(R.toUpper), R.uniq, R.join(<span style="color: #b5bd68;">' and '</span>)
+)(animals); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; BIRD and MAMMAL</span>
 </pre>
-    </div>
+</div>
 
-    <p>Another power of Ramda is currying. Currying is the process
-    of translating evaluation of function that takes multiple
-    parameters in evaluating a sequence of functions, each with one
-    argument.</p>
+<p>
+Another power of Ramda is currying. Currying is the process of
+translating evaluation of function that takes multiple parameters in
+evaluating a sequence of functions, each with one argument.
+</p>
 
-    <div class="org-src-container">
-      <pre class="src src-javascript">
-<span style="color: #b294bb;">let</span> <span style=
-"color: #cc6666;">tripleMultiply</span> = (a, b, c) =&gt; a * b * c;
-tripleMultiply(<span style=
-"color: #de935f; font-weight: bold;">3</span>, <span style=
-"color: #de935f; font-weight: bold;">9</span>, <span style=
-"color: #de935f; font-weight: bold;">2</span>); <span style=
-"color: #5a5b5a;">//</span><span style=
-"color: #5a5b5a;">=&gt; 54</span>
-tripleMultiply(<span style=
-"color: #de935f; font-weight: bold;">3</span>, <span style=
-"color: #de935f; font-weight: bold;">9</span>)(<span style=
-"color: #de935f; font-weight: bold;">2</span>); <span style=
-"color: #5a5b5a;">//</span><span style=
-"color: #5a5b5a;">=&gt; TypeError: tripleMultiply(..) is not a function</span>
-<span style="color: #b294bb;">let</span> <span style=
-"color: #cc6666;">curriedMultiply</span> = R.curry(tripleMultiply);
-curriedMultiply(<span style=
-"color: #de935f; font-weight: bold;">3</span>, <span style=
-"color: #de935f; font-weight: bold;">9</span>)(<span style=
-"color: #de935f; font-weight: bold;">2</span>); <span style=
-"color: #5a5b5a;">//</span><span style=
-"color: #5a5b5a;">=&gt; 54</span>
-curriedMultiply(<span style=
-"color: #de935f; font-weight: bold;">3</span>)(<span style=
-"color: #de935f; font-weight: bold;">9</span>)(<span style=
-"color: #de935f; font-weight: bold;">2</span>); <span style=
-"color: #5a5b5a;">//</span><span style=
-"color: #5a5b5a;">=&gt; 54</span>
+<div class="org-src-container">
+<pre class="src src-javascript"><span style="color: #b294bb;">let</span> <span style="color: #cc6666;">tripleMultiply</span> = (a, b, c) =&gt; a * b * c;
+tripleMultiply(<span style="color: #de935f; font-weight: bold;">3</span>, <span style="color: #de935f; font-weight: bold;">9</span>, <span style="color: #de935f; font-weight: bold;">2</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 54</span>
+tripleMultiply(<span style="color: #de935f; font-weight: bold;">3</span>, <span style="color: #de935f; font-weight: bold;">9</span>)(<span style="color: #de935f; font-weight: bold;">2</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; TypeError: tripleMultiply(..) is not a function</span>
+<span style="color: #b294bb;">let</span> <span style="color: #cc6666;">curriedMultiply</span> = R.curry(tripleMultiply);
+curriedMultiply(<span style="color: #de935f; font-weight: bold;">3</span>, <span style="color: #de935f; font-weight: bold;">9</span>)(<span style="color: #de935f; font-weight: bold;">2</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 54</span>
+curriedMultiply(<span style="color: #de935f; font-weight: bold;">3</span>)(<span style="color: #de935f; font-weight: bold;">9</span>)(<span style="color: #de935f; font-weight: bold;">2</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 54</span>
 </pre>
-    </div>
+</div>
 
-    <p>Pattern matching is also available through <i>R.cond</i>.
-    That allows you to check sequence of conditions to match
-    different patterns:</p>
+<p>
+Pattern matching is also available through <i>R.cond</i>. That allows you to
+check sequence of conditions to match different patterns:
+</p>
 
-    <div class="org-src-container">
-      <pre class="src src-javascript">
-<span style="color: #b294bb;">let</span> <span style=
-"color: #cc6666;">checkNumber</span> = R.cond([ [R.is(Number),
+<div class="org-src-container">
+<pre class="src src-javascript"><span style="color: #b294bb;">let</span> <span style="color: #cc6666;">checkNumber</span> = R.cond([ [R.is(Number),
 R.identity], [R.is(String), parseInt], [R.is(Boolean), Number],
-[R.isEmpty, R.always(<span style=
-"color: #de935f; font-weight: bold;">0</span>)], [R.T, R.always(<span style="color: #de935f;">NaN</span>)]]); checkNumber(<span style="color: #de935f; font-weight: bold;">100500</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 100500</span>
-checkNumber(<span style=
-"color: #b5bd68;">'146%'</span>); <span style=
-"color: #5a5b5a;">//</span><span style=
-"color: #5a5b5a;">=&gt; 146</span>
-checkNumber(<span style=
-"color: #b5bd68;">'Hodor'</span>); <span style=
-"color: #5a5b5a;">//</span><span style=
-"color: #5a5b5a;">=&gt; NaN</span>
-checkNumber(<span style=
-"color: #de935f;">true</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 1</span>
-checkNumber(<span style=
-"color: #de935f;">false</span>); <span style=
-"color: #5a5b5a;">//</span><span style=
-"color: #5a5b5a;">=&gt; 0</span>
-checkNumber([]); <span style=
-"color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 0</span>
-checkNumber([<span style=
-"color: #b5bd68;">'test'</span>]); <span style=
-"color: #5a5b5a;">//</span><span style=
-"color: #5a5b5a;">=&gt; NaN</span>
+[R.isEmpty, R.always(<span style="color: #de935f; font-weight: bold;">0</span>)], [R.T, R.always(<span style="color: #de935f;">NaN</span>)]]); checkNumber(<span style="color: #de935f; font-weight: bold;">100500</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 100500</span>
+checkNumber(<span style="color: #b5bd68;">'146%'</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 146</span>
+checkNumber(<span style="color: #b5bd68;">'Hodor'</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; NaN</span>
+checkNumber(<span style="color: #de935f;">true</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 1</span>
+checkNumber(<span style="color: #de935f;">false</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 0</span>
+checkNumber([]); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 0</span>
+checkNumber([<span style="color: #b5bd68;">'test'</span>]); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; NaN</span>
 </pre>
-    </div>
+</div>
 
-    <p>Ramda.js is one of the best functional programming libraries
-    that exists in JavaScript ecosystem. It can completely replace
-    <i>Underscore</i>, <i>Lodash</i> in your project with own
-    object, lists and others helpers. Immutability, currying and
-    composing allows you to write both efficient and simple code in
-    pure functional style.</p>
+<p>
+Ramda.js is one of the best functional programming libraries that exists
+in JavaScript ecosystem. It can completely replace <i>Underscore</i>,
+<i>Lodash</i> in your project with own object, lists and others helpers.
+Immutability, currying and composing allows you to write both efficient
+and simple code in pure functional style.
+</p>
+<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-javascript.html">javascript</a> <a href="https://neiro.io/tag-ramda.html">ramda</a> <a href="https://neiro.io/tag-functional.html">functional</a> </div>]]></description>
+  <category><![CDATA[javascript]]></category>
+  <category><![CDATA[ramda]]></category>
+  <category><![CDATA[functional]]></category>
+  <link>https://neiro.io/2015-09-05-functional-programming-with-ramda-js.html</link>
+  <pubDate>Sat, 05 Sep 2015 10:00:00 +0200</pubDate>
+</item>
+<item>
+  <title><![CDATA[Deploy Jekyll with Capistrano]]></title>
+  <description><![CDATA[
+<p>
+If you&rsquo;re using Jekyll to generate your static website, you may want to
+deploy it as simple and fast, as Jekyll works. For this case, Ruby
+ecosystem has remote server automation and deployment tool that called
+<a href="http://capistranorb.com/">Capistrano</a> .
+</p>
 
-    <div class="taglist">
-      <a href="https://neiro.io/tags.html">Tags</a>: <a href=
-      "https://neiro.io/tag-javascript.html">javascript</a>
-      <a href="https://neiro.io/tag-ramda.html">ramda</a> <a href=
-      "https://neiro.io/tag-functional.html">functional</a>
-    </div>
-  ]]>
-</description>
-      <category>
-        <![CDATA[javascript]]>
-</category>
-      <category>
-        <![CDATA[ramda]]>
-</category>
-      <category>
-        <![CDATA[functional]]>
-</category>
-      <link>
-      https://neiro.io/2015-09-05-functional-programming-with-ramda-js.html</link>
-      <pubDate>Sat, 05 Sep 2015 10:00:00 +0200</pubDate>
-    </item>
-    <item>
-      <title>
-        <![CDATA[Deploy Jekyll with Capistrano]]>
-</title>
-      <description>
-        <![CDATA[
+<p>
+First of all, you need to create <i>Gemfile</i> in your Jekyll project and
+add this lines:
+</p>
 
-    <p>If you&#8217;re using Jekyll to generate your static
-    website, you may want to deploy it as simple and fast, as
-    Jekyll works. For this case, Ruby ecosystem has remote server
-    automation and deployment tool that called <a href=
-    "http://capistranorb.com/">Capistrano</a> .</p>
-
-    <p>First of all, you need to create <i>Gemfile</i> in your
-    Jekyll project and add this lines:</p>
-
-    <div class="org-src-container">
-      <pre class="src src-ruby">
-source <span style="color: #b5bd68;">'https://rubygems.org'</span>
-gem <span style="color: #b5bd68;">'capistrano'</span>, <span style=
-"color: #b5bd68;">'~&gt; 3.4.0'</span>
+<div class="org-src-container">
+<pre class="src src-ruby">source <span style="color: #b5bd68;">'https://rubygems.org'</span>
+gem <span style="color: #b5bd68;">'capistrano'</span>, <span style="color: #b5bd68;">'~&gt; 3.4.0'</span>
 </pre>
-    </div>
+</div>
 
-    <p>Then execute:</p>
+<p>
+Then execute:
+</p>
 
-    <div class="org-src-container">
-      <pre class="src src-shell">
-bundle install &amp;&amp; bundle exec cap install
+<div class="org-src-container">
+<pre class="src src-shell">bundle install &amp;&amp; bundle exec cap install
 </pre>
-    </div>
+</div>
 
-    <p>This creates configuration files, that you can change with
-    your parameters. Make sure that you set up production
-    configuration with your server data
-    (<i>/config/deploy/production.rb</i>):</p>
+<p>
+This creates configuration files, that you can change with your
+parameters. Make sure that you set up production configuration with your
+server data (<i>/config/deploy/production.rb</i>):
+</p>
 
-    <div class="org-src-container">
-      <pre class="src src-ruby">
-role <span style="color: #de935f;">:app</span>, <span style=
-"color: #b5bd68;">%w{user@server}</span>
-role <span style="color: #de935f;">:web</span>, <span style=
-"color: #b5bd68;">%w{user@server}</span>
+<div class="org-src-container">
+<pre class="src src-ruby">
+role <span style="color: #de935f;">:app</span>, <span style="color: #b5bd68;">%w{user@server}</span>
+role <span style="color: #de935f;">:web</span>, <span style="color: #b5bd68;">%w{user@server}</span>
 </pre>
-    </div>
+</div>
 
-    <p>After configuration you can deploy your project with one
-    simple command:</p>
+<p>
+After configuration you can deploy your project with one simple command:
+</p>
 
-    <div class="org-src-container">
-      <pre class="src src-shell">
-bundle exec cap production deploy
+<div class="org-src-container">
+<pre class="src src-shell">bundle exec cap production deploy
 </pre>
-    </div>
+</div>
 
-    <p>This command deploys source to
-    <i>/var/www/website<sub>name</sub></i>, but it does not
-    generate website. To execute <code>jekyll build</code> command
-    you need to install Ruby using <a href=
-    "https://github.com/sstephenson/rbenv">rbenv</a> or <a href=
-    "https://rvm.io/">RVM</a> first.</p>
+<p>
+This command deploys source to <i>/var/www/website<sub>name</sub></i>, but it does not
+generate website. To execute <code>jekyll build</code> command you need to install
+Ruby using <a href="https://github.com/sstephenson/rbenv">rbenv</a> or
+<a href="https://rvm.io/">RVM</a> first.
+</p>
 
-    <p>Next you should add Capistrano plugin for rbenv in
-    <i>Gemfile</i>:</p>
+<p>
+Next you should add Capistrano plugin for rbenv in <i>Gemfile</i>:
+</p>
 
-    <div class="org-src-container">
-      <pre class="src src-ruby">
-gem <span style=
-"color: #b5bd68;">'capistrano-rbenv'</span>, <span style=
-"color: #b5bd68;">'~&gt; 2.0'</span>
+<div class="org-src-container">
+<pre class="src src-ruby">gem <span style="color: #b5bd68;">'capistrano-rbenv'</span>, <span style="color: #b5bd68;">'~&gt; 2.0'</span>
 </pre>
-    </div>
+</div>
 
-    <p>Then execute</p>
+<p>
+Then execute
+</p>
 
-    <div class="org-src-container">
-      <pre class="src src-ruby">
-bundle exec
+<div class="org-src-container">
+<pre class="src src-ruby">bundle exec
 </pre>
-    </div>
+</div>
 
-    <p>And add this line to <i>Capfile</i>:</p>
+<p>
+And add this line to <i>Capfile</i>:
+</p>
 
-    <div class="org-src-container">
-      <pre class="src src-ruby">
-<span style="color: #81a2be;">require</span> <span style=
-"color: #b5bd68;">'capistrano/rbenv'</span>
+<div class="org-src-container">
+<pre class="src src-ruby"><span style="color: #81a2be;">require</span> <span style="color: #b5bd68;">'capistrano/rbenv'</span>
 </pre>
-    </div>
+</div>
 
-    <p>Install Jekyll gem on server and add it to rbenv binaries
-    list in <i>config/deploy.rb</i>:</p>
+<p>
+Install Jekyll gem on server and add it to rbenv binaries list in
+<i>config/deploy.rb</i>:
+</p>
 
-    <div class="org-src-container">
-      <pre class="src src-ruby">
-set <span style=
-"color: #de935f;">:rbenv_map_bins</span>, <span style=
-"color: #b5bd68;">%w{rake gem bundle ruby jekyll}</span>
+<div class="org-src-container">
+<pre class="src src-ruby">set <span style="color: #de935f;">:rbenv_map_bins</span>, <span style="color: #b5bd68;">%w{rake gem bundle ruby jekyll}</span>
 </pre>
-    </div>
+</div>
 
-    <p>Now you can use my <a href=
-    "https://github.com/ne1ro/capistrano-jekyll">capistrano-jekyll</a>
-    gem to execute <code>jekyll build</code> command every time
-    when you deploy your website&#8217;s changes:</p>
+<p>
+Now you can use my
+<a href="https://github.com/ne1ro/capistrano-jekyll">capistrano-jekyll</a> gem to
+execute <code>jekyll build</code> command every time when you deploy your website&rsquo;s
+changes:
+</p>
 
-    <div class="org-src-container">
-      <pre class="src src-ruby">
-<span style="color: #5a5b5a;"># </span><span style=
-"color: #5a5b5a;">Gemfile</span>
+<div class="org-src-container">
+<pre class="src src-ruby"><span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">Gemfile</span>
 gem <span style="color: #b5bd68;">'capistrano-jekyll'</span>
 </pre>
-    </div>
+</div>
 
-    <div class="org-src-container">
-      <pre class="src src-shell">
-$ bundle install &amp;&amp; bundle exec cap production deploy
+<div class="org-src-container">
+<pre class="src src-shell">$ bundle install &amp;&amp; bundle exec cap production deploy
 </pre>
-    </div>
+</div>
+<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-jekyll.html">jekyll</a> <a href="https://neiro.io/tag-capistrano.html">capistrano</a> <a href="https://neiro.io/tag-deploy.html">deploy</a> </div>]]></description>
+  <category><![CDATA[jekyll]]></category>
+  <category><![CDATA[capistrano]]></category>
+  <category><![CDATA[deploy]]></category>
+  <link>https://neiro.io/2015-05-24-deploy-jekyll-with-capistrano.html</link>
+  <pubDate>Sun, 24 May 2015 10:00:00 +0200</pubDate>
+</item>
+<item>
+  <title><![CDATA[Jekyll with Rails assets]]></title>
+  <description><![CDATA[
+<p>
+<a href="http://jekyllrb.com/">Jekyll</a> is the great static website generator,
+that can be easily used for blogs, portfolio pages, galleries and others
+simple projects. It`s very simple, flexible tool that can be upgraded
+with hundreds powerful plugins.
+</p>
 
-    <div class="taglist">
-      <a href="https://neiro.io/tags.html">Tags</a>: <a href=
-      "https://neiro.io/tag-jekyll.html">jekyll</a> <a href=
-      "https://neiro.io/tag-capistrano.html">capistrano</a>
-      <a href="https://neiro.io/tag-deploy.html">deploy</a>
-    </div>
-  ]]>
-</description>
-      <category>
-        <![CDATA[jekyll]]>
-</category>
-      <category>
-        <![CDATA[capistrano]]>
-</category>
-      <category>
-        <![CDATA[deploy]]>
-</category>
-      <link>
-      https://neiro.io/2015-05-24-deploy-jekyll-with-capistrano.html</link>
-      <pubDate>Sun, 24 May 2015 10:00:00 +0200</pubDate>
-    </item>
-    <item>
-      <title>
-        <![CDATA[Jekyll with Rails assets]]>
-</title>
-      <description>
-        <![CDATA[
+<p>
+If you like Ruby on Rails, you might want to use Rails assets pipeline
+when you work with front-end in Jekyll. If so, here are
+<a href="https://github.com/jekyll-assets/jekyll-assets">jekyll-assets</a>. This
+project allows you to use some Rails-like assets pipeline functionality:
+</p>
 
-    <p><a href="http://jekyllrb.com/">Jekyll</a> is the great
-    static website generator, that can be easily used for blogs,
-    portfolio pages, galleries and others simple projects. It`s
-    very simple, flexible tool that can be upgraded with hundreds
-    powerful plugins.</p>
+<ul class="org-ul">
+<li>SASS, LESS, Coffeescript and even ERB</li>
+<li><p>
+Rails assets dependencies management:
+</p>
 
-    <p>If you like Ruby on Rails, you might want to use Rails
-    assets pipeline when you work with front-end in Jekyll. If so,
-    here are <a href=
-    "https://github.com/jekyll-assets/jekyll-assets">jekyll-assets</a>.
-    This project allows you to use some Rails-like assets pipeline
-    functionality:</p>
-
-    <ul class="org-ul">
-      <li>SASS, LESS, Coffeescript and even ERB</li>
-
-      <li>
-        <p>Rails assets dependencies management:</p>
-
-        <div class="org-src-container">
-          <pre class="src src-javascript">
-  <span style="color: #5a5b5a;">//</span><span style=
-"color: #5a5b5a;">=require 'jquery'</span>
-  <span style="color: #5a5b5a;">//</span><span style=
-"color: #5a5b5a;">=require 'parallax'</span>
-  <span style="color: #5a5b5a;">//</span><span style=
-"color: #5a5b5a;">=require 'slideout'</span>
+<div class="org-src-container">
+<pre class="src src-javascript">  <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=require 'jquery'</span>
+  <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=require 'parallax'</span>
+  <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=require 'slideout'</span>
 </pre>
-        </div>
-      </li>
+</div></li>
 
-      <li>Minification and compression for Javascript and CSS</li>
+<li>Minification and compression for Javascript and CSS</li>
+<li>Gzipped versions of assets</li>
+</ul>
 
-      <li>Gzipped versions of assets</li>
-    </ul>
+<p>
+But what if you also wants to use popular Bower packages with Jekyll and
+jekyll-assets?<br>
+First, you need <a href="https://rails-assets.org/">Rails assets</a> project,
+that allows you to use any Bower modules with Bundler. You just need to
+add required packages in your <i>Gemfile</i> like this:
+</p>
 
-    <p>But what if you also wants to use popular Bower packages
-    with Jekyll and jekyll-assets?<br>
-    First, you need <a href="https://rails-assets.org/">Rails
-    assets</a> project, that allows you to use any Bower modules
-    with Bundler. You just need to add required packages in your
-    <i>Gemfile</i> like this:</p>
-
-    <div class="org-src-container">
-      <pre class="src src-ruby">
-source <span style=
-"color: #b5bd68;">'https://rails-assets.org'</span> <span style=
-"color: #b294bb;">do</span>
+<div class="org-src-container">
+<pre class="src src-ruby">source <span style="color: #b5bd68;">'https://rails-assets.org'</span> <span style="color: #b294bb;">do</span>
   gem <span style="color: #b5bd68;">'rails-assets-jquery'</span>
-  gem <span style=
-"color: #b5bd68;">'rails-assets-normalize-scss'</span>
-  gem <span style=
-"color: #b5bd68;">'rails-assets-slideout.js'</span>
+  gem <span style="color: #b5bd68;">'rails-assets-normalize-scss'</span>
+  gem <span style="color: #b5bd68;">'rails-assets-slideout.js'</span>
 <span style="color: #b294bb;">end</span>
 </pre>
-    </div>
+</div>
 
-    <p>It works great with Ruby on Rails, but you need some hack to
-    use it with jekyll-assets - by default, jekyll-assets
-    configuration does not include rails-assets paths. To fix this,
-    you can load paths with <b>Sprockets</b> in your Jekyll plugin
-    file (<b>_plugins/ext.rb</b>) .</p>
+<p>
+It works great with Ruby on Rails, but you need some hack to use it
+with jekyll-assets - by default, jekyll-assets configuration does not
+include rails-assets paths. To fix this, you can load paths with
+<b>Sprockets</b> in your Jekyll plugin file (<b>_plugins/ext.rb</b>) .
+</p>
 
-    <div class="org-src-container">
-      <pre class="src src-ruby">
-<span style="color: #81a2be;">require</span> <span style=
-"color: #b5bd68;">'jekyll-assets'</span>
-<span style="color: #81a2be;">require</span> <span style=
-"color: #b5bd68;">'bundler/setup'</span>
+<div class="org-src-container">
+<pre class="src src-ruby"><span style="color: #81a2be;">require</span> <span style="color: #b5bd68;">'jekyll-assets'</span>
+<span style="color: #81a2be;">require</span> <span style="color: #b5bd68;">'bundler/setup'</span>
 
-<span style="color: #f0c674;">Bundler</span>.require(<span style=
-"color: #de935f;">:default</span>, <span style=
-"color: #b5bd68;">'development'</span>)
+<span style="color: #f0c674;">Bundler</span>.require(<span style="color: #de935f;">:default</span>, <span style="color: #b5bd68;">'development'</span>)
 
-<span style="color: #b294bb;">if</span> <span style=
-"color: #b294bb;">defined?</span>(<span style=
-"color: #f0c674;">RailsAssets</span>)
-  <span style=
-"color: #f0c674;">RailsAssets</span>.load_paths.each <span style=
-"color: #b294bb;">do</span> |path|
+<span style="color: #b294bb;">if</span> <span style="color: #b294bb;">defined?</span>(<span style="color: #f0c674;">RailsAssets</span>)
+  <span style="color: #f0c674;">RailsAssets</span>.load_paths.each <span style="color: #b294bb;">do</span> |path|
     <span style="color: #f0c674;">Sprockets</span>.append_path path
   <span style="color: #b294bb;">end</span>
 <span style="color: #b294bb;">end</span>
 </pre>
-    </div>
+</div>
 
-    <p>When you&#8217;ve completed this setup, you can manage your
-    assets almost like in Ruby on Rails.</p>
+<p>
+When you&rsquo;ve completed this setup, you can manage your assets almost like in
+Ruby on Rails.
+</p>
+<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-jekyll.html">jekyll</a> <a href="https://neiro.io/tag-rails.html">rails</a> </div>]]></description>
+  <category><![CDATA[jekyll]]></category>
+  <category><![CDATA[rails]]></category>
+  <link>https://neiro.io/2015-05-14-jekyll-with-rails-assets.html</link>
+  <pubDate>Thu, 14 May 2015 10:00:00 +0200</pubDate>
+</item>
+<item>
+  <title><![CDATA[#+title: Hello world!]]></title>
+  <description><![CDATA[
+<p>
+Welcome! This is my blog about web development, functional programming
+and others geeky themes.
+</p>
 
-    <div class="taglist">
-      <a href="https://neiro.io/tags.html">Tags</a>: <a href=
-      "https://neiro.io/tag-jekyll.html">jekyll</a> <a href=
-      "https://neiro.io/tag-rails.html">rails</a>
-    </div>
-  ]]>
-</description>
-      <category>
-        <![CDATA[jekyll]]>
-</category>
-      <category>
-        <![CDATA[rails]]>
-</category>
-      <link>
-      https://neiro.io/2015-05-14-jekyll-with-rails-assets.html</link>
-      <pubDate>Thu, 14 May 2015 10:00:00 +0200</pubDate>
-    </item>
-    <item>
-      <title>
-        <![CDATA[#+title: Hello world!]]>
-</title>
-      <description>
-        <![CDATA[
+<p>
+I am web developer, who specialised in modern web technologies, such as
+Ruby on Rails, Node.js, Angular.js and others.
+</p>
 
-    <p>Welcome! This is my blog about web development, functional
-    programming and others geeky themes.</p>
+<p>
+I love programming as great tool to solve complex real-life problems
+with simplest, deadly elegant solutions.
+</p>
 
-    <p>I am web developer, who specialised in modern web
-    technologies, such as Ruby on Rails, Node.js, Angular.js and
-    others.</p>
+<p>
+I love programming as hard work that combines cold logic and creativity.
+</p>
 
-    <p>I love programming as great tool to solve complex real-life
-    problems with simplest, deadly elegant solutions.</p>
+<p>
+I love programming as endless act of self-perfection.
+</p>
 
-    <p>I love programming as hard work that combines cold logic and
-    creativity.</p>
-
-    <p>I love programming as endless act of self-perfection.</p>
-
-    <p>This is why i would share with you my hacks, reviews,
-    thoughts about programming, code snippets and more interesting
-    stuff.</p>
-
-    <div class="taglist"></div>
-  ]]>
-</description>
-      <link>https://neiro.io/2015-05-14-hello-world.html</link>
-      <pubDate>Thu, 14 May 2015 10:00:00 +0200</pubDate>
-    </item>
-  </channel>
+<p>
+This is why i would share with you my hacks, reviews, thoughts about
+programming, code snippets and more interesting stuff.
+</p>
+<div class="taglist"></div>]]></description>
+  <link>https://neiro.io/2015-05-14-hello-world.html</link>
+  <pubDate>Thu, 14 May 2015 10:00:00 +0200</pubDate>
+</item>
+</channel>
 </rss>

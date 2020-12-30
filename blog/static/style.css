@@ -1,5 +1,5 @@
 body {
-    font-family: PT Serif, Helvetica, Arial, serif;
+    font-family: PT Serif, Noto Serif, Open Serif, Helvetica, Arial, serif;
     padding: 1em;
     background: #FAFAFA;
     color: #111;
@@ -22,7 +22,7 @@ body {
 }
 
 #content {
-    max-width: 42em;
+    max-width: 48em;
     margin: 0 auto;
 }
 

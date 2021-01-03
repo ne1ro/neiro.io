@@ -5,21 +5,19 @@
 <link rel="alternate"
       type="application/rss+xml"
       href="https://neiro.io/rss.xml"
-      title="RSS feed for https://neiro.io/"/>
+      title="RSS feed for https://neiro.io/">
 <title>Well-crafted functional architecture: ports and adapters</title>
 <meta name="author" content="Aleksei Kuznetsov">
     <meta name="referrer" content="no-referrer">
     <link href= "https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet" type="text/css" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.22.0/themes/prism-tomorrow.min.css" rel="stylesheet">
     <link href= "static/style.css" rel="stylesheet" type="text/css" />
     <link rel="icon" href="static/favicon.ico"></head>
 <body>
-<div id="preamble" class="status">
-<div class="header">
+<div id="preamble" class="status"><div class="header">
     <a href="https://neiro.io">Neiro - Functional programming, software architecture</a>
   </div></div>
 <div id="content">
-<div class="post-date">01 Oct 2019</div><h1 class="post-title"><a href="https://neiro.io/2019-10-01-well-crafted-functional-architecture-ports-and-adapters.md.html">Well-crafted functional architecture: ports and adapters</a></h1>
+<div class="post-date">01 Okt 2019</div><h1 class="post-title"><a href="https://neiro.io/2019-10-01-well-crafted-functional-architecture-ports-and-adapters.md.html">Well-crafted functional architecture: ports and adapters</a></h1>
 <nav id="table-of-contents">
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
@@ -109,7 +107,7 @@ while your adapters are placed surround it.
 </p>
 
 
-<figure id="orgd7360ed">
+<figure id="org428f623">
 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Hexagonal_Architecture.svg/1000px-Hexagonal_Architecture.svg.png" alt="1000px-Hexagonal_Architecture.svg.png">
 
 <figcaption><span class="figure-number">Figure 1: </span>Hexagon</figcaption>
@@ -165,7 +163,7 @@ now let&rsquo;s see how we can implement the realisation of port for Elixir
 using its&rsquo; capability to create <b>behaviours</b>:
 </p>
 
-<pre class="example" id="org619475e">
+<pre class="example" id="org4e61846">
   defmodule Core.PushNotifications do
     @moduledoc """
     Port for sending push notifications.
@@ -175,7 +173,7 @@ using its&rsquo; capability to create <b>behaviours</b>:
     @type payload :: Keyword.t
     @type recipients :: [map]
 
-    @adapter :core |&gt; Application.fetch_env!(__MODULE__) |&gt; Keyword.fetch!(:adapter)
+    @adapter :core |&gt; Application.fetch_env!(__MODULE__) |&gt; Keyword.fetch!(:adapter) 
 
     @callback send_notifications(message, recipients, payload) :: {:ok, [map]} | {:error, any}
 
@@ -191,7 +189,7 @@ exact implementation - adapter - should be placed in your app
 configuration like:
 </p>
 
-<pre class="example" id="org81abda8">
+<pre class="example" id="orgd41bdb2">
   config :core, Core.PushNotifications, adapter: PushNotifications.APNS
 </pre>
 
@@ -200,7 +198,7 @@ If you want to call this port from your application you just need to use
 the delegated function:
 </p>
 
-<pre class="example" id="orgbbe0dba">
+<pre class="example" id="orgbac3faf">
   defmodule Core do
     alias Core.PushNotifications
 
@@ -252,7 +250,7 @@ role of specification of driver port so you&rsquo;ll always be able to see
 what we need to send and what we should expect in response.
 </p>
 
-<pre class="example" id="org577196b">
+<pre class="example" id="orgfd0d5d5">
   defmodule Web.UserController do
     use Web, :controller
 
@@ -302,7 +300,7 @@ adapt realisation of sending push notifications over APNS by the
 specification that was given us by this port:
 </p>
 
-<pre class="example" id="org94a3d86">
+<pre class="example" id="org3903076">
   defmodule PushNotifications.APNS do
     @moduledoc "APNS adapter for push notifications"
     @behaviour Core.PushNotifications
@@ -342,7 +340,7 @@ should be tested. Let&rsquo;s write a test adapter for the PushNotifications
 port then:
 </p>
 
-<pre class="example" id="org70a4699">
+<pre class="example" id="org978f69e">
   defmodule PushNotifications.TestAdapter do
     @moduledoc "Test adapter for push notifications"
     @behaviour Core.PushNotifications
@@ -363,7 +361,7 @@ interface. In Elixir ecosystem we have a great library called <code>Mox</code> t
 can be used for such case:
 </p>
 
-<pre class="example" id="orgb018b6f">
+<pre class="example" id="orgcdc87b3">
   Mox.defmock(PushNotifications.TestMock, for: Core.PushNotifications)
 
   defmodule CoreTest do
@@ -375,7 +373,7 @@ can be used for such case:
 
     test "register/1" do
        stub_with(PushNotifications.TestMock, PushNotifications.TestAdapter)
-       assert {:ok, _} = Core.register_user(some_params)
+       assert {:ok, _} = Core.register_user(some_params) 
     end
   end
 </pre>
@@ -463,9 +461,5 @@ Stay tuned!
 </div>
 <div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-elixir.html">elixir</a> <a href="https://neiro.io/tag-functional.html">functional</a> <a href="https://neiro.io/tag-architecture.html">architecture</a> <a href="https://neiro.io/tag-ports.html">ports</a> <a href="https://neiro.io/tag-adapters.html">adapters</a> </div></div>
 <div id="postamble" class="status"></div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.22.0/prism.min.js" type="javascript"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.22.0/components/prism-elixir.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.22.0/components/prism-ruby.min.js"></script>
 </body>
 </html>

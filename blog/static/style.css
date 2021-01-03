@@ -1,5 +1,5 @@
 body {
-    font-family: PT Serif, Noto Serif, Open Serif, Helvetica, Arial, serif;
+    font-family: 'Libre Baskerville', Noto Serif, Open Serif, Helvetica, Arial, serif;
     padding: 1em;
     background: #FAFAFA;
     color: #111;
@@ -7,13 +7,13 @@ body {
 
 @media screen and (min-width: 320px) {
     html {
-        font-size: 35pt;
+        font-size: 33pt;
     }
 }
 
 @media screen and (min-width: 1024px) {
     html {
-        font-size: 16pt;
+        font-size: 15pt;
     }
 }
 
@@ -58,4 +58,9 @@ pre.example, pre.src {
 
 img {
     max-width: 100%;
+}
+
+.taglist {
+    margin-bottom: 4em;
+    margin-top: 1em;
 }

@@ -5,7 +5,7 @@
 <link rel="alternate"
       type="application/rss+xml"
       href="https://neiro.io/rss.xml"
-      title="RSS feed for https://neiro.io/"/>
+      title="RSS feed for https://neiro.io/">
 <title>Pattern matching in Elixir</title>
 <meta name="author" content="Aleksei Kuznetsov">
     <meta name="referrer" content="no-referrer">
@@ -13,12 +13,11 @@
     <link href= "static/style.css" rel="stylesheet" type="text/css" />
     <link rel="icon" href="static/favicon.ico"></head>
 <body>
-<div id="preamble" class="status">
-<div class="header">
+<div id="preamble" class="status"><div class="header">
     <a href="https://neiro.io">Neiro - Functional programming, software architecture</a>
   </div></div>
 <div id="content">
-<div class="post-date">31 May 2016</div><h1 class="post-title"><a href="https://neiro.io/2016-05-31-pattern-matching-in-elixir.md.html">Pattern matching in Elixir</a></h1>
+<div class="post-date">31 Mai 2016</div><h1 class="post-title"><a href="https://neiro.io/2016-05-31-pattern-matching-in-elixir.md.html">Pattern matching in Elixir</a></h1>
 <nav id="table-of-contents">
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
@@ -48,7 +47,7 @@ Elixir equals sign is actually <i>match operator</i>. Using this operator we
 can assign and match values:
 </p>
 
-<pre class="example" id="org5815962">
+<pre class="example" id="org73d8c2f">
   x = 1
   1 = x
   x # 1
@@ -58,7 +57,7 @@ can assign and match values:
 But if we will provide invalid pattern?
 </p>
 
-<pre class="example" id="orgecf5fa2">
+<pre class="example" id="org4903563">
   2 = x # ** (MatchError) no match of right hand side value: 1
 </pre>
 
@@ -68,7 +67,7 @@ match operator are different - they don&rsquo;t match. You can assign variable
 only on the left side of match operator:
 </p>
 
-<pre class="example" id="org0f7375d">
+<pre class="example" id="org24ebd13">
   true = undefined # * (CompileError) undefined function undefined/0
 </pre>
 </div>
@@ -82,7 +81,7 @@ You can use match operator not for assign only - it&rsquo;s useful for
 destructuring operations:
 </p>
 
-<pre class="example" id="orgb9d9eb5">
+<pre class="example" id="org34ff6bd">
     # Lists
     list = [1, 2]
     [1 | tail] = list
@@ -105,7 +104,7 @@ destructuring operations:
 You can also use pattern matching with functions:
 </p>
 
-<pre class="example" id="orgfe31baf">
+<pre class="example" id="org9219484">
   defmodule HelloWorld do
     def hello(:world), do: "Hello, world!"
     def hello(name), do: "Hello, #{ name }!"
@@ -126,7 +125,7 @@ You can also use pattern matching with functions:
 You can rebound Elixir&rsquo;s variables:
 </p>
 
-<pre class="example" id="org78e719f">
+<pre class="example" id="orgd4bb0db">
   x = 1
   x = 2
   x # 2
@@ -137,7 +136,7 @@ If you want to provide existing variable&rsquo;s value in pattern matching,
 then you should use <i>pin operator</i>:
 </p>
 
-<pre class="example" id="orgf079b4d">
+<pre class="example" id="org1c13be6">
   x = 1
   ^x = 2 # MatchError because 1 != 2
   [^x, y] = [1, 2] # [1, 2]

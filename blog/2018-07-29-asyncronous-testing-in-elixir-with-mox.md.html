@@ -5,7 +5,7 @@
 <link rel="alternate"
       type="application/rss+xml"
       href="https://neiro.io/rss.xml"
-      title="RSS feed for https://neiro.io/"/>
+      title="RSS feed for https://neiro.io/">
 <title>Asynchronous testing in Elixir with Mox</title>
 <meta name="author" content="Aleksei Kuznetsov">
     <meta name="referrer" content="no-referrer">
@@ -13,8 +13,7 @@
     <link href= "static/style.css" rel="stylesheet" type="text/css" />
     <link rel="icon" href="static/favicon.ico"></head>
 <body>
-<div id="preamble" class="status">
-<div class="header">
+<div id="preamble" class="status"><div class="header">
     <a href="https://neiro.io">Neiro - Functional programming, software architecture</a>
   </div></div>
 <div id="content">
@@ -53,7 +52,7 @@ using third-party services anyway. Imagine that you are sending SMS
 through you favorite provider services. This code can look like that:
 </p>
 
-<pre class="example" id="org37b18fd">
+<pre class="example" id="org7cd08c6">
   SmsProvider.send_sms(from, to, "message")
 </pre>
 
@@ -68,7 +67,7 @@ Now we need to test this situation. This will be our very first
 approach:
 </p>
 
-<pre class="example" id="org4c3cf63">
+<pre class="example" id="orgdbebb77">
   assert {:ok, %Message{}} = SmsProvider.send_sms(from, to, "message")
 </pre>
 
@@ -84,7 +83,7 @@ The most popular solution is mocking. You&rsquo;re supposing that call of
 expected result:
 </p>
 
-<pre class="example" id="org0ccb225">
+<pre class="example" id="org9b09e66">
   mock(SmsProvider, :send_sms, fn _, _, _ -&gt; {:ok, %Message{status: :sent}} end)
   assert {:ok, %Message{status: :sent}} = SmsProvider.send_sms(from, to, "message")
 </pre>
@@ -96,7 +95,7 @@ mocked SmsProvider so it will be overriden in every next asynchronous
 test:
 </p>
 
-<pre class="example" id="org644ab62">
+<pre class="example" id="org40c5378">
   use MyApp.DataCase, async: true
 
   # ...
@@ -122,7 +121,7 @@ Instead of mocking we can try calling the function that will override
 content:
 </p>
 
-<pre class="example" id="orgb1ee506">
+<pre class="example" id="org2ad4fa6">
   defmodule TestProvider do
     def send_sms(from, to, message) do
       {:ok, %Message{status: :sent, from: from, to: to, text: message}}
@@ -136,7 +135,7 @@ module. It will use default adapter in development, production
 environments and will use <code>TestProvider</code> in testing:
 </p>
 
-<pre class="example" id="orgf0e6635">
+<pre class="example" id="orgaa28592">
   # config/test.exs
   config :my_app, SmsProvider, adapter: TestProvider
 
@@ -155,7 +154,7 @@ environments and will use <code>TestProvider</code> in testing:
 Let&rsquo;s go straight to the test:
 </p>
 
-<pre class="example" id="org7e11043">
+<pre class="example" id="orgff8754b">
   assert {:ok, %Message{}} = SmsProvider.send_sms(from, to, "message") # true
 </pre>
 
@@ -192,7 +191,7 @@ in tests</li>
 Now let&rsquo;s add it to our dependencies list:
 </p>
 
-<pre class="example" id="orgf26d7a4">
+<pre class="example" id="orgfed7081">
   # mix.exs
   def deps do
     [
@@ -206,7 +205,7 @@ It&rsquo;s easy as a pie to rewrite our tests with Mox. We need to create an
 SMS provider behaviour and implement it for different environments:
 </p>
 
-<pre class="example" id="orga5b4933">
+<pre class="example" id="org4e41ebe">
   # sms_provider.ex
   defmodule SmsProvider do
     @callback send_sms(String.t, String.t, String.t) :: {:ok, %Message{}} | {:error, :wrong_number}
@@ -237,7 +236,7 @@ If you don&rsquo;t need to check expectations in test you can try
 <code>stub_with/2</code> function in order to stub entire module:
 </p>
 
-<pre class="example" id="org6748c04">
+<pre class="example" id="orgb43f988">
   # sms_provider.ex
   defmodule SmsProvider do
     @callback send_sms(String.t, String.t, String.t) :: {:ok, %Message{}} | {:error, :wrong_number}

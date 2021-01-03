@@ -1,160 +1,134 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <link rel="alternate" type="application/rss+xml" href=
-  "https://neiro.io/rss.xml" title=
-  "RSS feed for https://neiro.io/">
-
-  <title>Deploy Jekyll with Capistrano</title>
-  <meta name="author" content="Aleksei Kuznetsov">
-  <meta name="referrer" content="no-referrer">
-  <link href=
-  "https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css"
-  rel="stylesheet" type="text/css">
-  <link href="static/style.css" rel="stylesheet" type="text/css">
-  <link rel="icon" href="static/favicon.ico">
-</head>
-
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://neiro.io/rss.xml"
+      title="RSS feed for https://neiro.io/">
+<title>Deploy Jekyll with Capistrano</title>
+<meta name="author" content="Aleksei Kuznetsov">
+    <meta name="referrer" content="no-referrer">
+    <link href= "https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet" type="text/css" />
+    <link href= "static/style.css" rel="stylesheet" type="text/css" />
+    <link rel="icon" href="static/favicon.ico"></head>
 <body>
-  <div id="preamble" class="status">
-    <div class="header">
-      <a href="https://neiro.io">Neiro - Functional programming,
-      software architecture</a>
-    </div>
-  </div>
+<div id="preamble" class="status"><div class="header">
+    <a href="https://neiro.io">Neiro - Functional programming, software architecture</a>
+  </div></div>
+<div id="content">
+<div class="post-date">24 Mai 2015</div><h1 class="post-title"><a href="https://neiro.io/2015-05-24-deploy-jekyll-with-capistrano.html">Deploy Jekyll with Capistrano</a></h1>
+<p>
+If you&rsquo;re using Jekyll to generate your static website, you may want to
+deploy it as simple and fast, as Jekyll works. For this case, Ruby
+ecosystem has remote server automation and deployment tool that called
+<a href="http://capistranorb.com/">Capistrano</a> .
+</p>
 
-  <div id="content">
-    <div class="post-date">
-      24 May 2015
-    </div>
+<p>
+First of all, you need to create <i>Gemfile</i> in your Jekyll project and
+add this lines:
+</p>
 
-    <h1 class="post-title"><a href=
-    "https://neiro.io/2015-05-24-deploy-jekyll-with-capistrano.html">
-    Deploy Jekyll with Capistrano</a></h1>
-
-    <p>If you&#8217;re using Jekyll to generate your static
-    website, you may want to deploy it as simple and fast, as
-    Jekyll works. For this case, Ruby ecosystem has remote server
-    automation and deployment tool that called <a href=
-    "http://capistranorb.com/">Capistrano</a> .</p>
-
-    <p>First of all, you need to create <i>Gemfile</i> in your
-    Jekyll project and add this lines:</p>
-
-    <div class="org-src-container">
-      <pre class="src src-ruby">
-source <span style="color: #b5bd68;">'https://rubygems.org'</span>
-gem <span style="color: #b5bd68;">'capistrano'</span>, <span style=
-"color: #b5bd68;">'~&gt; 3.4.0'</span>
+<div class="org-src-container">
+<pre class="src src-ruby">source <span style="color: #b5bd68;">'https://rubygems.org'</span>
+gem <span style="color: #b5bd68;">'capistrano'</span>, <span style="color: #b5bd68;">'~&gt; 3.4.0'</span>
 </pre>
-    </div>
+</div>
 
-    <p>Then execute:</p>
+<p>
+Then execute:
+</p>
 
-    <div class="org-src-container">
-      <pre class="src src-shell">
-bundle install &amp;&amp; bundle exec cap install
+<div class="org-src-container">
+<pre class="src src-shell">bundle install &amp;&amp; bundle exec cap install
 </pre>
-    </div>
+</div>
 
-    <p>This creates configuration files, that you can change with
-    your parameters. Make sure that you set up production
-    configuration with your server data
-    (<i>/config/deploy/production.rb</i>):</p>
+<p>
+This creates configuration files, that you can change with your
+parameters. Make sure that you set up production configuration with your
+server data (<i>/config/deploy/production.rb</i>):
+</p>
 
-    <div class="org-src-container">
-      <pre class="src src-ruby">
-role <span style="color: #de935f;">:app</span>, <span style=
-"color: #b5bd68;">%w{user@server}</span>
-role <span style="color: #de935f;">:web</span>, <span style=
-"color: #b5bd68;">%w{user@server}</span>
+<div class="org-src-container">
+<pre class="src src-ruby">
+role <span style="color: #de935f;">:app</span>, <span style="color: #b5bd68;">%w{user@server}</span>
+role <span style="color: #de935f;">:web</span>, <span style="color: #b5bd68;">%w{user@server}</span>
 </pre>
-    </div>
+</div>
 
-    <p>After configuration you can deploy your project with one
-    simple command:</p>
+<p>
+After configuration you can deploy your project with one simple command:
+</p>
 
-    <div class="org-src-container">
-      <pre class="src src-shell">
-bundle exec cap production deploy
+<div class="org-src-container">
+<pre class="src src-shell">bundle exec cap production deploy
 </pre>
-    </div>
+</div>
 
-    <p>This command deploys source to
-    <i>/var/www/website<sub>name</sub></i>, but it does not
-    generate website. To execute <code>jekyll build</code> command
-    you need to install Ruby using <a href=
-    "https://github.com/sstephenson/rbenv">rbenv</a> or <a href=
-    "https://rvm.io/">RVM</a> first.</p>
+<p>
+This command deploys source to <i>/var/www/website<sub>name</sub></i>, but it does not
+generate website. To execute <code>jekyll build</code> command you need to install
+Ruby using <a href="https://github.com/sstephenson/rbenv">rbenv</a> or
+<a href="https://rvm.io/">RVM</a> first.
+</p>
 
-    <p>Next you should add Capistrano plugin for rbenv in
-    <i>Gemfile</i>:</p>
+<p>
+Next you should add Capistrano plugin for rbenv in <i>Gemfile</i>:
+</p>
 
-    <div class="org-src-container">
-      <pre class="src src-ruby">
-gem <span style=
-"color: #b5bd68;">'capistrano-rbenv'</span>, <span style=
-"color: #b5bd68;">'~&gt; 2.0'</span>
+<div class="org-src-container">
+<pre class="src src-ruby">gem <span style="color: #b5bd68;">'capistrano-rbenv'</span>, <span style="color: #b5bd68;">'~&gt; 2.0'</span>
 </pre>
-    </div>
+</div>
 
-    <p>Then execute</p>
+<p>
+Then execute
+</p>
 
-    <div class="org-src-container">
-      <pre class="src src-ruby">
-bundle exec
+<div class="org-src-container">
+<pre class="src src-ruby">bundle exec
 </pre>
-    </div>
+</div>
 
-    <p>And add this line to <i>Capfile</i>:</p>
+<p>
+And add this line to <i>Capfile</i>:
+</p>
 
-    <div class="org-src-container">
-      <pre class="src src-ruby">
-<span style="color: #81a2be;">require</span> <span style=
-"color: #b5bd68;">'capistrano/rbenv'</span>
+<div class="org-src-container">
+<pre class="src src-ruby"><span style="color: #81a2be;">require</span> <span style="color: #b5bd68;">'capistrano/rbenv'</span>
 </pre>
-    </div>
+</div>
 
-    <p>Install Jekyll gem on server and add it to rbenv binaries
-    list in <i>config/deploy.rb</i>:</p>
+<p>
+Install Jekyll gem on server and add it to rbenv binaries list in
+<i>config/deploy.rb</i>:
+</p>
 
-    <div class="org-src-container">
-      <pre class="src src-ruby">
-set <span style=
-"color: #de935f;">:rbenv_map_bins</span>, <span style=
-"color: #b5bd68;">%w{rake gem bundle ruby jekyll}</span>
+<div class="org-src-container">
+<pre class="src src-ruby">set <span style="color: #de935f;">:rbenv_map_bins</span>, <span style="color: #b5bd68;">%w{rake gem bundle ruby jekyll}</span>
 </pre>
-    </div>
+</div>
 
-    <p>Now you can use my <a href=
-    "https://github.com/ne1ro/capistrano-jekyll">capistrano-jekyll</a>
-    gem to execute <code>jekyll build</code> command every time
-    when you deploy your website&#8217;s changes:</p>
+<p>
+Now you can use my
+<a href="https://github.com/ne1ro/capistrano-jekyll">capistrano-jekyll</a> gem to
+execute <code>jekyll build</code> command every time when you deploy your website&rsquo;s
+changes:
+</p>
 
-    <div class="org-src-container">
-      <pre class="src src-ruby">
-<span style="color: #5a5b5a;"># </span><span style=
-"color: #5a5b5a;">Gemfile</span>
+<div class="org-src-container">
+<pre class="src src-ruby"><span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">Gemfile</span>
 gem <span style="color: #b5bd68;">'capistrano-jekyll'</span>
 </pre>
-    </div>
+</div>
 
-    <div class="org-src-container">
-      <pre class="src src-shell">
-$ bundle install &amp;&amp; bundle exec cap production deploy
+<div class="org-src-container">
+<pre class="src src-shell">$ bundle install &amp;&amp; bundle exec cap production deploy
 </pre>
-    </div>
-
-    <div class="taglist">
-      <a href="https://neiro.io/tags.html">Tags</a>: <a href=
-      "https://neiro.io/tag-jekyll.html">jekyll</a> <a href=
-      "https://neiro.io/tag-capistrano.html">capistrano</a>
-      <a href="https://neiro.io/tag-deploy.html">deploy</a>
-    </div>
-  </div>
-
-  <div id="postamble" class="status"></div>
+</div>
+<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-jekyll.html">jekyll</a> <a href="https://neiro.io/tag-capistrano.html">capistrano</a> <a href="https://neiro.io/tag-deploy.html">deploy</a> </div></div>
+<div id="postamble" class="status"></div>
 </body>
 </html>

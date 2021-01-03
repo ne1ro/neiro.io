@@ -5,7 +5,7 @@
 <link rel="alternate"
       type="application/rss+xml"
       href="https://neiro.io/rss.xml"
-      title="RSS feed for https://neiro.io/"/>
+      title="RSS feed for https://neiro.io/">
 <title>Elixir code quality tools and checks</title>
 <meta name="author" content="Aleksei Kuznetsov">
     <meta name="referrer" content="no-referrer">
@@ -13,8 +13,7 @@
     <link href= "static/style.css" rel="stylesheet" type="text/css" />
     <link rel="icon" href="static/favicon.ico"></head>
 <body>
-<div id="preamble" class="status">
-<div class="header">
+<div id="preamble" class="status"><div class="header">
     <a href="https://neiro.io">Neiro - Functional programming, software architecture</a>
   </div></div>
 <div id="content">
@@ -59,7 +58,7 @@ CI, we want to make it more obvious and stop any further checks. This
 can be achieved by running <code>mix compile</code> task with related option:
 </p>
 
-<pre class="example" id="orgeafade4">
+<pre class="example" id="org6da334f">
   mix compile --warnings-as-errors
 </pre>
 </div>
@@ -76,7 +75,7 @@ the formatter and we need to force this option by running <code>mix format</code
 task with the <code>--check-formatted</code> option during CI.
 </p>
 
-<pre class="example" id="org89abf6b">
+<pre class="example" id="orgdfc6f00">
   mix format --check-formatted
 </pre>
 </div>
@@ -97,7 +96,7 @@ In order to start using Credo you need to add this line to your
 <code>mix.exs</code> deps:
 </p>
 
-<pre class="example" id="org3c36121">
+<pre class="example" id="orgd4e8bde">
   {:credo, "~&gt; 0.9.1", only: ~w(dev test)a, runtime: false}
 </pre>
 
@@ -107,7 +106,7 @@ configuration file. For example, you can create <code>config/.credo.exs</code> f
 with this content:
 </p>
 
-<pre class="example" id="org2b9dbd1">
+<pre class="example" id="orgcb98730">
   %{
     #
     # You can have as many configs as you like in the `configs:` field.
@@ -165,7 +164,7 @@ After that, it would be nice to force these settings by running Credo
 mix task with <code>--strict</code> option:
 </p>
 
-<pre class="example" id="org494f771">
+<pre class="example" id="org885f4af">
   mix credo --strict
 </pre>
 </div>
@@ -182,7 +181,7 @@ function. During the CI we want to check if we have any unavailable or
 deprecated functions/modules:
 </p>
 
-<pre class="example" id="orge2c8392">
+<pre class="example" id="org8adccf7">
   mix xref unavailable
   mix xref deprecated
 </pre>
@@ -219,7 +218,7 @@ detect the following types of security issues:
 To install Sobelow you can use the next command:
 </p>
 
-<pre class="example" id="orgd2c29a8">
+<pre class="example" id="orgf4b3a43">
   mix archive.install hex sobelow
 </pre>
 
@@ -227,7 +226,7 @@ To install Sobelow you can use the next command:
 To run Sobelow just start the related mix task:
 </p>
 
-<pre class="example" id="org79dc9c8">
+<pre class="example" id="org19fbbd4">
   mix sobelow
 </pre>
 </div>
@@ -250,7 +249,7 @@ To use Dialyzer in your Elixir application you may want to use
 line to your <code>mix.exs</code> file:
 </p>
 
-<pre class="example" id="orgd43aaa3">
+<pre class="example" id="org975f41c">
   defp deps do
     [{:dialyxir, "~&gt; 0.5", only: [:dev], runtime: false}]
   end
@@ -260,7 +259,7 @@ line to your <code>mix.exs</code> file:
 You can also configure warnings, dependencies and paths in <code>mix.exs</code>:
 </p>
 
-<pre class="example" id="orgd2a8119">
+<pre class="example" id="orgb1cb9f9">
   def project do
     [
     dialyzer: [plt_add_deps: :apps_direct, plt_add_apps: [:wx]]
@@ -275,7 +274,7 @@ You can ignore any unwanted warnings by providing <code>ignore_warnings</code>
 option:
 </p>
 
-<pre class="example" id="org15a636f">
+<pre class="example" id="orga590891">
   def project do
     [dialyzer: [ignore_warnings: "dialyzer.ignore-warnings"]]
   end
@@ -286,7 +285,7 @@ To run dialyzer on the CI add the next option to make sure that the
 build fails in case of any errors:
 </p>
 
-<pre class="example" id="org5cf65e2">
+<pre class="example" id="org5be4b77">
   mix dialyzer --halt-exit-status
 </pre>
 </div>

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <rss version="2.0">
 <channel>
-<title><![CDATA[Neiro - Functional programming, software architecture]]></title>
-<description><![CDATA[Neiro - Functional programming, software architecture]]></description>
+<title><![CDATA[Neiro | Functional programming, software architecture]]></title>
+<description><![CDATA[Neiro | Functional programming, software architecture]]></description>
 <link>https://neiro.io/</link>
-<lastBuildDate>Wed, 30 Dec 2020 14:23:48 +0100</lastBuildDate>
+<lastBuildDate>Sun, 03 Jan 2021 16:54:24 +0100</lastBuildDate>
 <item>
   <title><![CDATA[Migrating from Jekyll to org-static-blog]]></title>
   <description><![CDATA[
@@ -12,37 +12,37 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#org6e5fc4e">1. Org-mode support in existing blog engines</a>
+<li><a href="#org1414219">1. Org-mode support in existing blog engines</a>
 <ul>
-<li><a href="#org389f3c0">1.1. Jekyll</a></li>
-<li><a href="#org6c3c8e1">1.2. Gatsby</a></li>
-<li><a href="#orga24336f">1.3. Emacs itself</a></li>
+<li><a href="#orga7c1a3a">1.1. Jekyll</a></li>
+<li><a href="#orgbba8c57">1.2. Gatsby</a></li>
+<li><a href="#org13f91d6">1.3. Emacs itself</a></li>
 </ul>
 </li>
-<li><a href="#org73fabf0">2. Migration from Jekyll</a>
+<li><a href="#orgf35bddd">2. Migration from Jekyll</a>
 <ul>
-<li><a href="#orgb89449c">2.1. Installation of the org-static-blog</a></li>
-<li><a href="#org5314a3d">2.2. Configuration</a></li>
-<li><a href="#orgca55f31">2.3. Convert markdown to org</a></li>
-<li><a href="#org9dad459">2.4. Writing a new post</a></li>
-<li><a href="#org4db3481">2.5. CI/CD</a></li>
+<li><a href="#org0162f2d">2.1. Installation of the org-static-blog</a></li>
+<li><a href="#org5a5a68b">2.2. Configuration</a></li>
+<li><a href="#orgd2bb681">2.3. Convert markdown to org</a></li>
+<li><a href="#org3ccbc98">2.4. Writing a new post</a></li>
+<li><a href="#orga0b361c">2.5. CI/CD</a></li>
 </ul>
 </li>
-<li><a href="#org78bb84b">3. Issues that are still not solved by migration</a>
+<li><a href="#org2fd2ba4">3. Issues that are still not solved by migration</a>
 <ul>
-<li><a href="#org057ed3d">3.1. Better code highlighting</a></li>
-<li><a href="#org90a8b0b">3.2. Better CI/CD experience</a></li>
-<li><a href="#org6b2899e">3.3. Assets management</a></li>
+<li><a href="#org04ce139">3.1. Better code highlighting</a></li>
+<li><a href="#orge78672e">3.2. Better CI/CD experience</a></li>
+<li><a href="#org60572f8">3.3. Assets management</a></li>
 </ul>
 </li>
-<li><a href="#orgaef5396">4. Conclusion</a></li>
+<li><a href="#org3455834">4. Conclusion</a></li>
 </ul>
 </div>
 </nav>
 <p>
 One of the biggest (and positive) discoveries this year for me was definitely an Emacs.
 I&rsquo;ve decided to switch to this editor after using Vim for almost 8 years as I&rsquo;ve started embracing
-Lisps (especially Clojure) and wanted an editor where I can have a first-class integration.
+Lisps (especially Clojure) and wanted an editor where I can have a first-class integration with these programming languages.
 </p>
 
 <p>
@@ -60,12 +60,12 @@ apply it for my personal blog. However, this was not as simple as I&rsquo;ve exp
 a lot of options.
 </p>
 
-<div id="outline-container-org6e5fc4e" class="outline-2">
-<h2 id="org6e5fc4e"><span class="section-number-2">1</span> Org-mode support in existing blog engines</h2>
+<div id="outline-container-org1414219" class="outline-2">
+<h2 id="org1414219"><span class="section-number-2">1</span> Org-mode support in existing blog engines</h2>
 <div class="outline-text-2" id="text-1">
 </div>
-<div id="outline-container-org389f3c0" class="outline-3">
-<h3 id="org389f3c0"><span class="section-number-3">1.1</span> Jekyll</h3>
+<div id="outline-container-orga7c1a3a" class="outline-3">
+<h3 id="orga7c1a3a"><span class="section-number-3">1.1</span> Jekyll</h3>
 <div class="outline-text-3" id="text-1-1">
 <p>
 Jekyll has <a href="https://github.com/eggcaker/jekyll-org">a support for org mode</a> , however, it&rsquo;s based on an outdated
@@ -73,8 +73,8 @@ Jekyll has <a href="https://github.com/eggcaker/jekyll-org">a support for org mo
 </p>
 </div>
 </div>
-<div id="outline-container-org6c3c8e1" class="outline-3">
-<h3 id="org6c3c8e1"><span class="section-number-3">1.2</span> Gatsby</h3>
+<div id="outline-container-orgbba8c57" class="outline-3">
+<h3 id="orgbba8c57"><span class="section-number-3">1.2</span> Gatsby</h3>
 <div class="outline-text-3" id="text-1-2">
 <p>
 Gatsby.js seems to be a relatively popular choice for building static websites - and it has all
@@ -83,8 +83,8 @@ Gatsby also has an <a href="https://www.gatsbyjs.com/plugins/gatsby-transformer-
 </p>
 </div>
 </div>
-<div id="outline-container-orga24336f" class="outline-3">
-<h3 id="orga24336f"><span class="section-number-3">1.3</span> Emacs itself</h3>
+<div id="outline-container-org13f91d6" class="outline-3">
+<h3 id="org13f91d6"><span class="section-number-3">1.3</span> Emacs itself</h3>
 <div class="outline-text-3" id="text-1-3">
 <p>
 Emacs has a variety of solutions to have some static website or a small blog built from org-mode.
@@ -95,8 +95,8 @@ an extension to the org-mode.
 </div>
 </div>
 
-<div id="outline-container-org73fabf0" class="outline-2">
-<h2 id="org73fabf0"><span class="section-number-2">2</span> Migration from Jekyll</h2>
+<div id="outline-container-orgf35bddd" class="outline-2">
+<h2 id="orgf35bddd"><span class="section-number-2">2</span> Migration from Jekyll</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 I&rsquo;ve had a lot of issues with outdated Jekyll version and my attempts to update it with assets have failed.
@@ -107,18 +107,16 @@ to the <b>org-static-blog</b>.
 </p>
 </div>
 
-<div id="outline-container-orgb89449c" class="outline-3">
-<h3 id="orgb89449c"><span class="section-number-3">2.1</span> Installation of the org-static-blog</h3>
+<div id="outline-container-org0162f2d" class="outline-3">
+<h3 id="org0162f2d"><span class="section-number-3">2.1</span> Installation of the org-static-blog</h3>
 <div class="outline-text-3" id="text-2-1">
 <p>
 It&rsquo;s quite simple - you just need to run from your Emacs
 </p>
 
-<div class="emacs" id="org4c5db52">
-<p>
-package-install
-</p>
-
+<div class="org-src-container">
+<pre class="src src-emacs">package-install
+</pre>
 </div>
 
 <p>
@@ -131,8 +129,8 @@ org-static-blog
 </div>
 </div>
 
-<div id="outline-container-org5314a3d" class="outline-3">
-<h3 id="org5314a3d"><span class="section-number-3">2.2</span> Configuration</h3>
+<div id="outline-container-org5a5a68b" class="outline-3">
+<h3 id="org5a5a68b"><span class="section-number-3">2.2</span> Configuration</h3>
 <div class="outline-text-3" id="text-2-2">
 <p>
 org-static blog has a lot of configuration options, so it&rsquo;s better to refer the <a href="https://github.com/bastibe/org-static-blog#examples">examples and documentation on the website</a>.
@@ -140,33 +138,29 @@ org-static blog has a lot of configuration options, so it&rsquo;s better to refe
 </div>
 </div>
 
-<div id="outline-container-orgca55f31" class="outline-3">
-<h3 id="orgca55f31"><span class="section-number-3">2.3</span> Convert markdown to org</h3>
+<div id="outline-container-orgd2bb681" class="outline-3">
+<h3 id="orgd2bb681"><span class="section-number-3">2.3</span> Convert markdown to org</h3>
 <div class="outline-text-3" id="text-2-3">
 <p>
 This is required step which can be quickly done by simple script, assuming that you have pandoc installed:
 </p>
 
-<div class="shell" id="org9dbc909">
-<p>
-for f in `ls *.md`; do 
-    pandoc -f markdown -t org -o ${f}.org ${f}; 
-done
-</p>
-
+<div class="org-src-container">
+<pre class="src src-shell"><span style="color: #b294bb;">for</span> f<span style="color: #b294bb;"> in</span> <span style="color: #c5c8c6; font-weight: bold;">`</span><span style="color: #c5c8c6; font-weight: bold;">ls</span><span style="color: #c5c8c6; font-weight: bold;"> *.md`</span>; <span style="color: #b294bb;">do</span> 
+    pandoc -f markdown -t org -o $<span style="color: #b294bb;">{</span><span style="color: #cc6666;">f</span><span style="color: #b294bb;">}</span>.org $<span style="color: #b294bb;">{</span><span style="color: #cc6666;">f</span><span style="color: #b294bb;">}</span>; 
+<span style="color: #b294bb;">done</span>
+</pre>
 </div>
 </div>
 </div>
 
-<div id="outline-container-org9dad459" class="outline-3">
-<h3 id="org9dad459"><span class="section-number-3">2.4</span> Writing a new post</h3>
+<div id="outline-container-org3ccbc98" class="outline-3">
+<h3 id="org3ccbc98"><span class="section-number-3">2.4</span> Writing a new post</h3>
 <div class="outline-text-3" id="text-2-4">
-<div class="emacs" id="org1c9e6aa">
-<p>
-org-static-blog-mode
+<div class="org-src-container">
+<pre class="src src-emacs">org-static-blog-mode
 org-static-blog-create-new-post
-</p>
-
+</pre>
 </div>
 
 <p>
@@ -176,8 +170,8 @@ This will build a new HTML page in the <b>/blog</b> directory.
 </div>
 </div>
 
-<div id="outline-container-org4db3481" class="outline-3">
-<h3 id="org4db3481"><span class="section-number-3">2.5</span> CI/CD</h3>
+<div id="outline-container-orga0b361c" class="outline-3">
+<h3 id="orga0b361c"><span class="section-number-3">2.5</span> CI/CD</h3>
 <div class="outline-text-3" id="text-2-5">
 <p>
 So far the simplest solution I&rsquo;ve found is just to keep built HTML version of the website in the repo and deploy it on
@@ -187,24 +181,24 @@ each change. <a href="https://gitlab.com/_zngguvnf/org-static-blog-example">Ther
 </div>
 </div>
 
-<div id="outline-container-org78bb84b" class="outline-2">
-<h2 id="org78bb84b"><span class="section-number-2">3</span> Issues that are still not solved by migration</h2>
+<div id="outline-container-org2fd2ba4" class="outline-2">
+<h2 id="org2fd2ba4"><span class="section-number-2">3</span> Issues that are still not solved by migration</h2>
 <div class="outline-text-2" id="text-3">
 <p>
 The migration was not ideal, and there are still some pain points and issues not solved:
 </p>
 </div>
 
-<div id="outline-container-org057ed3d" class="outline-3">
-<h3 id="org057ed3d"><span class="section-number-3">3.1</span> Better code highlighting</h3>
+<div id="outline-container-org04ce139" class="outline-3">
+<h3 id="org04ce139"><span class="section-number-3">3.1</span> Better code highlighting</h3>
 <div class="outline-text-3" id="text-3-1">
 <p>
-Some programming languages are highlighted quite poorly.
+Some programming languages are highlighted poorly.
 </p>
 </div>
 </div>
-<div id="outline-container-org90a8b0b" class="outline-3">
-<h3 id="org90a8b0b"><span class="section-number-3">3.2</span> Better CI/CD experience</h3>
+<div id="outline-container-orge78672e" class="outline-3">
+<h3 id="orge78672e"><span class="section-number-3">3.2</span> Better CI/CD experience</h3>
 <div class="outline-text-3" id="text-3-2">
 <p>
 There is a way to build the website right from CI, e.g. by executing Emacs Lisp code from the container,
@@ -212,8 +206,8 @@ though it may require some setup &amp; efforts spent before.
 </p>
 </div>
 </div>
-<div id="outline-container-org6b2899e" class="outline-3">
-<h3 id="org6b2899e"><span class="section-number-3">3.3</span> Assets management</h3>
+<div id="outline-container-org60572f8" class="outline-3">
+<h3 id="org60572f8"><span class="section-number-3">3.3</span> Assets management</h3>
 <div class="outline-text-3" id="text-3-3">
 <p>
 Probably I&rsquo;ll still need to configure Webpack, stylesheets, javascripts to make the website looking more neat
@@ -223,8 +217,8 @@ and more fully featured.
 </div>
 </div>
 
-<div id="outline-container-orgaef5396" class="outline-2">
-<h2 id="orgaef5396"><span class="section-number-2">4</span> Conclusion</h2>
+<div id="outline-container-org3455834" class="outline-2">
+<h2 id="org3455834"><span class="section-number-2">4</span> Conclusion</h2>
 <div class="outline-text-2" id="text-4">
 <p>
 Switching from Jekyll to <b>org-static-mode</b> definitely improved the blogging experience, and now it&rsquo;s a way more
@@ -4382,7 +4376,7 @@ more about Trine, you can take a look at it&rsquo;s
   <pubDate>Thu, 31 Dec 2015 10:00:00 +0100</pubDate>
 </item>
 <item>
-  <title><![CDATA[#+title: Functional Ruby gem]]></title>
+  <title><![CDATA[Functional Ruby gem]]></title>
   <description><![CDATA[
 <nav id="table-of-contents">
 <h2>Table of Contents</h2>
@@ -5199,7 +5193,7 @@ Ruby on Rails.
   <pubDate>Thu, 14 May 2015 10:00:00 +0200</pubDate>
 </item>
 <item>
-  <title><![CDATA[#+title: Hello world!]]></title>
+  <title><![CDATA[Hello world!]]></title>
   <description><![CDATA[
 <p>
 Welcome! This is my blog about web development, functional programming
@@ -5225,7 +5219,7 @@ I love programming as endless act of self-perfection.
 </p>
 
 <p>
-This is why i would share with you my hacks, reviews, thoughts about
+This is why I want to share with you my hacks, reviews, thoughts about
 programming, code snippets and more interesting stuff.
 </p>
 <div class="taglist"></div>]]></description>

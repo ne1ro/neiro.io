@@ -5,7 +5,7 @@
 <link rel="alternate"
       type="application/rss+xml"
       href="https://neiro.io/rss.xml"
-      title="RSS feed for https://neiro.io/"/>
+      title="RSS feed for https://neiro.io/">
 <title>Markov chains in Elixir</title>
 <meta name="author" content="Aleksei Kuznetsov">
     <meta name="referrer" content="no-referrer">
@@ -13,8 +13,7 @@
     <link href= "static/style.css" rel="stylesheet" type="text/css" />
     <link rel="icon" href="static/favicon.ico"></head>
 <body>
-<div id="preamble" class="status">
-<div class="header">
+<div id="preamble" class="status"><div class="header">
     <a href="https://neiro.io">Neiro - Functional programming, software architecture</a>
   </div></div>
 <div id="content">
@@ -42,7 +41,7 @@ chains as statistical models for real-world processes.
 </p>
 
 
-<figure id="orgcf23e08">
+<figure id="org8091ed3">
 <img src="https://upload.wikimedia.org/wikipedia/commons/7/7a/Markov_Chain_weather_model_matrix_as_a_graph.png" alt="Markov_Chain_weather_model_matrix_as_a_graph.png">
 
 <figcaption><span class="figure-number">Figure 1: </span>Simple Markov chain</figcaption>
@@ -62,7 +61,7 @@ within Markov chain.
 Let&rsquo;s create an entry point of new application:
 </p>
 
-<pre class="example" id="orgc0b3545">
+<pre class="example" id="org1075367">
     # lib/elixir markov chain.ex
     defmodule ElixirMarkovChain do
       alias ElixirMarkovChain.Model
@@ -87,7 +86,7 @@ At first, to process the source file for output sentences, we need to
 tokenize it:
 </p>
 
-<pre class="example" id="orgb018172">
+<pre class="example" id="org7cd34df">
     # lib/elixir_markov_chain/tokenizer.ex
     defmodule ElixirMarkovChain.Tokenizer do
       def tokenize(text) do
@@ -104,7 +103,7 @@ Next we need to realize Markov model. We&rsquo;ll use agents to share state in
 application:
 </p>
 
-<pre class="example" id="org42ab4c1">
+<pre class="example" id="orgb4597e7">
     # lib/elixir_markov_chain/model.ex
     defmodule ElixirMarkovChain.Model do
       import ElixirMarkovChain.Tokenizer
@@ -162,7 +161,7 @@ When our Markov model is done, we can use it in application. For this
 example, we&rsquo;ll build a random sentence generator based on text source:
 </p>
 
-<pre class="example" id="orgcdf82e1">
+<pre class="example" id="org88069ef">
     # lib/elixir_markov_chain/generator.ex
     defmodule ElixirMarkovChain.Generator do
       alias ElixirMarkovChain.Model
@@ -210,7 +209,7 @@ Now, when basic logic is implemented, we need to fill <code>process_source</code
 function:
 </p>
 
-<pre class="example" id="org98ebf08">
+<pre class="example" id="org5c71903">
     # lib/elixir_markov_chain.ex
     defp process_source(text) do
       {:ok, model} = Model.start_link

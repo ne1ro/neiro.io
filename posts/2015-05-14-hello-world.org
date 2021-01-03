@@ -1,4 +1,4 @@
-#+TITLE:#+title: Hello world!
+#+TITLE: Hello world!
 #+date: <2015-05-14 10:00>
 
 Welcome! This is my blog about web development, functional programming

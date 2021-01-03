@@ -5,7 +5,7 @@
 <link rel="alternate"
       type="application/rss+xml"
       href="https://neiro.io/rss.xml"
-      title="RSS feed for https://neiro.io/"/>
+      title="RSS feed for https://neiro.io/">
 <title>Elixir continious integration with CircleCI</title>
 <meta name="author" content="Aleksei Kuznetsov">
     <meta name="referrer" content="no-referrer">
@@ -13,8 +13,7 @@
     <link href= "static/style.css" rel="stylesheet" type="text/css" />
     <link rel="icon" href="static/favicon.ico"></head>
 <body>
-<div id="preamble" class="status">
-<div class="header">
+<div id="preamble" class="status"><div class="header">
     <a href="https://neiro.io">Neiro - Functional programming, software architecture</a>
   </div></div>
 <div id="content">
@@ -70,7 +69,7 @@ Let&rsquo;s start by creating a CircleCI configuration file in
 <code>.circleci/config.yml</code>:
 </p>
 
-<pre class="example" id="org786651f">
+<pre class="example" id="org8226fa8">
   version: 2  # use CircleCI 2.0 instead of CircleCI Classic
   jobs:  # basic units of work in a run
     build:  # runs not using Workflows must have a `build` job as entry point
@@ -127,7 +126,7 @@ above:
 {% raw %}
 </p>
 
-<pre class="example" id="org6aee248">
+<pre class="example" id="orge96e9a8">
         - restore_cache:  # restores saved mix cache
             keys:  # list of cache keys, in decreasing specificity
               - v1-mix-cache-{{ .Branch }}-{{ checksum "mix.lock" }}
@@ -205,7 +204,7 @@ Let&rsquo;s continue filling up our configuration file by adding a new
 <code>deploy</code> job:
 </p>
 
-<pre class="example" id="orgd295eca">
+<pre class="example" id="org19c3a68">
     deploy:
       docker:
         - image: circleci/elixir:1.6
@@ -241,7 +240,7 @@ accordingly. We can achieve this by using CircleCI workflow and
 providing a simple configuration at the bottom of our config file:
 </p>
 
-<pre class="example" id="orga144a8e">
+<pre class="example" id="org13a0ea2">
   workflows:
     version: 2
     build-and-deploy:

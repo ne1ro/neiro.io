@@ -1,135 +1,97 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <link rel="alternate" type="application/rss+xml" href=
-  "https://neiro.io/rss.xml" title=
-  "RSS feed for https://neiro.io/">
-
-  <title>Jekyll with Rails assets</title>
-  <meta name="author" content="Aleksei Kuznetsov">
-  <meta name="referrer" content="no-referrer">
-  <link href=
-  "https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css"
-  rel="stylesheet" type="text/css">
-  <link href="static/style.css" rel="stylesheet" type="text/css">
-  <link rel="icon" href="static/favicon.ico">
-</head>
-
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://neiro.io/rss.xml"
+      title="RSS feed for https://neiro.io/">
+<title>Jekyll with Rails assets</title>
+<meta name="author" content="Aleksei Kuznetsov">
+    <meta name="referrer" content="no-referrer">
+    <link href= "https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet" type="text/css" />
+    <link href= "static/style.css" rel="stylesheet" type="text/css" />
+    <link rel="icon" href="static/favicon.ico"></head>
 <body>
-  <div id="preamble" class="status">
-    <div class="header">
-      <a href="https://neiro.io">Neiro - Functional programming,
-      software architecture</a>
-    </div>
-  </div>
+<div id="preamble" class="status"><div class="header">
+    <a href="https://neiro.io">Neiro - Functional programming, software architecture</a>
+  </div></div>
+<div id="content">
+<div class="post-date">14 Mai 2015</div><h1 class="post-title"><a href="https://neiro.io/2015-05-14-jekyll-with-rails-assets.html">Jekyll with Rails assets</a></h1>
+<p>
+<a href="http://jekyllrb.com/">Jekyll</a> is the great static website generator,
+that can be easily used for blogs, portfolio pages, galleries and others
+simple projects. It`s very simple, flexible tool that can be upgraded
+with hundreds powerful plugins.
+</p>
 
-  <div id="content">
-    <div class="post-date">
-      14 May 2015
-    </div>
+<p>
+If you like Ruby on Rails, you might want to use Rails assets pipeline
+when you work with front-end in Jekyll. If so, here are
+<a href="https://github.com/jekyll-assets/jekyll-assets">jekyll-assets</a>. This
+project allows you to use some Rails-like assets pipeline functionality:
+</p>
 
-    <h1 class="post-title"><a href=
-    "https://neiro.io/2015-05-14-jekyll-with-rails-assets.html">Jekyll
-    with Rails assets</a></h1>
+<ul class="org-ul">
+<li>SASS, LESS, Coffeescript and even ERB</li>
+<li><p>
+Rails assets dependencies management:
+</p>
 
-    <p><a href="http://jekyllrb.com/">Jekyll</a> is the great
-    static website generator, that can be easily used for blogs,
-    portfolio pages, galleries and others simple projects. It`s
-    very simple, flexible tool that can be upgraded with hundreds
-    powerful plugins.</p>
-
-    <p>If you like Ruby on Rails, you might want to use Rails
-    assets pipeline when you work with front-end in Jekyll. If so,
-    here are <a href=
-    "https://github.com/jekyll-assets/jekyll-assets">jekyll-assets</a>.
-    This project allows you to use some Rails-like assets pipeline
-    functionality:</p>
-
-    <ul class="org-ul">
-      <li>SASS, LESS, Coffeescript and even ERB</li>
-
-      <li>
-        <p>Rails assets dependencies management:</p>
-
-        <div class="org-src-container">
-          <pre class="src src-javascript">
-  <span style="color: #5a5b5a;">//</span><span style=
-"color: #5a5b5a;">=require 'jquery'</span>
-  <span style="color: #5a5b5a;">//</span><span style=
-"color: #5a5b5a;">=require 'parallax'</span>
-  <span style="color: #5a5b5a;">//</span><span style=
-"color: #5a5b5a;">=require 'slideout'</span>
+<div class="org-src-container">
+<pre class="src src-javascript">  <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=require 'jquery'</span>
+  <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=require 'parallax'</span>
+  <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=require 'slideout'</span>
 </pre>
-        </div>
-      </li>
+</div></li>
 
-      <li>Minification and compression for Javascript and CSS</li>
+<li>Minification and compression for Javascript and CSS</li>
+<li>Gzipped versions of assets</li>
+</ul>
 
-      <li>Gzipped versions of assets</li>
-    </ul>
+<p>
+But what if you also wants to use popular Bower packages with Jekyll and
+jekyll-assets?<br>
+First, you need <a href="https://rails-assets.org/">Rails assets</a> project,
+that allows you to use any Bower modules with Bundler. You just need to
+add required packages in your <i>Gemfile</i> like this:
+</p>
 
-    <p>But what if you also wants to use popular Bower packages
-    with Jekyll and jekyll-assets?<br>
-    First, you need <a href="https://rails-assets.org/">Rails
-    assets</a> project, that allows you to use any Bower modules
-    with Bundler. You just need to add required packages in your
-    <i>Gemfile</i> like this:</p>
-
-    <div class="org-src-container">
-      <pre class="src src-ruby">
-source <span style=
-"color: #b5bd68;">'https://rails-assets.org'</span> <span style=
-"color: #b294bb;">do</span>
+<div class="org-src-container">
+<pre class="src src-ruby">source <span style="color: #b5bd68;">'https://rails-assets.org'</span> <span style="color: #b294bb;">do</span>
   gem <span style="color: #b5bd68;">'rails-assets-jquery'</span>
-  gem <span style=
-"color: #b5bd68;">'rails-assets-normalize-scss'</span>
-  gem <span style=
-"color: #b5bd68;">'rails-assets-slideout.js'</span>
+  gem <span style="color: #b5bd68;">'rails-assets-normalize-scss'</span>
+  gem <span style="color: #b5bd68;">'rails-assets-slideout.js'</span>
 <span style="color: #b294bb;">end</span>
 </pre>
-    </div>
+</div>
 
-    <p>It works great with Ruby on Rails, but you need some hack to
-    use it with jekyll-assets - by default, jekyll-assets
-    configuration does not include rails-assets paths. To fix this,
-    you can load paths with <b>Sprockets</b> in your Jekyll plugin
-    file (<b>_plugins/ext.rb</b>) .</p>
+<p>
+It works great with Ruby on Rails, but you need some hack to use it
+with jekyll-assets - by default, jekyll-assets configuration does not
+include rails-assets paths. To fix this, you can load paths with
+<b>Sprockets</b> in your Jekyll plugin file (<b>_plugins/ext.rb</b>) .
+</p>
 
-    <div class="org-src-container">
-      <pre class="src src-ruby">
-<span style="color: #81a2be;">require</span> <span style=
-"color: #b5bd68;">'jekyll-assets'</span>
-<span style="color: #81a2be;">require</span> <span style=
-"color: #b5bd68;">'bundler/setup'</span>
+<div class="org-src-container">
+<pre class="src src-ruby"><span style="color: #81a2be;">require</span> <span style="color: #b5bd68;">'jekyll-assets'</span>
+<span style="color: #81a2be;">require</span> <span style="color: #b5bd68;">'bundler/setup'</span>
 
-<span style="color: #f0c674;">Bundler</span>.require(<span style=
-"color: #de935f;">:default</span>, <span style=
-"color: #b5bd68;">'development'</span>)
+<span style="color: #f0c674;">Bundler</span>.require(<span style="color: #de935f;">:default</span>, <span style="color: #b5bd68;">'development'</span>)
 
-<span style="color: #b294bb;">if</span> <span style=
-"color: #b294bb;">defined?</span>(<span style=
-"color: #f0c674;">RailsAssets</span>)
-  <span style=
-"color: #f0c674;">RailsAssets</span>.load_paths.each <span style=
-"color: #b294bb;">do</span> |path|
+<span style="color: #b294bb;">if</span> <span style="color: #b294bb;">defined?</span>(<span style="color: #f0c674;">RailsAssets</span>)
+  <span style="color: #f0c674;">RailsAssets</span>.load_paths.each <span style="color: #b294bb;">do</span> |path|
     <span style="color: #f0c674;">Sprockets</span>.append_path path
   <span style="color: #b294bb;">end</span>
 <span style="color: #b294bb;">end</span>
 </pre>
-    </div>
+</div>
 
-    <p>When you&#8217;ve completed this setup, you can manage your
-    assets almost like in Ruby on Rails.</p>
-
-    <div class="taglist">
-      <a href="https://neiro.io/tags.html">Tags</a>: <a href=
-      "https://neiro.io/tag-jekyll.html">jekyll</a> <a href=
-      "https://neiro.io/tag-rails.html">rails</a>
-    </div>
-  </div>
-
-  <div id="postamble" class="status"></div>
+<p>
+When you&rsquo;ve completed this setup, you can manage your assets almost like in
+Ruby on Rails.
+</p>
+<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-jekyll.html">jekyll</a> <a href="https://neiro.io/tag-rails.html">rails</a> </div></div>
+<div id="postamble" class="status"></div>
 </body>
 </html>

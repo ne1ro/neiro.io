@@ -5,7 +5,7 @@
 <link rel="alternate"
       type="application/rss+xml"
       href="https://neiro.io/rss.xml"
-      title="RSS feed for https://neiro.io/"/>
+      title="RSS feed for https://neiro.io/">
 <title>Query objects in Ruby on Rails</title>
 <meta name="author" content="Aleksei Kuznetsov">
     <meta name="referrer" content="no-referrer">
@@ -13,12 +13,11 @@
     <link href= "static/style.css" rel="stylesheet" type="text/css" />
     <link rel="icon" href="static/favicon.ico"></head>
 <body>
-<div id="preamble" class="status">
-<div class="header">
+<div id="preamble" class="status"><div class="header">
     <a href="https://neiro.io">Neiro - Functional programming, software architecture</a>
   </div></div>
 <div id="content">
-<div class="post-date">05 Oct 2016</div><h1 class="post-title"><a href="https://neiro.io/2016-10-05-query-objects-in-ruby-on-rails.md.html">Query objects in Ruby on Rails</a></h1>
+<div class="post-date">05 Okt 2016</div><h1 class="post-title"><a href="https://neiro.io/2016-10-05-query-objects-in-ruby-on-rails.md.html">Query objects in Ruby on Rails</a></h1>
 <nav id="table-of-contents">
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
@@ -52,7 +51,7 @@ queries in plain Ruby.
 </p>
 
 
-<figure id="org65b1dcd">
+<figure id="org80086cc">
 <img src="https://cdn-images-1.medium.com/max/1600/1*-oIlwIWlt0BDN4b5a9rRCQ.png" alt="1*-oIlwIWlt0BDN4b5a9rRCQ.png">
 
 </figure>
@@ -140,7 +139,7 @@ class Article &lt; ActiveRecord::Base
 SORT<sub>OPTIONS</sub> = %w(by<sub>date</sub> by<sub>title</sub> by<sub>author</sub>).freeze
 </p>
 
-<pre class="example" id="orgcad56d9">
+<pre class="example" id="org19e36d0">
   def initialize(params = {}, relation = Article.includes(:user))
     @relation = relation
     @params = params
@@ -170,7 +169,7 @@ index @articles = OrderedArticlesQuery.new(sort<sub>query</sub><sub>params</sub>
 end
 </p>
 
-<pre class="example" id="org6088d49">
+<pre class="example" id="org1b08963">
   private
 
   def sort_query_params

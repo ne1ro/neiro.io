@@ -9,12 +9,15 @@
 <title>Postgres full-text search using Ecto</title>
 <meta name="author" content="Aleksei Kuznetsov">
     <meta name="referrer" content="no-referrer">
-    <link href= "https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet" type="text/css" />
-    <link href= "static/style.css" rel="stylesheet" type="text/css" />
-    <link rel="icon" href="static/favicon.ico"></head>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet" type="text/css" />
+    <link href="static/style.css" rel="stylesheet" type="text/css" />
+    <link rel="icon" href="static/favicon.ico">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link rel="canonical" href="https://neiro.io/" />
+    <link rel="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"/></head>
 <body>
 <div id="preamble" class="status"><div class="header">
-    <a href="https://neiro.io">Neiro - Functional programming, software architecture</a>
+    <a href="https://neiro.io">Neiro | Functional programming, software architecture</a>
   </div></div>
 <div id="content">
 <div class="post-date">21 Jan 2018</div><h1 class="post-title"><a href="https://neiro.io/2018-01-21-postgres-full-text-search-using-ecto.md.html">Postgres full-text search using Ecto</a></h1>
@@ -63,7 +66,7 @@ Let&rsquo;s start by creating a migration. Create a new Elixir project and a
 new migration in priv/repo/migrations:
 </p>
 
-<pre class="example" id="orgfec87fe">
+<pre class="example" id="org4fb3c58">
   defmodule App.Repo.Migrations.IntroducePgSearch do
     @moduledoc """
     Create postgres extension and indices
@@ -99,7 +102,7 @@ defined. In that case we can implement a simple search query that can be
 used in your contexts or controllers:
 </p>
 
-<pre class="example" id="orgc63abab">
+<pre class="example" id="org9e106e4">
   defmodule App.Users.Search do
     @moduledoc """
     Implementation of the full-text user search
@@ -123,7 +126,7 @@ though.
 We need to escape all of non-words characters from user&rsquo;s input:
 </p>
 
-<pre class="example" id="orgeef22cf">
+<pre class="example" id="orgcb10c27">
   String.replace(term, ~r/\W/u, "")
 </pre>
 
@@ -132,7 +135,7 @@ Also we need to allow to search by prefix - beginning of the word. Let&rsquo;s
 add :* to our search term*:
 </p>
 
-<pre class="example" id="org6829647">
+<pre class="example" id="org3180b76">
   defp prefix_search(term), do: String.replace(term, ~r/\W/u, "") &lt;&gt; ":*"
 </pre>
 
@@ -141,7 +144,7 @@ Now we need to implement the search by using Ecto&rsquo;s fragment macro and
 to<sub>tsquery</sub> PostgreSQL function:
 </p>
 
-<pre class="example" id="orgde667c7">
+<pre class="example" id="org48e5518">
   def run(query, search_term) do
       where(
         query,
@@ -159,7 +162,7 @@ Let&rsquo;s take a look at the implementation. At first, we need to compose a
 search token by joining columns:
 </p>
 
-<pre class="example" id="org44ec9be">
+<pre class="example" id="org0c5f9b2">
   to_tsvector('english', username || ' ' || first_name || ' ' || coalesce(last_name, ' ')) @@ to_tsquery(?)
 </pre>
 
@@ -173,7 +176,7 @@ But this result won&rsquo;t be as fast as we wanted. Let&rsquo;s suppose that we
 have <i>11K</i> users:
 </p>
 
-<pre class="example" id="orge13fce4">
+<pre class="example" id="org925875e">
   User |&gt; App.Users.Search.run("meta") |&gt; Repo.explain
 
   ###
@@ -199,7 +202,7 @@ order to improve performance of full-text queries. Let&rsquo;s modify our
 transaction:
 </p>
 
-<pre class="example" id="org3806592">
+<pre class="example" id="org754052c">
   defmodule App.Repo.Migrations.IntroducePgSearch do
     @moduledoc """
     Create postgres extension and indices
@@ -227,7 +230,7 @@ transaction:
 Now run mix do ecto.rollback, eco.migrate and try to run the search:
 </p>
 
-<pre class="example" id="orgaa915df">
+<pre class="example" id="org8e6ad3f">
   User |&gt; App.Users.Search.run("meta") |&gt; Repo.explain
 
   ###

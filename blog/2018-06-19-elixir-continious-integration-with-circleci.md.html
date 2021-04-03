@@ -9,12 +9,15 @@
 <title>Elixir continious integration with CircleCI</title>
 <meta name="author" content="Aleksei Kuznetsov">
     <meta name="referrer" content="no-referrer">
-    <link href= "https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet" type="text/css" />
-    <link href= "static/style.css" rel="stylesheet" type="text/css" />
-    <link rel="icon" href="static/favicon.ico"></head>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet" type="text/css" />
+    <link href="static/style.css" rel="stylesheet" type="text/css" />
+    <link rel="icon" href="static/favicon.ico">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link rel="canonical" href="https://neiro.io/" />
+    <link rel="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"/></head>
 <body>
 <div id="preamble" class="status"><div class="header">
-    <a href="https://neiro.io">Neiro - Functional programming, software architecture</a>
+    <a href="https://neiro.io">Neiro | Functional programming, software architecture</a>
   </div></div>
 <div id="content">
 <div class="post-date">19 Jun 2018</div><h1 class="post-title"><a href="https://neiro.io/2018-06-19-elixir-continious-integration-with-circleci.md.html">Elixir continious integration with CircleCI</a></h1>
@@ -69,7 +72,7 @@ Let&rsquo;s start by creating a CircleCI configuration file in
 <code>.circleci/config.yml</code>:
 </p>
 
-<pre class="example" id="org8226fa8">
+<pre class="example" id="orgb16aa85">
   version: 2  # use CircleCI 2.0 instead of CircleCI Classic
   jobs:  # basic units of work in a run
     build:  # runs not using Workflows must have a `build` job as entry point
@@ -126,7 +129,7 @@ above:
 {% raw %}
 </p>
 
-<pre class="example" id="orge96e9a8">
+<pre class="example" id="orgbc1b385">
         - restore_cache:  # restores saved mix cache
             keys:  # list of cache keys, in decreasing specificity
               - v1-mix-cache-{{ .Branch }}-{{ checksum "mix.lock" }}
@@ -204,7 +207,7 @@ Let&rsquo;s continue filling up our configuration file by adding a new
 <code>deploy</code> job:
 </p>
 
-<pre class="example" id="org19c3a68">
+<pre class="example" id="org7e4a2f7">
     deploy:
       docker:
         - image: circleci/elixir:1.6
@@ -240,7 +243,7 @@ accordingly. We can achieve this by using CircleCI workflow and
 providing a simple configuration at the bottom of our config file:
 </p>
 
-<pre class="example" id="org13a0ea2">
+<pre class="example" id="org01db531">
   workflows:
     version: 2
     build-and-deploy:

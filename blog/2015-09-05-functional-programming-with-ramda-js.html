@@ -9,12 +9,15 @@
 <title>Functional programming with Ramda.js</title>
 <meta name="author" content="Aleksei Kuznetsov">
     <meta name="referrer" content="no-referrer">
-    <link href= "https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet" type="text/css" />
-    <link href= "static/style.css" rel="stylesheet" type="text/css" />
-    <link rel="icon" href="static/favicon.ico"></head>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet" type="text/css" />
+    <link href="static/style.css" rel="stylesheet" type="text/css" />
+    <link rel="icon" href="static/favicon.ico">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link rel="canonical" href="https://neiro.io/" />
+    <link rel="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"/></head>
 <body>
 <div id="preamble" class="status"><div class="header">
-    <a href="https://neiro.io">Neiro - Functional programming, software architecture</a>
+    <a href="https://neiro.io">Neiro | Functional programming, software architecture</a>
   </div></div>
 <div id="content">
 <div class="post-date">05 Sep 2015</div><h1 class="post-title"><a href="https://neiro.io/2015-09-05-functional-programming-with-ramda-js.html">Functional programming with Ramda.js</a></h1>
@@ -77,9 +80,9 @@ let&rsquo;s create new <i>.js</i> file:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-javascript"><span style="color: #5a5b5a;">#!/usr/bin/env babel-node</span>
+<pre class="src src-javascript"><span style="color: #a5a4a5;">#!/usr/bin/env babel-node</span>
 
-<span style="color: #b294bb;">import</span> R from <span style="color: #b5bd68;">'ramda'</span>;
+<span style="color: #8959a8;">import</span> R from <span style="color: #718c00;">'ramda'</span>;
 </pre>
 </div>
 
@@ -89,22 +92,22 @@ Ramda.js API has some general use functions:
 
 <div class="org-src-container">
 <pre class="src src-javascript">
-<span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">Typing let str = 'test';</span>
-R.is(String, str); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; true // The same with currying</span>
-R.is(String)(str); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; true</span>
-<span style="color: #b294bb;">let</span> <span style="color: #cc6666;">isString</span> = R.is(String); isString(<span style="color: #b5bd68;">'string'</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; true</span>
-R.type(isString); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; String</span>
+<span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">Typing let str = 'test';</span>
+R.is(String, str); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; true // The same with currying</span>
+R.is(String)(str); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; true</span>
+<span style="color: #8959a8;">let</span> <span style="color: #c82829;">isString</span> = R.is(String); isString(<span style="color: #718c00;">'string'</span>); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; true</span>
+R.type(isString); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; String</span>
 
-<span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">Math</span>
-R.add(<span style="color: #de935f; font-weight: bold;">100</span>, <span style="color: #de935f; font-weight: bold;">500</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 600</span>
-R.add(<span style="color: #de935f; font-weight: bold;">100</span>)(<span style="color: #de935f; font-weight: bold;">500</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 600</span>
-R.mean([<span style="color: #de935f; font-weight: bold;">2</span>,<span style="color: #de935f; font-weight: bold;">3</span>,<span style="color: #de935f; font-weight: bold;">7</span>]); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 4 R.sum(R.range(1, 5)); //=&gt; 10</span>
+<span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">Math</span>
+R.add(<span style="color: #f5871f; font-weight: bold;">100</span>, <span style="color: #f5871f; font-weight: bold;">500</span>); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; 600</span>
+R.add(<span style="color: #f5871f; font-weight: bold;">100</span>)(<span style="color: #f5871f; font-weight: bold;">500</span>); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; 600</span>
+R.mean([<span style="color: #f5871f; font-weight: bold;">2</span>,<span style="color: #f5871f; font-weight: bold;">3</span>,<span style="color: #f5871f; font-weight: bold;">7</span>]); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; 4 R.sum(R.range(1, 5)); //=&gt; 10</span>
 
-<span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">Logic</span>
-R.and(<span style="color: #de935f;">true</span>, <span style="color: #de935f;">false</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; false</span>
-R.and([])(<span style="color: #de935f; font-weight: bold;">0</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 0</span>
-R.not(<span style="color: #de935f; font-weight: bold;">1</span>);<span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; false</span>
-R.both(isString, R.is(String))(str); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">=&gt; true</span>
+<span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">Logic</span>
+R.and(<span style="color: #f5871f;">true</span>, <span style="color: #f5871f;">false</span>); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; false</span>
+R.and([])(<span style="color: #f5871f; font-weight: bold;">0</span>); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; 0</span>
+R.not(<span style="color: #f5871f; font-weight: bold;">1</span>);<span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; false</span>
+R.both(isString, R.is(String))(str); <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">=&gt; true</span>
 </pre>
 </div>
 
@@ -115,16 +118,16 @@ functions:
 
 <div class="org-src-container">
 <pre class="src src-javascript">
-<span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">Lists</span>
-<span style="color: #b294bb;">let</span> <span style="color: #cc6666;">animals</span> = [ { name: <span style="color: #b5bd68;">'goose'</span>,
-type: <span style="color: #b5bd68;">'bird'</span>, color: <span style="color: #b5bd68;">'white'</span> }, { name: <span style="color: #b5bd68;">'parrot'</span>, type: <span style="color: #b5bd68;">'bird'</span>, color:
-<span style="color: #b5bd68;">'yellow'</span> }, { name: <span style="color: #b5bd68;">'cat'</span>, type: <span style="color: #b5bd68;">'mammal'</span>, color: <span style="color: #b5bd68;">'grey'</span> }];
+<span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">Lists</span>
+<span style="color: #8959a8;">let</span> <span style="color: #c82829;">animals</span> = [ { name: <span style="color: #718c00;">'goose'</span>,
+type: <span style="color: #718c00;">'bird'</span>, color: <span style="color: #718c00;">'white'</span> }, { name: <span style="color: #718c00;">'parrot'</span>, type: <span style="color: #718c00;">'bird'</span>, color:
+<span style="color: #718c00;">'yellow'</span> }, { name: <span style="color: #718c00;">'cat'</span>, type: <span style="color: #718c00;">'mammal'</span>, color: <span style="color: #718c00;">'grey'</span> }];
 
-R.map(animal =&gt; animal.color + <span style="color: #b5bd68;">' '</span> + animal.name, animals); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; [</span>
-<span style="color: #b5bd68;">'white goose'</span>, <span style="color: #b5bd68;">'yellow parrot'</span>, <span style="color: #b5bd68;">'grey cat'</span> ] R.head(animals).name; <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt;</span>
-goose R.last(animals).name; <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; cat</span>
-R.uniq(R.pluck(<span style="color: #b5bd68;">'type'</span>, animals)); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; [ 'bird', 'mammal' ]</span>
-R.length(R.filter(animal =&gt; animal.type === <span style="color: #b5bd68;">'bird'</span>, animals)); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 2</span>
+R.map(animal =&gt; animal.color + <span style="color: #718c00;">' '</span> + animal.name, animals); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; [</span>
+<span style="color: #718c00;">'white goose'</span>, <span style="color: #718c00;">'yellow parrot'</span>, <span style="color: #718c00;">'grey cat'</span> ] R.head(animals).name; <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt;</span>
+goose R.last(animals).name; <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; cat</span>
+R.uniq(R.pluck(<span style="color: #718c00;">'type'</span>, animals)); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; [ 'bird', 'mammal' ]</span>
+R.length(R.filter(animal =&gt; animal.type === <span style="color: #718c00;">'bird'</span>, animals)); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; 2</span>
 </pre>
 </div>
 
@@ -134,18 +137,18 @@ And object helpers too:
 
 <div class="org-src-container">
 <pre class="src src-javascript">
-<span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">Objects let cat = { type: 'animal',</span>
-subclass: <span style="color: #b5bd68;">'mammal'</span>, binomialName: <span style="color: #b5bd68;">'Felis catus'</span> };
-R.assoc(<span style="color: #b5bd68;">'status'</span>, <span style="color: #b5bd68;">'domesticated'</span>, cat).status; <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; domesticated</span>
-R.dissoc(<span style="color: #b5bd68;">'binomialName'</span>, cat).binomialName; <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; undefined</span>
-R.keys(cat); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; [ 'type', 'subclass', 'binomialName' ]</span>
-R.has(<span style="color: #b5bd68;">'type'</span>, cat); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; true</span>
-R.prop(<span style="color: #b5bd68;">'type'</span>, cat); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; animal</span>
-R.values(cat); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; [ 'animal', 'mammal', 'felis catus' ]</span>
+<span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">Objects let cat = { type: 'animal',</span>
+subclass: <span style="color: #718c00;">'mammal'</span>, binomialName: <span style="color: #718c00;">'Felis catus'</span> };
+R.assoc(<span style="color: #718c00;">'status'</span>, <span style="color: #718c00;">'domesticated'</span>, cat).status; <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; domesticated</span>
+R.dissoc(<span style="color: #718c00;">'binomialName'</span>, cat).binomialName; <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; undefined</span>
+R.keys(cat); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; [ 'type', 'subclass', 'binomialName' ]</span>
+R.has(<span style="color: #718c00;">'type'</span>, cat); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; true</span>
+R.prop(<span style="color: #718c00;">'type'</span>, cat); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; animal</span>
+R.values(cat); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; [ 'animal', 'mammal', 'felis catus' ]</span>
 
-<span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">Object transformation</span>
-<span style="color: #b294bb;">let</span> <span style="color: #cc6666;">transformations</span> = { type: R.toUpper, binomialName: R.toLower }
-R.evolve(transformations, cat).type; <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">=&gt; ANIMAL</span>
+<span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">Object transformation</span>
+<span style="color: #8959a8;">let</span> <span style="color: #c82829;">transformations</span> = { type: R.toUpper, binomialName: R.toLower }
+R.evolve(transformations, cat).type; <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">=&gt; ANIMAL</span>
 
 </pre>
 </div>
@@ -155,15 +158,15 @@ compose multiple functions in different orders:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-javascript"><span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">Compose and pipe R.join(' and ',</span>
-R.uniq(R.map(R.toUpper)(R.pluck(<span style="color: #b5bd68;">'type'</span>, animals)))); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; BIRD and MAMMAL</span>
-<span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">Performs right-to-left function composition</span>
-R.compose(R.join(<span style="color: #b5bd68;">' and '</span>), R.uniq, R.map(R.toUpper), R.pluck(<span style="color: #b5bd68;">'type'</span>) )(animals);
-<span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; BIRD and MAMMAL</span>
+<pre class="src src-javascript"><span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">Compose and pipe R.join(' and ',</span>
+R.uniq(R.map(R.toUpper)(R.pluck(<span style="color: #718c00;">'type'</span>, animals)))); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; BIRD and MAMMAL</span>
+<span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">Performs right-to-left function composition</span>
+R.compose(R.join(<span style="color: #718c00;">' and '</span>), R.uniq, R.map(R.toUpper), R.pluck(<span style="color: #718c00;">'type'</span>) )(animals);
+<span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; BIRD and MAMMAL</span>
 
-<span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">Performs left-to-right function composition</span>
-R.pipe(R.pluck(<span style="color: #b5bd68;">'type'</span>) R.map(R.toUpper), R.uniq, R.join(<span style="color: #b5bd68;">' and '</span>)
-)(animals); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; BIRD and MAMMAL</span>
+<span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">Performs left-to-right function composition</span>
+R.pipe(R.pluck(<span style="color: #718c00;">'type'</span>) R.map(R.toUpper), R.uniq, R.join(<span style="color: #718c00;">' and '</span>)
+)(animals); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; BIRD and MAMMAL</span>
 </pre>
 </div>
 
@@ -174,12 +177,12 @@ evaluating a sequence of functions, each with one argument.
 </p>
 
 <div class="org-src-container">
-<pre class="src src-javascript"><span style="color: #b294bb;">let</span> <span style="color: #cc6666;">tripleMultiply</span> = (a, b, c) =&gt; a * b * c;
-tripleMultiply(<span style="color: #de935f; font-weight: bold;">3</span>, <span style="color: #de935f; font-weight: bold;">9</span>, <span style="color: #de935f; font-weight: bold;">2</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 54</span>
-tripleMultiply(<span style="color: #de935f; font-weight: bold;">3</span>, <span style="color: #de935f; font-weight: bold;">9</span>)(<span style="color: #de935f; font-weight: bold;">2</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; TypeError: tripleMultiply(..) is not a function</span>
-<span style="color: #b294bb;">let</span> <span style="color: #cc6666;">curriedMultiply</span> = R.curry(tripleMultiply);
-curriedMultiply(<span style="color: #de935f; font-weight: bold;">3</span>, <span style="color: #de935f; font-weight: bold;">9</span>)(<span style="color: #de935f; font-weight: bold;">2</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 54</span>
-curriedMultiply(<span style="color: #de935f; font-weight: bold;">3</span>)(<span style="color: #de935f; font-weight: bold;">9</span>)(<span style="color: #de935f; font-weight: bold;">2</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 54</span>
+<pre class="src src-javascript"><span style="color: #8959a8;">let</span> <span style="color: #c82829;">tripleMultiply</span> = (a, b, c) =&gt; a * b * c;
+tripleMultiply(<span style="color: #f5871f; font-weight: bold;">3</span>, <span style="color: #f5871f; font-weight: bold;">9</span>, <span style="color: #f5871f; font-weight: bold;">2</span>); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; 54</span>
+tripleMultiply(<span style="color: #f5871f; font-weight: bold;">3</span>, <span style="color: #f5871f; font-weight: bold;">9</span>)(<span style="color: #f5871f; font-weight: bold;">2</span>); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; TypeError: tripleMultiply(..) is not a function</span>
+<span style="color: #8959a8;">let</span> <span style="color: #c82829;">curriedMultiply</span> = R.curry(tripleMultiply);
+curriedMultiply(<span style="color: #f5871f; font-weight: bold;">3</span>, <span style="color: #f5871f; font-weight: bold;">9</span>)(<span style="color: #f5871f; font-weight: bold;">2</span>); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; 54</span>
+curriedMultiply(<span style="color: #f5871f; font-weight: bold;">3</span>)(<span style="color: #f5871f; font-weight: bold;">9</span>)(<span style="color: #f5871f; font-weight: bold;">2</span>); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; 54</span>
 </pre>
 </div>
 
@@ -189,15 +192,15 @@ check sequence of conditions to match different patterns:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-javascript"><span style="color: #b294bb;">let</span> <span style="color: #cc6666;">checkNumber</span> = R.cond([ [R.is(Number),
+<pre class="src src-javascript"><span style="color: #8959a8;">let</span> <span style="color: #c82829;">checkNumber</span> = R.cond([ [R.is(Number),
 R.identity], [R.is(String), parseInt], [R.is(Boolean), Number],
-[R.isEmpty, R.always(<span style="color: #de935f; font-weight: bold;">0</span>)], [R.T, R.always(<span style="color: #de935f;">NaN</span>)]]); checkNumber(<span style="color: #de935f; font-weight: bold;">100500</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 100500</span>
-checkNumber(<span style="color: #b5bd68;">'146%'</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 146</span>
-checkNumber(<span style="color: #b5bd68;">'Hodor'</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; NaN</span>
-checkNumber(<span style="color: #de935f;">true</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 1</span>
-checkNumber(<span style="color: #de935f;">false</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 0</span>
-checkNumber([]); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 0</span>
-checkNumber([<span style="color: #b5bd68;">'test'</span>]); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; NaN</span>
+[R.isEmpty, R.always(<span style="color: #f5871f; font-weight: bold;">0</span>)], [R.T, R.always(<span style="color: #f5871f;">NaN</span>)]]); checkNumber(<span style="color: #f5871f; font-weight: bold;">100500</span>); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; 100500</span>
+checkNumber(<span style="color: #718c00;">'146%'</span>); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; 146</span>
+checkNumber(<span style="color: #718c00;">'Hodor'</span>); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; NaN</span>
+checkNumber(<span style="color: #f5871f;">true</span>); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; 1</span>
+checkNumber(<span style="color: #f5871f;">false</span>); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; 0</span>
+checkNumber([]); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; 0</span>
+checkNumber([<span style="color: #718c00;">'test'</span>]); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; NaN</span>
 </pre>
 </div>
 

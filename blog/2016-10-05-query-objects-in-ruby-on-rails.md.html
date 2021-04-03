@@ -9,12 +9,15 @@
 <title>Query objects in Ruby on Rails</title>
 <meta name="author" content="Aleksei Kuznetsov">
     <meta name="referrer" content="no-referrer">
-    <link href= "https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet" type="text/css" />
-    <link href= "static/style.css" rel="stylesheet" type="text/css" />
-    <link rel="icon" href="static/favicon.ico"></head>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet" type="text/css" />
+    <link href="static/style.css" rel="stylesheet" type="text/css" />
+    <link rel="icon" href="static/favicon.ico">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link rel="canonical" href="https://neiro.io/" />
+    <link rel="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"/></head>
 <body>
 <div id="preamble" class="status"><div class="header">
-    <a href="https://neiro.io">Neiro - Functional programming, software architecture</a>
+    <a href="https://neiro.io">Neiro | Functional programming, software architecture</a>
   </div></div>
 <div id="content">
 <div class="post-date">05 Okt 2016</div><h1 class="post-title"><a href="https://neiro.io/2016-10-05-query-objects-in-ruby-on-rails.md.html">Query objects in Ruby on Rails</a></h1>
@@ -51,7 +54,7 @@ queries in plain Ruby.
 </p>
 
 
-<figure id="org80086cc">
+<figure id="org035866a">
 <img src="https://cdn-images-1.medium.com/max/1600/1*-oIlwIWlt0BDN4b5a9rRCQ.png" alt="1*-oIlwIWlt0BDN4b5a9rRCQ.png">
 
 </figure>
@@ -139,7 +142,7 @@ class Article &lt; ActiveRecord::Base
 SORT<sub>OPTIONS</sub> = %w(by<sub>date</sub> by<sub>title</sub> by<sub>author</sub>).freeze
 </p>
 
-<pre class="example" id="org19e36d0">
+<pre class="example" id="orgd843931">
   def initialize(params = {}, relation = Article.includes(:user))
     @relation = relation
     @params = params
@@ -169,7 +172,7 @@ index @articles = OrderedArticlesQuery.new(sort<sub>query</sub><sub>params</sub>
 end
 </p>
 
-<pre class="example" id="org1b08963">
+<pre class="example" id="org9bdd1df">
   private
 
   def sort_query_params
@@ -193,28 +196,28 @@ isolate it using Ruby&rsquo;s <i>HEREDOC syntax:</i>
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby"> <span style="color: #b294bb;">class</span> <span style="color: #f0c674;">PopularArticlesQuery</span>
-  <span style="color: #f0c674;">POPULAR_TRESHOLD</span> = <span style="color: #de935f; font-weight: bold;">5</span>
+<pre class="src src-ruby"> <span style="color: #8959a8;">class</span> <span style="color: #eab700;">PopularArticlesQuery</span>
+  <span style="color: #eab700;">POPULAR_TRESHOLD</span> = <span style="color: #f5871f; font-weight: bold;">5</span>
 
-  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">initialize</span>(subscriptions = <span style="color: #f0c674;">Subscription</span>.all)
-    <span style="color: #cc6666;">@subscriptions</span> = subscriptions
-  <span style="color: #b294bb;">end</span>
+  <span style="color: #8959a8;">def</span> <span style="color: #3e999f;">initialize</span>(subscriptions = <span style="color: #eab700;">Subscription</span>.all)
+    <span style="color: #c82829;">@subscriptions</span> = subscriptions
+  <span style="color: #8959a8;">end</span>
 
-  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">all</span>
-    <span style="color: #cc6666;">@subscriptions</span>.where(query)
-  <span style="color: #b294bb;">end</span>
+  <span style="color: #8959a8;">def</span> <span style="color: #3e999f;">all</span>
+    <span style="color: #c82829;">@subscriptions</span>.where(query)
+  <span style="color: #8959a8;">end</span>
 
-  <span style="color: #81a2be;">private</span>
+  <span style="color: #3e999f;">private</span>
 
-  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">query</span>
-    <span style="color: #b5bd68;">&lt;&lt;-SQL</span>
-<span style="color: #b5bd68;">      articles.comments_count &gt;= </span><span style="color: #cc6666;">#{POPULAR_TRESHOLD}</span>
-<span style="color: #b5bd68;">      AND articles.content IS NOT NULL</span>
-<span style="color: #b5bd68;">      AND articles.status = </span><span style="color: #cc6666;">#{Article::STATUSES[:published]}</span>
-<span style="color: #b5bd68;">      ORDER BY articles.comments_count DESC</span>
-<span style="color: #b5bd68;">    SQL</span>
-  <span style="color: #b294bb;">end</span>
-<span style="color: #b294bb;">end</span>
+  <span style="color: #8959a8;">def</span> <span style="color: #3e999f;">query</span>
+    <span style="color: #718c00;">&lt;&lt;-SQL</span>
+<span style="color: #718c00;">      articles.comments_count &gt;= </span><span style="color: #c82829;">#{POPULAR_TRESHOLD}</span>
+<span style="color: #718c00;">      AND articles.content IS NOT NULL</span>
+<span style="color: #718c00;">      AND articles.status = </span><span style="color: #c82829;">#{Article::STATUSES[:published]}</span>
+<span style="color: #718c00;">      ORDER BY articles.comments_count DESC</span>
+<span style="color: #718c00;">    SQL</span>
+  <span style="color: #8959a8;">end</span>
+<span style="color: #8959a8;">end</span>
 </pre>
 </div>
 
@@ -235,44 +238,44 @@ method will help you:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby"><span style="color: #b294bb;">class</span> <span style="color: #f0c674;">OrderedArticlesQuery</span>
-  <span style="color: #f0c674;">SORT_OPTIONS</span> = <span style="color: #b5bd68;">%w(by_date by_title by_author)</span>.freeze
+<pre class="src src-ruby"><span style="color: #8959a8;">class</span> <span style="color: #eab700;">OrderedArticlesQuery</span>
+  <span style="color: #eab700;">SORT_OPTIONS</span> = <span style="color: #718c00;">%w(by_date by_title by_author)</span>.freeze
 
-  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">initialize</span>(params = {}, relation = <span style="color: #f0c674;">Article</span>.includes(<span style="color: #de935f;">:user</span>))
-    <span style="color: #cc6666;">@relation</span> = relation.extending(<span style="color: #f0c674;">Scopes</span>)
+  <span style="color: #8959a8;">def</span> <span style="color: #3e999f;">initialize</span>(params = {}, relation = <span style="color: #eab700;">Article</span>.includes(<span style="color: #f5871f;">:user</span>))
+    <span style="color: #c82829;">@relation</span> = relation.extending(<span style="color: #eab700;">Scopes</span>)
 
-    <span style="color: #cc6666;">@params</span> = params
-  <span style="color: #b294bb;">end</span>
+    <span style="color: #c82829;">@params</span> = params
+  <span style="color: #8959a8;">end</span>
 
-  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">all</span>
-    <span style="color: #cc6666;">@relation</span>.public_send(sort_by, direction)
-  <span style="color: #b294bb;">end</span>
+  <span style="color: #8959a8;">def</span> <span style="color: #3e999f;">all</span>
+    <span style="color: #c82829;">@relation</span>.public_send(sort_by, direction)
+  <span style="color: #8959a8;">end</span>
 
-  <span style="color: #81a2be;">private</span>
+  <span style="color: #3e999f;">private</span>
 
-  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">sort_by</span>
-    <span style="color: #cc6666;">@params</span>[<span style="color: #de935f;">:sort</span>].presence_in(<span style="color: #f0c674;">SORT_OPTIONS</span>) || <span style="color: #de935f;">:by_date</span>
-  <span style="color: #b294bb;">end</span>
+  <span style="color: #8959a8;">def</span> <span style="color: #3e999f;">sort_by</span>
+    <span style="color: #c82829;">@params</span>[<span style="color: #f5871f;">:sort</span>].presence_in(<span style="color: #eab700;">SORT_OPTIONS</span>) || <span style="color: #f5871f;">:by_date</span>
+  <span style="color: #8959a8;">end</span>
 
-  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">direction</span>
-    <span style="color: #cc6666;">@params</span>[<span style="color: #de935f;">:direction</span>] == <span style="color: #b5bd68;">"asc"</span> ? <span style="color: #de935f;">:asc</span> : <span style="color: #de935f;">:desc</span>
-  <span style="color: #b294bb;">end</span>
+  <span style="color: #8959a8;">def</span> <span style="color: #3e999f;">direction</span>
+    <span style="color: #c82829;">@params</span>[<span style="color: #f5871f;">:direction</span>] == <span style="color: #718c00;">"asc"</span> ? <span style="color: #f5871f;">:asc</span> : <span style="color: #f5871f;">:desc</span>
+  <span style="color: #8959a8;">end</span>
 
-  <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">Group additional scope methods in module in order to extend relation</span>
-  <span style="color: #b294bb;">module</span> <span style="color: #f0c674;">Scopes</span>
-    <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">by_title</span>(direction)
-      order(<span style="color: #de935f;">title:</span> direction)
-    <span style="color: #b294bb;">end</span>
+  <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">Group additional scope methods in module in order to extend relation</span>
+  <span style="color: #8959a8;">module</span> <span style="color: #eab700;">Scopes</span>
+    <span style="color: #8959a8;">def</span> <span style="color: #3e999f;">by_title</span>(direction)
+      order(<span style="color: #f5871f;">title:</span> direction)
+    <span style="color: #8959a8;">end</span>
 
-    <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">by_date</span>(direction)
-      order(<span style="color: #de935f;">created_at:</span> direction)
-    <span style="color: #b294bb;">end</span>
+    <span style="color: #8959a8;">def</span> <span style="color: #3e999f;">by_date</span>(direction)
+      order(<span style="color: #f5871f;">created_at:</span> direction)
+    <span style="color: #8959a8;">end</span>
 
-    <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">by_author</span>
-      order(<span style="color: #b5bd68;">"users.full_name </span><span style="color: #cc6666;">#{direction}</span><span style="color: #b5bd68;">"</span>)
-    <span style="color: #b294bb;">end</span>
-  <span style="color: #b294bb;">end</span>
-<span style="color: #b294bb;">end</span>
+    <span style="color: #8959a8;">def</span> <span style="color: #3e999f;">by_author</span>
+      order(<span style="color: #718c00;">"users.full_name </span><span style="color: #c82829;">#{direction}</span><span style="color: #718c00;">"</span>)
+    <span style="color: #8959a8;">end</span>
+  <span style="color: #8959a8;">end</span>
+<span style="color: #8959a8;">end</span>
 </pre>
 </div>
 
@@ -293,31 +296,31 @@ two composed Query Objects represent one SQL query:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby"><span style="color: #b294bb;">class</span> <span style="color: #f0c674;">FeaturedQuery</span>
-  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">initialize</span>(relation = <span style="color: #f0c674;">Article</span>.all)
-    <span style="color: #cc6666;">@relation</span> = relation
-  <span style="color: #b294bb;">end</span>
+<pre class="src src-ruby"><span style="color: #8959a8;">class</span> <span style="color: #eab700;">FeaturedQuery</span>
+  <span style="color: #8959a8;">def</span> <span style="color: #3e999f;">initialize</span>(relation = <span style="color: #eab700;">Article</span>.all)
+    <span style="color: #c82829;">@relation</span> = relation
+  <span style="color: #8959a8;">end</span>
 
-  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">all</span>
-    <span style="color: #cc6666;">@relation</span>.where(<span style="color: #de935f;">featured:</span> <span style="color: #de935f;">true</span>).where(<span style="color: #b5bd68;">"views_count &gt; ?"</span>, <span style="color: #de935f; font-weight: bold;">100</span>)
-  <span style="color: #b294bb;">end</span>
-<span style="color: #b294bb;">end</span>
+  <span style="color: #8959a8;">def</span> <span style="color: #3e999f;">all</span>
+    <span style="color: #c82829;">@relation</span>.where(<span style="color: #f5871f;">featured:</span> <span style="color: #f5871f;">true</span>).where(<span style="color: #718c00;">"views_count &gt; ?"</span>, <span style="color: #f5871f; font-weight: bold;">100</span>)
+  <span style="color: #8959a8;">end</span>
+<span style="color: #8959a8;">end</span>
 
-<span style="color: #b294bb;">class</span> <span style="color: #f0c674;">ArticlesController</span>
-  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">index</span>
-    <span style="color: #cc6666;">@articles</span> = <span style="color: #f0c674;">FeaturedArticlesQuery</span>.new(sorted_articles).all <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">SELECT "articles".* FROM "articles" WHERE "articles"."featured" = $1 # AND (views_count &gt;100) ORDER BY "articles"."created_at" DESC LIMIT 10 OFFSET 0</span>
-  <span style="color: #b294bb;">end</span>
+<span style="color: #8959a8;">class</span> <span style="color: #eab700;">ArticlesController</span>
+  <span style="color: #8959a8;">def</span> <span style="color: #3e999f;">index</span>
+    <span style="color: #c82829;">@articles</span> = <span style="color: #eab700;">FeaturedArticlesQuery</span>.new(sorted_articles).all <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">SELECT "articles".* FROM "articles" WHERE "articles"."featured" = $1 # AND (views_count &gt;100) ORDER BY "articles"."created_at" DESC LIMIT 10 OFFSET 0</span>
+  <span style="color: #8959a8;">end</span>
 
-  <span style="color: #81a2be;">private</span>
+  <span style="color: #3e999f;">private</span>
 
-  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">sorted_articles</span>
-    <span style="color: #f0c674;">SortedArticlesQuery</span>.new(sort_query_params).all
-  <span style="color: #b294bb;">end</span>
+  <span style="color: #8959a8;">def</span> <span style="color: #3e999f;">sorted_articles</span>
+    <span style="color: #eab700;">SortedArticlesQuery</span>.new(sort_query_params).all
+  <span style="color: #8959a8;">end</span>
 
-  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">sort_query_params</span>
-    { <span style="color: #de935f;">sort:</span> <span style="color: #de935f;">:by_title</span>, <span style="color: #de935f;">direction:</span> <span style="color: #de935f;">:desc</span> }
-  <span style="color: #b294bb;">end</span>
-<span style="color: #b294bb;">end</span>
+  <span style="color: #8959a8;">def</span> <span style="color: #3e999f;">sort_query_params</span>
+    { <span style="color: #f5871f;">sort:</span> <span style="color: #f5871f;">:by_title</span>, <span style="color: #f5871f;">direction:</span> <span style="color: #f5871f;">:desc</span> }
+  <span style="color: #8959a8;">end</span>
+<span style="color: #8959a8;">end</span>
 </pre>
 </div>
 
@@ -336,33 +339,33 @@ repetition and follow DRY principle:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby"><span style="color: #b294bb;">class</span> <span style="color: #f0c674;">ArticlesQuery</span>
-  <span style="color: #f0c674;">TEXT_LENGTH</span> = <span style="color: #de935f; font-weight: bold;">3</span>
+<pre class="src src-ruby"><span style="color: #8959a8;">class</span> <span style="color: #eab700;">ArticlesQuery</span>
+  <span style="color: #eab700;">TEXT_LENGTH</span> = <span style="color: #f5871f; font-weight: bold;">3</span>
 
-<span style="color: #5a5b5a;">#</span><span style="color: #5a5b5a;">+BEGIN_EXAMPLE</span>
-  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">initialize</span>(comments = <span style="color: #f0c674;">Comment</span>.all)
-    <span style="color: #cc6666;">@comments</span> = comments
-  <span style="color: #b294bb;">end</span>
+<span style="color: #a5a4a5;">#</span><span style="color: #a5a4a5;">+BEGIN_EXAMPLE</span>
+  <span style="color: #8959a8;">def</span> <span style="color: #3e999f;">initialize</span>(comments = <span style="color: #eab700;">Comment</span>.all)
+    <span style="color: #c82829;">@comments</span> = comments
+  <span style="color: #8959a8;">end</span>
 
-  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">all</span>
+  <span style="color: #8959a8;">def</span> <span style="color: #3e999f;">all</span>
     comments
-      .where(<span style="color: #b5bd68;">"user_id IS NOT NULL"</span>)
-      .where(<span style="color: #b5bd68;">"LENGTH(content) </span><span style="color: #cc6666;">#{condition}</span><span style="color: #b5bd68;">"</span>)
-  <span style="color: #b294bb;">end</span>
+      .where(<span style="color: #718c00;">"user_id IS NOT NULL"</span>)
+      .where(<span style="color: #718c00;">"LENGTH(content) </span><span style="color: #c82829;">#{condition}</span><span style="color: #718c00;">"</span>)
+  <span style="color: #8959a8;">end</span>
 
-  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">condition</span>
-    <span style="color: #b5bd68;">"&gt; </span><span style="color: #cc6666;">#{TEXT_LENGTH}</span><span style="color: #b5bd68;">"</span>
-  <span style="color: #b294bb;">end</span>
-<span style="color: #b294bb;">end</span>
+  <span style="color: #8959a8;">def</span> <span style="color: #3e999f;">condition</span>
+    <span style="color: #718c00;">"&gt; </span><span style="color: #c82829;">#{TEXT_LENGTH}</span><span style="color: #718c00;">"</span>
+  <span style="color: #8959a8;">end</span>
+<span style="color: #8959a8;">end</span>
 
-<span style="color: #b294bb;">class</span> <span style="color: #f0c674;">LongArticlesQuery</span> &lt; <span style="color: #f0c674;">ArticlesQuery</span>
-  <span style="color: #f0c674;">TEXT_LENGTH</span> = <span style="color: #de935f; font-weight: bold;">5</span>
+<span style="color: #8959a8;">class</span> <span style="color: #eab700;">LongArticlesQuery</span> &lt; <span style="color: #eab700;">ArticlesQuery</span>
+  <span style="color: #eab700;">TEXT_LENGTH</span> = <span style="color: #f5871f; font-weight: bold;">5</span>
 
-  <span style="color: #5a5b5a;">#</span><span style="color: #5a5b5a;">+BEGIN_EXAMPLE</span>
-  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">condition</span>
-    <span style="color: #b5bd68;">"&gt;= </span><span style="color: #cc6666;">#{TEXT_LENGTH}</span><span style="color: #b5bd68;">"</span>
-  <span style="color: #b294bb;">end</span>
-<span style="color: #b294bb;">end</span>
+  <span style="color: #a5a4a5;">#</span><span style="color: #a5a4a5;">+BEGIN_EXAMPLE</span>
+  <span style="color: #8959a8;">def</span> <span style="color: #3e999f;">condition</span>
+    <span style="color: #718c00;">"&gt;= </span><span style="color: #c82829;">#{TEXT_LENGTH}</span><span style="color: #718c00;">"</span>
+  <span style="color: #8959a8;">end</span>
+<span style="color: #8959a8;">end</span>
 </pre>
 </div>
 
@@ -382,22 +385,22 @@ results:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby"><span style="color: #81a2be;">require</span> <span style="color: #b5bd68;">"rails_helper"</span>
+<pre class="src src-ruby"><span style="color: #3e999f;">require</span> <span style="color: #718c00;">"rails_helper"</span>
 
-describe <span style="color: #f0c674;">LongArticlesQuery</span> <span style="color: #b294bb;">do</span>
-  describe <span style="color: #b5bd68;">"#all"</span> <span style="color: #b294bb;">do</span>
-    subject(<span style="color: #de935f;">:all</span>) { described_class.new.all }
+describe <span style="color: #eab700;">LongArticlesQuery</span> <span style="color: #8959a8;">do</span>
+  describe <span style="color: #718c00;">"#all"</span> <span style="color: #8959a8;">do</span>
+    subject(<span style="color: #f5871f;">:all</span>) { described_class.new.all }
 
-    before <span style="color: #b294bb;">do</span>
-      create <span style="color: #de935f;">:article</span>, <span style="color: #de935f;">text:</span> <span style="color: #b5bd68;">"abc"</span>
-      create <span style="color: #de935f;">:article</span>, <span style="color: #de935f;">text:</span> <span style="color: #b5bd68;">"this is long article"</span>
-    <span style="color: #b294bb;">end</span>
+    before <span style="color: #8959a8;">do</span>
+      create <span style="color: #f5871f;">:article</span>, <span style="color: #f5871f;">text:</span> <span style="color: #718c00;">"abc"</span>
+      create <span style="color: #f5871f;">:article</span>, <span style="color: #f5871f;">text:</span> <span style="color: #718c00;">"this is long article"</span>
+    <span style="color: #8959a8;">end</span>
 
-    it <span style="color: #b5bd68;">"returns one short comment"</span> <span style="color: #b294bb;">do</span>
-      expect(all.size).to eq(<span style="color: #de935f; font-weight: bold;">1</span>)
-    <span style="color: #b294bb;">end</span>
-  <span style="color: #b294bb;">end</span>
-<span style="color: #b294bb;">end</span>
+    it <span style="color: #718c00;">"returns one short comment"</span> <span style="color: #8959a8;">do</span>
+      expect(all.size).to eq(<span style="color: #f5871f; font-weight: bold;">1</span>)
+    <span style="color: #8959a8;">end</span>
+  <span style="color: #8959a8;">end</span>
+<span style="color: #8959a8;">end</span>
 </pre>
 </div>
 

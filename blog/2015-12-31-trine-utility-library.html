@@ -9,12 +9,15 @@
 <title>Trine util library</title>
 <meta name="author" content="Aleksei Kuznetsov">
     <meta name="referrer" content="no-referrer">
-    <link href= "https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet" type="text/css" />
-    <link href= "static/style.css" rel="stylesheet" type="text/css" />
-    <link rel="icon" href="static/favicon.ico"></head>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet" type="text/css" />
+    <link href="static/style.css" rel="stylesheet" type="text/css" />
+    <link rel="icon" href="static/favicon.ico">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link rel="canonical" href="https://neiro.io/" />
+    <link rel="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"/></head>
 <body>
 <div id="preamble" class="status"><div class="header">
-    <a href="https://neiro.io">Neiro - Functional programming, software architecture</a>
+    <a href="https://neiro.io">Neiro | Functional programming, software architecture</a>
   </div></div>
 <div id="content">
 <div class="post-date">31 Dez 2015</div><h1 class="post-title"><a href="https://neiro.io/2015-12-31-trine-utility-library.html">Trine util library</a></h1>
@@ -81,7 +84,7 @@ standards with <a href="https://babeljs.io/">Babel</a>:
 <i>npm install &#x2013;save babel babel-preset-stage-0 babel-preset-es2015</i>
 </p>
 <div class="org-src-container">
-<pre class="src src-javascript"> <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">.babelrc { "presets": ["stage-0", "es2015"]</span>
+<pre class="src src-javascript"> <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">.babelrc { "presets": ["stage-0", "es2015"]</span>
 }
 </pre>
 </div>
@@ -99,10 +102,10 @@ and import to your project required functions:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-javascript"> <span style="color: #b294bb;">import</span> { last } from <span style="color: #b5bd68;">'trine/iterable/last'</span>;
+<pre class="src src-javascript"> <span style="color: #8959a8;">import</span> { last } from <span style="color: #718c00;">'trine/iterable/last'</span>;
 
- <span style="color: #b294bb;">const</span> <span style="color: #cc6666;">lastCh</span> = [<span style="color: #b5bd68;">'a'</span>, <span style="color: #b5bd68;">'b'</span>, <span style="color: #b5bd68;">'c'</span>]::last(<span style="color: #de935f; font-weight: bold;">0</span>); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">yields 'c'</span>
- lastCh.next().value; <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">c</span>
+ <span style="color: #8959a8;">const</span> <span style="color: #c82829;">lastCh</span> = [<span style="color: #718c00;">'a'</span>, <span style="color: #718c00;">'b'</span>, <span style="color: #718c00;">'c'</span>]::last(<span style="color: #f5871f; font-weight: bold;">0</span>); <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">yields 'c'</span>
+ lastCh.next().value; <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">c</span>
 </pre>
 </div>
 </div>
@@ -116,11 +119,11 @@ Trine provides common boolean helpers:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-javascript"><span style="color: #de935f;">true</span>::not() <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">false</span>
-<span style="color: #de935f;">true</span>::and(<span style="color: #de935f;">false</span>) <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">false</span>
-<span style="color: #de935f;">true</span>::or(<span style="color: #de935f;">false</span>) <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">true</span>
-<span style="color: #de935f;">true</span>::xor(<span style="color: #de935f;">false</span>) <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">true</span>
-<span style="color: #de935f; font-weight: bold;">0</span>::not() <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">true</span>
+<pre class="src src-javascript"><span style="color: #f5871f;">true</span>::not() <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">false</span>
+<span style="color: #f5871f;">true</span>::and(<span style="color: #f5871f;">false</span>) <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">false</span>
+<span style="color: #f5871f;">true</span>::or(<span style="color: #f5871f;">false</span>) <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">true</span>
+<span style="color: #f5871f;">true</span>::xor(<span style="color: #f5871f;">false</span>) <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">true</span>
+<span style="color: #f5871f; font-weight: bold;">0</span>::not() <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">true</span>
 </pre>
 </div>
 </div>
@@ -148,9 +151,9 @@ Extract , compare or convert values to functions:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-javascript"><span style="color: #b5bd68;">'foo'</span>::equals(<span style="color: #b5bd68;">'bar'</span>)::is(<span style="color: #de935f;">false</span>); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">true</span>
-<span style="color: #b294bb;">const</span> <span style="color: #cc6666;">func</span> = { foo: <span style="color: #b5bd68;">'bar'</span> }::prop(<span style="color: #b5bd68;">'foo'</span>)::toFunction();
-func(); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">bar</span>
+<pre class="src src-javascript"><span style="color: #718c00;">'foo'</span>::equals(<span style="color: #718c00;">'bar'</span>)::is(<span style="color: #f5871f;">false</span>); <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">true</span>
+<span style="color: #8959a8;">const</span> <span style="color: #c82829;">func</span> = { foo: <span style="color: #718c00;">'bar'</span> }::prop(<span style="color: #718c00;">'foo'</span>)::toFunction();
+func(); <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">bar</span>
 
 </pre>
 </div>
@@ -165,7 +168,7 @@ Trine includes partial helper:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-javascript">parseInt::partial(_, <span style="color: #de935f; font-weight: bold;">2</span>)(<span style="color: #b5bd68;">'1010'</span>) <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">10</span>
+<pre class="src src-javascript">parseInt::partial(_, <span style="color: #f5871f; font-weight: bold;">2</span>)(<span style="color: #718c00;">'1010'</span>) <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">10</span>
 </pre>
 </div>
 </div>
@@ -175,9 +178,9 @@ Trine includes partial helper:
 <h2 id="object"><span class="section-number-2">6</span> Object</h2>
 <div class="outline-text-2" id="text-object">
 <div class="org-src-container">
-<pre class="src src-javascript"><span style="color: #b294bb;">let</span> <span style="color: #cc6666;">obj</span> = { foo: <span style="color: #b5bd68;">'bar'</span> };
-obj::keys().next().value; <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">foo</span>
-obj::values().next().value; <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">bar</span>
+<pre class="src src-javascript"><span style="color: #8959a8;">let</span> <span style="color: #c82829;">obj</span> = { foo: <span style="color: #718c00;">'bar'</span> };
+obj::keys().next().value; <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">foo</span>
+obj::values().next().value; <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">bar</span>
 </pre>
 </div>
 </div>
@@ -187,11 +190,11 @@ obj::values().next().value; <span style="color: #5a5b5a;">// </span><span style=
 <h2 id="iterable"><span class="section-number-2">7</span> Iterable</h2>
 <div class="outline-text-2" id="text-iterable">
 <div class="org-src-container">
-<pre class="src src-javascript"> <span style="color: #b294bb;">let</span> <span style="color: #cc6666;">nums</span> = [<span style="color: #de935f; font-weight: bold;">5</span>, <span style="color: #de935f; font-weight: bold;">1</span>];
-nums::count().next().value; <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">2</span>
-nums::reverse()::to(Array); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">1, 5</span>
-<span style="color: #b5bd68;">'cab'</span>::sortAlphabetically()::to(Array) <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">a, b, c</span>
-[nums, [<span style="color: #de935f; font-weight: bold;">2</span>, <span style="color: #de935f; font-weight: bold;">3</span>]]::flatten()::map(<span style="color: #b294bb;">function</span>() { <span style="color: #b294bb;">return</span> <span style="color: #de935f;">this</span> * <span style="color: #de935f; font-weight: bold;">3</span> })::to(Array); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">15, 3, 6, 9</span>
+<pre class="src src-javascript"> <span style="color: #8959a8;">let</span> <span style="color: #c82829;">nums</span> = [<span style="color: #f5871f; font-weight: bold;">5</span>, <span style="color: #f5871f; font-weight: bold;">1</span>];
+nums::count().next().value; <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">2</span>
+nums::reverse()::to(Array); <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">1, 5</span>
+<span style="color: #718c00;">'cab'</span>::sortAlphabetically()::to(Array) <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">a, b, c</span>
+[nums, [<span style="color: #f5871f; font-weight: bold;">2</span>, <span style="color: #f5871f; font-weight: bold;">3</span>]]::flatten()::map(<span style="color: #8959a8;">function</span>() { <span style="color: #8959a8;">return</span> <span style="color: #f5871f;">this</span> * <span style="color: #f5871f; font-weight: bold;">3</span> })::to(Array); <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">15, 3, 6, 9</span>
 </pre>
 </div>
 </div>

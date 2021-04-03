@@ -9,12 +9,15 @@
 <title>Deploy Jekyll with Capistrano</title>
 <meta name="author" content="Aleksei Kuznetsov">
     <meta name="referrer" content="no-referrer">
-    <link href= "https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet" type="text/css" />
-    <link href= "static/style.css" rel="stylesheet" type="text/css" />
-    <link rel="icon" href="static/favicon.ico"></head>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet" type="text/css" />
+    <link href="static/style.css" rel="stylesheet" type="text/css" />
+    <link rel="icon" href="static/favicon.ico">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link rel="canonical" href="https://neiro.io/" />
+    <link rel="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"/></head>
 <body>
 <div id="preamble" class="status"><div class="header">
-    <a href="https://neiro.io">Neiro - Functional programming, software architecture</a>
+    <a href="https://neiro.io">Neiro | Functional programming, software architecture</a>
   </div></div>
 <div id="content">
 <div class="post-date">24 Mai 2015</div><h1 class="post-title"><a href="https://neiro.io/2015-05-24-deploy-jekyll-with-capistrano.html">Deploy Jekyll with Capistrano</a></h1>
@@ -31,8 +34,8 @@ add this lines:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby">source <span style="color: #b5bd68;">'https://rubygems.org'</span>
-gem <span style="color: #b5bd68;">'capistrano'</span>, <span style="color: #b5bd68;">'~&gt; 3.4.0'</span>
+<pre class="src src-ruby">source <span style="color: #718c00;">'https://rubygems.org'</span>
+gem <span style="color: #718c00;">'capistrano'</span>, <span style="color: #718c00;">'~&gt; 3.4.0'</span>
 </pre>
 </div>
 
@@ -53,8 +56,8 @@ server data (<i>/config/deploy/production.rb</i>):
 
 <div class="org-src-container">
 <pre class="src src-ruby">
-role <span style="color: #de935f;">:app</span>, <span style="color: #b5bd68;">%w{user@server}</span>
-role <span style="color: #de935f;">:web</span>, <span style="color: #b5bd68;">%w{user@server}</span>
+role <span style="color: #f5871f;">:app</span>, <span style="color: #718c00;">%w{user@server}</span>
+role <span style="color: #f5871f;">:web</span>, <span style="color: #718c00;">%w{user@server}</span>
 </pre>
 </div>
 
@@ -79,7 +82,7 @@ Next you should add Capistrano plugin for rbenv in <i>Gemfile</i>:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby">gem <span style="color: #b5bd68;">'capistrano-rbenv'</span>, <span style="color: #b5bd68;">'~&gt; 2.0'</span>
+<pre class="src src-ruby">gem <span style="color: #718c00;">'capistrano-rbenv'</span>, <span style="color: #718c00;">'~&gt; 2.0'</span>
 </pre>
 </div>
 
@@ -97,7 +100,7 @@ And add this line to <i>Capfile</i>:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby"><span style="color: #81a2be;">require</span> <span style="color: #b5bd68;">'capistrano/rbenv'</span>
+<pre class="src src-ruby"><span style="color: #3e999f;">require</span> <span style="color: #718c00;">'capistrano/rbenv'</span>
 </pre>
 </div>
 
@@ -107,7 +110,7 @@ Install Jekyll gem on server and add it to rbenv binaries list in
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby">set <span style="color: #de935f;">:rbenv_map_bins</span>, <span style="color: #b5bd68;">%w{rake gem bundle ruby jekyll}</span>
+<pre class="src src-ruby">set <span style="color: #f5871f;">:rbenv_map_bins</span>, <span style="color: #718c00;">%w{rake gem bundle ruby jekyll}</span>
 </pre>
 </div>
 
@@ -119,8 +122,8 @@ changes:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby"><span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">Gemfile</span>
-gem <span style="color: #b5bd68;">'capistrano-jekyll'</span>
+<pre class="src src-ruby"><span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">Gemfile</span>
+gem <span style="color: #718c00;">'capistrano-jekyll'</span>
 </pre>
 </div>
 

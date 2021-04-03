@@ -9,12 +9,15 @@
 <title>Well-crafted functional architecture: ports and adapters</title>
 <meta name="author" content="Aleksei Kuznetsov">
     <meta name="referrer" content="no-referrer">
-    <link href= "https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet" type="text/css" />
-    <link href= "static/style.css" rel="stylesheet" type="text/css" />
-    <link rel="icon" href="static/favicon.ico"></head>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet" type="text/css" />
+    <link href="static/style.css" rel="stylesheet" type="text/css" />
+    <link rel="icon" href="static/favicon.ico">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link rel="canonical" href="https://neiro.io/" />
+    <link rel="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"/></head>
 <body>
 <div id="preamble" class="status"><div class="header">
-    <a href="https://neiro.io">Neiro - Functional programming, software architecture</a>
+    <a href="https://neiro.io">Neiro | Functional programming, software architecture</a>
   </div></div>
 <div id="content">
 <div class="post-date">01 Okt 2019</div><h1 class="post-title"><a href="https://neiro.io/2019-10-01-well-crafted-functional-architecture-ports-and-adapters.md.html">Well-crafted functional architecture: ports and adapters</a></h1>
@@ -107,7 +110,7 @@ while your adapters are placed surround it.
 </p>
 
 
-<figure id="org428f623">
+<figure id="org6c1ed94">
 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Hexagonal_Architecture.svg/1000px-Hexagonal_Architecture.svg.png" alt="1000px-Hexagonal_Architecture.svg.png">
 
 <figcaption><span class="figure-number">Figure 1: </span>Hexagon</figcaption>
@@ -163,7 +166,7 @@ now let&rsquo;s see how we can implement the realisation of port for Elixir
 using its&rsquo; capability to create <b>behaviours</b>:
 </p>
 
-<pre class="example" id="org4e61846">
+<pre class="example" id="org33cf1f4">
   defmodule Core.PushNotifications do
     @moduledoc """
     Port for sending push notifications.
@@ -189,7 +192,7 @@ exact implementation - adapter - should be placed in your app
 configuration like:
 </p>
 
-<pre class="example" id="orgd41bdb2">
+<pre class="example" id="orgfef3bb4">
   config :core, Core.PushNotifications, adapter: PushNotifications.APNS
 </pre>
 
@@ -198,7 +201,7 @@ If you want to call this port from your application you just need to use
 the delegated function:
 </p>
 
-<pre class="example" id="orgbac3faf">
+<pre class="example" id="org8242162">
   defmodule Core do
     alias Core.PushNotifications
 
@@ -250,7 +253,7 @@ role of specification of driver port so you&rsquo;ll always be able to see
 what we need to send and what we should expect in response.
 </p>
 
-<pre class="example" id="orgfd0d5d5">
+<pre class="example" id="org066b4ad">
   defmodule Web.UserController do
     use Web, :controller
 
@@ -300,7 +303,7 @@ adapt realisation of sending push notifications over APNS by the
 specification that was given us by this port:
 </p>
 
-<pre class="example" id="org3903076">
+<pre class="example" id="org241967b">
   defmodule PushNotifications.APNS do
     @moduledoc "APNS adapter for push notifications"
     @behaviour Core.PushNotifications
@@ -340,7 +343,7 @@ should be tested. Let&rsquo;s write a test adapter for the PushNotifications
 port then:
 </p>
 
-<pre class="example" id="org978f69e">
+<pre class="example" id="org4b1aba3">
   defmodule PushNotifications.TestAdapter do
     @moduledoc "Test adapter for push notifications"
     @behaviour Core.PushNotifications
@@ -361,7 +364,7 @@ interface. In Elixir ecosystem we have a great library called <code>Mox</code> t
 can be used for such case:
 </p>
 
-<pre class="example" id="orgcdc87b3">
+<pre class="example" id="org188c173">
   Mox.defmock(PushNotifications.TestMock, for: Core.PushNotifications)
 
   defmodule CoreTest do

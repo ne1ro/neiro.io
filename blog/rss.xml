@@ -4,7 +4,7 @@
 <title><![CDATA[Neiro | Functional programming, software architecture]]></title>
 <description><![CDATA[Neiro | Functional programming, software architecture]]></description>
 <link>https://neiro.io/</link>
-<lastBuildDate>Sun, 03 Jan 2021 16:54:24 +0100</lastBuildDate>
+<lastBuildDate>Sat, 03 Apr 2021 13:17:16 +0200</lastBuildDate>
 <item>
   <title><![CDATA[Migrating from Jekyll to org-static-blog]]></title>
   <description><![CDATA[
@@ -12,30 +12,30 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#org1414219">1. Org-mode support in existing blog engines</a>
+<li><a href="#org86f9475">1. Org-mode support in existing blog engines</a>
 <ul>
-<li><a href="#orga7c1a3a">1.1. Jekyll</a></li>
-<li><a href="#orgbba8c57">1.2. Gatsby</a></li>
-<li><a href="#org13f91d6">1.3. Emacs itself</a></li>
+<li><a href="#org23a4ca3">1.1. Jekyll</a></li>
+<li><a href="#orga4911b5">1.2. Gatsby</a></li>
+<li><a href="#org8391860">1.3. Emacs itself</a></li>
 </ul>
 </li>
-<li><a href="#orgf35bddd">2. Migration from Jekyll</a>
+<li><a href="#orgc7ced88">2. Migration from Jekyll</a>
 <ul>
-<li><a href="#org0162f2d">2.1. Installation of the org-static-blog</a></li>
-<li><a href="#org5a5a68b">2.2. Configuration</a></li>
-<li><a href="#orgd2bb681">2.3. Convert markdown to org</a></li>
-<li><a href="#org3ccbc98">2.4. Writing a new post</a></li>
-<li><a href="#orga0b361c">2.5. CI/CD</a></li>
+<li><a href="#orgae981c9">2.1. Installation of the org-static-blog</a></li>
+<li><a href="#org1449942">2.2. Configuration</a></li>
+<li><a href="#org03e9124">2.3. Convert markdown to org</a></li>
+<li><a href="#org9acee99">2.4. Writing a new post</a></li>
+<li><a href="#orgbff7a57">2.5. CI/CD</a></li>
 </ul>
 </li>
-<li><a href="#org2fd2ba4">3. Issues that are still not solved by migration</a>
+<li><a href="#org415315f">3. Issues that are still not solved by migration</a>
 <ul>
-<li><a href="#org04ce139">3.1. Better code highlighting</a></li>
-<li><a href="#orge78672e">3.2. Better CI/CD experience</a></li>
-<li><a href="#org60572f8">3.3. Assets management</a></li>
+<li><a href="#org231af27">3.1. Better code highlighting</a></li>
+<li><a href="#org3fc0b9d">3.2. Better CI/CD experience</a></li>
+<li><a href="#orgb95e2d2">3.3. Assets management</a></li>
 </ul>
 </li>
-<li><a href="#org3455834">4. Conclusion</a></li>
+<li><a href="#org21d8590">4. Conclusion</a></li>
 </ul>
 </div>
 </nav>
@@ -60,12 +60,12 @@ apply it for my personal blog. However, this was not as simple as I&rsquo;ve exp
 a lot of options.
 </p>
 
-<div id="outline-container-org1414219" class="outline-2">
-<h2 id="org1414219"><span class="section-number-2">1</span> Org-mode support in existing blog engines</h2>
+<div id="outline-container-org86f9475" class="outline-2">
+<h2 id="org86f9475"><span class="section-number-2">1</span> Org-mode support in existing blog engines</h2>
 <div class="outline-text-2" id="text-1">
 </div>
-<div id="outline-container-orga7c1a3a" class="outline-3">
-<h3 id="orga7c1a3a"><span class="section-number-3">1.1</span> Jekyll</h3>
+<div id="outline-container-org23a4ca3" class="outline-3">
+<h3 id="org23a4ca3"><span class="section-number-3">1.1</span> Jekyll</h3>
 <div class="outline-text-3" id="text-1-1">
 <p>
 Jekyll has <a href="https://github.com/eggcaker/jekyll-org">a support for org mode</a> , however, it&rsquo;s based on an outdated
@@ -73,8 +73,8 @@ Jekyll has <a href="https://github.com/eggcaker/jekyll-org">a support for org mo
 </p>
 </div>
 </div>
-<div id="outline-container-orgbba8c57" class="outline-3">
-<h3 id="orgbba8c57"><span class="section-number-3">1.2</span> Gatsby</h3>
+<div id="outline-container-orga4911b5" class="outline-3">
+<h3 id="orga4911b5"><span class="section-number-3">1.2</span> Gatsby</h3>
 <div class="outline-text-3" id="text-1-2">
 <p>
 Gatsby.js seems to be a relatively popular choice for building static websites - and it has all
@@ -83,8 +83,8 @@ Gatsby also has an <a href="https://www.gatsbyjs.com/plugins/gatsby-transformer-
 </p>
 </div>
 </div>
-<div id="outline-container-org13f91d6" class="outline-3">
-<h3 id="org13f91d6"><span class="section-number-3">1.3</span> Emacs itself</h3>
+<div id="outline-container-org8391860" class="outline-3">
+<h3 id="org8391860"><span class="section-number-3">1.3</span> Emacs itself</h3>
 <div class="outline-text-3" id="text-1-3">
 <p>
 Emacs has a variety of solutions to have some static website or a small blog built from org-mode.
@@ -95,8 +95,8 @@ an extension to the org-mode.
 </div>
 </div>
 
-<div id="outline-container-orgf35bddd" class="outline-2">
-<h2 id="orgf35bddd"><span class="section-number-2">2</span> Migration from Jekyll</h2>
+<div id="outline-container-orgc7ced88" class="outline-2">
+<h2 id="orgc7ced88"><span class="section-number-2">2</span> Migration from Jekyll</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 I&rsquo;ve had a lot of issues with outdated Jekyll version and my attempts to update it with assets have failed.
@@ -107,8 +107,8 @@ to the <b>org-static-blog</b>.
 </p>
 </div>
 
-<div id="outline-container-org0162f2d" class="outline-3">
-<h3 id="org0162f2d"><span class="section-number-3">2.1</span> Installation of the org-static-blog</h3>
+<div id="outline-container-orgae981c9" class="outline-3">
+<h3 id="orgae981c9"><span class="section-number-3">2.1</span> Installation of the org-static-blog</h3>
 <div class="outline-text-3" id="text-2-1">
 <p>
 It&rsquo;s quite simple - you just need to run from your Emacs
@@ -129,8 +129,8 @@ org-static-blog
 </div>
 </div>
 
-<div id="outline-container-org5a5a68b" class="outline-3">
-<h3 id="org5a5a68b"><span class="section-number-3">2.2</span> Configuration</h3>
+<div id="outline-container-org1449942" class="outline-3">
+<h3 id="org1449942"><span class="section-number-3">2.2</span> Configuration</h3>
 <div class="outline-text-3" id="text-2-2">
 <p>
 org-static blog has a lot of configuration options, so it&rsquo;s better to refer the <a href="https://github.com/bastibe/org-static-blog#examples">examples and documentation on the website</a>.
@@ -138,24 +138,24 @@ org-static blog has a lot of configuration options, so it&rsquo;s better to refe
 </div>
 </div>
 
-<div id="outline-container-orgd2bb681" class="outline-3">
-<h3 id="orgd2bb681"><span class="section-number-3">2.3</span> Convert markdown to org</h3>
+<div id="outline-container-org03e9124" class="outline-3">
+<h3 id="org03e9124"><span class="section-number-3">2.3</span> Convert markdown to org</h3>
 <div class="outline-text-3" id="text-2-3">
 <p>
 This is required step which can be quickly done by simple script, assuming that you have pandoc installed:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-shell"><span style="color: #b294bb;">for</span> f<span style="color: #b294bb;"> in</span> <span style="color: #c5c8c6; font-weight: bold;">`</span><span style="color: #c5c8c6; font-weight: bold;">ls</span><span style="color: #c5c8c6; font-weight: bold;"> *.md`</span>; <span style="color: #b294bb;">do</span> 
-    pandoc -f markdown -t org -o $<span style="color: #b294bb;">{</span><span style="color: #cc6666;">f</span><span style="color: #b294bb;">}</span>.org $<span style="color: #b294bb;">{</span><span style="color: #cc6666;">f</span><span style="color: #b294bb;">}</span>; 
-<span style="color: #b294bb;">done</span>
+<pre class="src src-shell"><span style="color: #8959a8;">for</span> f<span style="color: #8959a8;"> in</span> <span style="color: #4d4d4c; font-weight: bold;">`</span><span style="color: #4d4d4c; font-weight: bold;">ls</span><span style="color: #4d4d4c; font-weight: bold;"> *.md`</span>; <span style="color: #8959a8;">do</span> 
+    pandoc -f markdown -t org -o $<span style="color: #8959a8;">{</span><span style="color: #c82829;">f</span><span style="color: #8959a8;">}</span>.org $<span style="color: #8959a8;">{</span><span style="color: #c82829;">f</span><span style="color: #8959a8;">}</span>; 
+<span style="color: #8959a8;">done</span>
 </pre>
 </div>
 </div>
 </div>
 
-<div id="outline-container-org3ccbc98" class="outline-3">
-<h3 id="org3ccbc98"><span class="section-number-3">2.4</span> Writing a new post</h3>
+<div id="outline-container-org9acee99" class="outline-3">
+<h3 id="org9acee99"><span class="section-number-3">2.4</span> Writing a new post</h3>
 <div class="outline-text-3" id="text-2-4">
 <div class="org-src-container">
 <pre class="src src-emacs">org-static-blog-mode
@@ -170,8 +170,8 @@ This will build a new HTML page in the <b>/blog</b> directory.
 </div>
 </div>
 
-<div id="outline-container-orga0b361c" class="outline-3">
-<h3 id="orga0b361c"><span class="section-number-3">2.5</span> CI/CD</h3>
+<div id="outline-container-orgbff7a57" class="outline-3">
+<h3 id="orgbff7a57"><span class="section-number-3">2.5</span> CI/CD</h3>
 <div class="outline-text-3" id="text-2-5">
 <p>
 So far the simplest solution I&rsquo;ve found is just to keep built HTML version of the website in the repo and deploy it on
@@ -181,24 +181,24 @@ each change. <a href="https://gitlab.com/_zngguvnf/org-static-blog-example">Ther
 </div>
 </div>
 
-<div id="outline-container-org2fd2ba4" class="outline-2">
-<h2 id="org2fd2ba4"><span class="section-number-2">3</span> Issues that are still not solved by migration</h2>
+<div id="outline-container-org415315f" class="outline-2">
+<h2 id="org415315f"><span class="section-number-2">3</span> Issues that are still not solved by migration</h2>
 <div class="outline-text-2" id="text-3">
 <p>
 The migration was not ideal, and there are still some pain points and issues not solved:
 </p>
 </div>
 
-<div id="outline-container-org04ce139" class="outline-3">
-<h3 id="org04ce139"><span class="section-number-3">3.1</span> Better code highlighting</h3>
+<div id="outline-container-org231af27" class="outline-3">
+<h3 id="org231af27"><span class="section-number-3">3.1</span> Better code highlighting</h3>
 <div class="outline-text-3" id="text-3-1">
 <p>
 Some programming languages are highlighted poorly.
 </p>
 </div>
 </div>
-<div id="outline-container-orge78672e" class="outline-3">
-<h3 id="orge78672e"><span class="section-number-3">3.2</span> Better CI/CD experience</h3>
+<div id="outline-container-org3fc0b9d" class="outline-3">
+<h3 id="org3fc0b9d"><span class="section-number-3">3.2</span> Better CI/CD experience</h3>
 <div class="outline-text-3" id="text-3-2">
 <p>
 There is a way to build the website right from CI, e.g. by executing Emacs Lisp code from the container,
@@ -206,8 +206,8 @@ though it may require some setup &amp; efforts spent before.
 </p>
 </div>
 </div>
-<div id="outline-container-org60572f8" class="outline-3">
-<h3 id="org60572f8"><span class="section-number-3">3.3</span> Assets management</h3>
+<div id="outline-container-orgb95e2d2" class="outline-3">
+<h3 id="orgb95e2d2"><span class="section-number-3">3.3</span> Assets management</h3>
 <div class="outline-text-3" id="text-3-3">
 <p>
 Probably I&rsquo;ll still need to configure Webpack, stylesheets, javascripts to make the website looking more neat
@@ -217,8 +217,8 @@ and more fully featured.
 </div>
 </div>
 
-<div id="outline-container-org3455834" class="outline-2">
-<h2 id="org3455834"><span class="section-number-2">4</span> Conclusion</h2>
+<div id="outline-container-org21d8590" class="outline-2">
+<h2 id="org21d8590"><span class="section-number-2">4</span> Conclusion</h2>
 <div class="outline-text-2" id="text-4">
 <p>
 Switching from Jekyll to <b>org-static-mode</b> definitely improved the blogging experience, and now it&rsquo;s a way more
@@ -330,7 +330,7 @@ while your adapters are placed surround it.
 </p>
 
 
-<figure id="org428f623">
+<figure id="org6c1ed94">
 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Hexagonal_Architecture.svg/1000px-Hexagonal_Architecture.svg.png" alt="1000px-Hexagonal_Architecture.svg.png">
 
 <figcaption><span class="figure-number">Figure 1: </span>Hexagon</figcaption>
@@ -386,7 +386,7 @@ now let&rsquo;s see how we can implement the realisation of port for Elixir
 using its&rsquo; capability to create <b>behaviours</b>:
 </p>
 
-<pre class="example" id="org4e61846">
+<pre class="example" id="org33cf1f4">
   defmodule Core.PushNotifications do
     @moduledoc """
     Port for sending push notifications.
@@ -412,7 +412,7 @@ exact implementation - adapter - should be placed in your app
 configuration like:
 </p>
 
-<pre class="example" id="orgd41bdb2">
+<pre class="example" id="orgfef3bb4">
   config :core, Core.PushNotifications, adapter: PushNotifications.APNS
 </pre>
 
@@ -421,7 +421,7 @@ If you want to call this port from your application you just need to use
 the delegated function:
 </p>
 
-<pre class="example" id="orgbac3faf">
+<pre class="example" id="org8242162">
   defmodule Core do
     alias Core.PushNotifications
 
@@ -473,7 +473,7 @@ role of specification of driver port so you&rsquo;ll always be able to see
 what we need to send and what we should expect in response.
 </p>
 
-<pre class="example" id="orgfd0d5d5">
+<pre class="example" id="org066b4ad">
   defmodule Web.UserController do
     use Web, :controller
 
@@ -523,7 +523,7 @@ adapt realisation of sending push notifications over APNS by the
 specification that was given us by this port:
 </p>
 
-<pre class="example" id="org3903076">
+<pre class="example" id="org241967b">
   defmodule PushNotifications.APNS do
     @moduledoc "APNS adapter for push notifications"
     @behaviour Core.PushNotifications
@@ -563,7 +563,7 @@ should be tested. Let&rsquo;s write a test adapter for the PushNotifications
 port then:
 </p>
 
-<pre class="example" id="org978f69e">
+<pre class="example" id="org4b1aba3">
   defmodule PushNotifications.TestAdapter do
     @moduledoc "Test adapter for push notifications"
     @behaviour Core.PushNotifications
@@ -584,7 +584,7 @@ interface. In Elixir ecosystem we have a great library called <code>Mox</code> t
 can be used for such case:
 </p>
 
-<pre class="example" id="orgcdc87b3">
+<pre class="example" id="org188c173">
   Mox.defmock(PushNotifications.TestMock, for: Core.PushNotifications)
 
   defmodule CoreTest do
@@ -755,7 +755,7 @@ best parts of these languages and Erlang to make developers much more
 productive and efficient.
 </p>
 
-<pre class="example" id="org40c82f0">
+<pre class="example" id="orgec6134a">
   defmodule Example do
     def list_users(ids) do
         User
@@ -959,7 +959,7 @@ using third-party services anyway. Imagine that you are sending SMS
 through you favorite provider services. This code can look like that:
 </p>
 
-<pre class="example" id="org7cd08c6">
+<pre class="example" id="org7897a7d">
   SmsProvider.send_sms(from, to, "message")
 </pre>
 
@@ -974,7 +974,7 @@ Now we need to test this situation. This will be our very first
 approach:
 </p>
 
-<pre class="example" id="orgdbebb77">
+<pre class="example" id="org6a564dc">
   assert {:ok, %Message{}} = SmsProvider.send_sms(from, to, "message")
 </pre>
 
@@ -990,7 +990,7 @@ The most popular solution is mocking. You&rsquo;re supposing that call of
 expected result:
 </p>
 
-<pre class="example" id="org9b09e66">
+<pre class="example" id="org6a2f2a0">
   mock(SmsProvider, :send_sms, fn _, _, _ -&gt; {:ok, %Message{status: :sent}} end)
   assert {:ok, %Message{status: :sent}} = SmsProvider.send_sms(from, to, "message")
 </pre>
@@ -1002,7 +1002,7 @@ mocked SmsProvider so it will be overriden in every next asynchronous
 test:
 </p>
 
-<pre class="example" id="org40c5378">
+<pre class="example" id="org17960ef">
   use MyApp.DataCase, async: true
 
   # ...
@@ -1028,7 +1028,7 @@ Instead of mocking we can try calling the function that will override
 content:
 </p>
 
-<pre class="example" id="org2ad4fa6">
+<pre class="example" id="org3ee8749">
   defmodule TestProvider do
     def send_sms(from, to, message) do
       {:ok, %Message{status: :sent, from: from, to: to, text: message}}
@@ -1042,7 +1042,7 @@ module. It will use default adapter in development, production
 environments and will use <code>TestProvider</code> in testing:
 </p>
 
-<pre class="example" id="orgaa28592">
+<pre class="example" id="org8b8583f">
   # config/test.exs
   config :my_app, SmsProvider, adapter: TestProvider
 
@@ -1061,7 +1061,7 @@ environments and will use <code>TestProvider</code> in testing:
 Let&rsquo;s go straight to the test:
 </p>
 
-<pre class="example" id="orgff8754b">
+<pre class="example" id="org3a142dc">
   assert {:ok, %Message{}} = SmsProvider.send_sms(from, to, "message") # true
 </pre>
 
@@ -1098,7 +1098,7 @@ in tests</li>
 Now let&rsquo;s add it to our dependencies list:
 </p>
 
-<pre class="example" id="orgfed7081">
+<pre class="example" id="org84120b2">
   # mix.exs
   def deps do
     [
@@ -1112,7 +1112,7 @@ It&rsquo;s easy as a pie to rewrite our tests with Mox. We need to create an
 SMS provider behaviour and implement it for different environments:
 </p>
 
-<pre class="example" id="org4e41ebe">
+<pre class="example" id="orge653bb4">
   # sms_provider.ex
   defmodule SmsProvider do
     @callback send_sms(String.t, String.t, String.t) :: {:ok, %Message{}} | {:error, :wrong_number}
@@ -1143,7 +1143,7 @@ If you don&rsquo;t need to check expectations in test you can try
 <code>stub_with/2</code> function in order to stub entire module:
 </p>
 
-<pre class="example" id="orgb43f988">
+<pre class="example" id="orgabd62a8">
   # sms_provider.ex
   defmodule SmsProvider do
     @callback send_sms(String.t, String.t, String.t) :: {:ok, %Message{}} | {:error, :wrong_number}
@@ -1245,7 +1245,7 @@ Let&rsquo;s start by creating a CircleCI configuration file in
 <code>.circleci/config.yml</code>:
 </p>
 
-<pre class="example" id="org8226fa8">
+<pre class="example" id="orgb16aa85">
   version: 2  # use CircleCI 2.0 instead of CircleCI Classic
   jobs:  # basic units of work in a run
     build:  # runs not using Workflows must have a `build` job as entry point
@@ -1302,7 +1302,7 @@ above:
 {% raw %}
 </p>
 
-<pre class="example" id="orge96e9a8">
+<pre class="example" id="orgbc1b385">
         - restore_cache:  # restores saved mix cache
             keys:  # list of cache keys, in decreasing specificity
               - v1-mix-cache-{{ .Branch }}-{{ checksum "mix.lock" }}
@@ -1380,7 +1380,7 @@ Let&rsquo;s continue filling up our configuration file by adding a new
 <code>deploy</code> job:
 </p>
 
-<pre class="example" id="org19c3a68">
+<pre class="example" id="org7e4a2f7">
     deploy:
       docker:
         - image: circleci/elixir:1.6
@@ -1416,7 +1416,7 @@ accordingly. We can achieve this by using CircleCI workflow and
 providing a simple configuration at the bottom of our config file:
 </p>
 
-<pre class="example" id="org13a0ea2">
+<pre class="example" id="org01db531">
   workflows:
     version: 2
     build-and-deploy:
@@ -1511,7 +1511,7 @@ CI, we want to make it more obvious and stop any further checks. This
 can be achieved by running <code>mix compile</code> task with related option:
 </p>
 
-<pre class="example" id="org6da334f">
+<pre class="example" id="org693a20a">
   mix compile --warnings-as-errors
 </pre>
 </div>
@@ -1528,7 +1528,7 @@ the formatter and we need to force this option by running <code>mix format</code
 task with the <code>--check-formatted</code> option during CI.
 </p>
 
-<pre class="example" id="orgdfc6f00">
+<pre class="example" id="orgd35cc40">
   mix format --check-formatted
 </pre>
 </div>
@@ -1549,7 +1549,7 @@ In order to start using Credo you need to add this line to your
 <code>mix.exs</code> deps:
 </p>
 
-<pre class="example" id="orgd4e8bde">
+<pre class="example" id="orgfaceb3b">
   {:credo, "~&gt; 0.9.1", only: ~w(dev test)a, runtime: false}
 </pre>
 
@@ -1559,7 +1559,7 @@ configuration file. For example, you can create <code>config/.credo.exs</code> f
 with this content:
 </p>
 
-<pre class="example" id="orgcb98730">
+<pre class="example" id="orgb24ec1d">
   %{
     #
     # You can have as many configs as you like in the `configs:` field.
@@ -1617,7 +1617,7 @@ After that, it would be nice to force these settings by running Credo
 mix task with <code>--strict</code> option:
 </p>
 
-<pre class="example" id="org885f4af">
+<pre class="example" id="org7346f9d">
   mix credo --strict
 </pre>
 </div>
@@ -1634,7 +1634,7 @@ function. During the CI we want to check if we have any unavailable or
 deprecated functions/modules:
 </p>
 
-<pre class="example" id="org8adccf7">
+<pre class="example" id="org00f7b25">
   mix xref unavailable
   mix xref deprecated
 </pre>
@@ -1671,7 +1671,7 @@ detect the following types of security issues:
 To install Sobelow you can use the next command:
 </p>
 
-<pre class="example" id="orgf4b3a43">
+<pre class="example" id="orgf2b31a3">
   mix archive.install hex sobelow
 </pre>
 
@@ -1679,7 +1679,7 @@ To install Sobelow you can use the next command:
 To run Sobelow just start the related mix task:
 </p>
 
-<pre class="example" id="org19fbbd4">
+<pre class="example" id="org93a6956">
   mix sobelow
 </pre>
 </div>
@@ -1702,7 +1702,7 @@ To use Dialyzer in your Elixir application you may want to use
 line to your <code>mix.exs</code> file:
 </p>
 
-<pre class="example" id="org975f41c">
+<pre class="example" id="org6a23ddf">
   defp deps do
     [{:dialyxir, "~&gt; 0.5", only: [:dev], runtime: false}]
   end
@@ -1712,7 +1712,7 @@ line to your <code>mix.exs</code> file:
 You can also configure warnings, dependencies and paths in <code>mix.exs</code>:
 </p>
 
-<pre class="example" id="orgb1cb9f9">
+<pre class="example" id="orgf5fd00e">
   def project do
     [
     dialyzer: [plt_add_deps: :apps_direct, plt_add_apps: [:wx]]
@@ -1727,7 +1727,7 @@ You can ignore any unwanted warnings by providing <code>ignore_warnings</code>
 option:
 </p>
 
-<pre class="example" id="orga590891">
+<pre class="example" id="orgdd029cb">
   def project do
     [dialyzer: [ignore_warnings: "dialyzer.ignore-warnings"]]
   end
@@ -1738,7 +1738,7 @@ To run dialyzer on the CI add the next option to make sure that the
 build fails in case of any errors:
 </p>
 
-<pre class="example" id="org5be4b77">
+<pre class="example" id="org3e3fe03">
   mix dialyzer --halt-exit-status
 </pre>
 </div>
@@ -1815,7 +1815,7 @@ Let&rsquo;s start by creating a migration. Create a new Elixir project and a
 new migration in priv/repo/migrations:
 </p>
 
-<pre class="example" id="orgfec87fe">
+<pre class="example" id="org4fb3c58">
   defmodule App.Repo.Migrations.IntroducePgSearch do
     @moduledoc """
     Create postgres extension and indices
@@ -1851,7 +1851,7 @@ defined. In that case we can implement a simple search query that can be
 used in your contexts or controllers:
 </p>
 
-<pre class="example" id="orgc63abab">
+<pre class="example" id="org9e106e4">
   defmodule App.Users.Search do
     @moduledoc """
     Implementation of the full-text user search
@@ -1875,7 +1875,7 @@ though.
 We need to escape all of non-words characters from user&rsquo;s input:
 </p>
 
-<pre class="example" id="orgeef22cf">
+<pre class="example" id="orgcb10c27">
   String.replace(term, ~r/\W/u, "")
 </pre>
 
@@ -1884,7 +1884,7 @@ Also we need to allow to search by prefix - beginning of the word. Let&rsquo;s
 add :* to our search term*:
 </p>
 
-<pre class="example" id="org6829647">
+<pre class="example" id="org3180b76">
   defp prefix_search(term), do: String.replace(term, ~r/\W/u, "") &lt;&gt; ":*"
 </pre>
 
@@ -1893,7 +1893,7 @@ Now we need to implement the search by using Ecto&rsquo;s fragment macro and
 to<sub>tsquery</sub> PostgreSQL function:
 </p>
 
-<pre class="example" id="orgde667c7">
+<pre class="example" id="org48e5518">
   def run(query, search_term) do
       where(
         query,
@@ -1911,7 +1911,7 @@ Let&rsquo;s take a look at the implementation. At first, we need to compose a
 search token by joining columns:
 </p>
 
-<pre class="example" id="org44ec9be">
+<pre class="example" id="org0c5f9b2">
   to_tsvector('english', username || ' ' || first_name || ' ' || coalesce(last_name, ' ')) @@ to_tsquery(?)
 </pre>
 
@@ -1925,7 +1925,7 @@ But this result won&rsquo;t be as fast as we wanted. Let&rsquo;s suppose that we
 have <i>11K</i> users:
 </p>
 
-<pre class="example" id="orge13fce4">
+<pre class="example" id="org925875e">
   User |&gt; App.Users.Search.run("meta") |&gt; Repo.explain
 
   ###
@@ -1951,7 +1951,7 @@ order to improve performance of full-text queries. Let&rsquo;s modify our
 transaction:
 </p>
 
-<pre class="example" id="org3806592">
+<pre class="example" id="org754052c">
   defmodule App.Repo.Migrations.IntroducePgSearch do
     @moduledoc """
     Create postgres extension and indices
@@ -1979,7 +1979,7 @@ transaction:
 Now run mix do ecto.rollback, eco.migrate and try to run the search:
 </p>
 
-<pre class="example" id="orgaa915df">
+<pre class="example" id="org8e6ad3f">
   User |&gt; App.Users.Search.run("meta") |&gt; Repo.explain
 
   ###
@@ -2078,7 +2078,7 @@ Let&rsquo;s create a new Elixir module that will implement logic of our future
 dynamic query. I will name it <code>FilterQuery</code> :
 </p>
 
-<pre class="example" id="org7f2fa77">
+<pre class="example" id="orgb676492">
   defmodule FilterQuery do
     @moduledoc """
     Query that accepts inclusion or exclusion parameters and filters by this parameters
@@ -2094,7 +2094,7 @@ accepts incoming query, inclusion and exclusion parameters as the
 arguments:
 </p>
 
-<pre class="example" id="orgdd4474f">
+<pre class="example" id="orgf8e16a8">
   @spec filter(Ecto.Query.t, map, map) :: Ecto.Query.t
   def filter(query, inclusion, exclusion) 
 </pre>
@@ -2105,7 +2105,7 @@ we need to build two lists of dynamic queries both for inclusion and
 exclusion parameters:
 </p>
 
-<pre class="example" id="orgbc468d7">
+<pre class="example" id="orge4f3310">
   queries = dynamic_query(:inclusion, inclusion) ++ dynamic_query(:exclusion, exclusion)
 </pre>
 
@@ -2114,7 +2114,7 @@ Now we need to merge all these dynamic queries into a new big one. It
 can be implemented using <code>Enum.reduce</code> :
 </p>
 
-<pre class="example" id="org87772e3">
+<pre class="example" id="org3b714ad">
   Enum.reduce(queries, query, fn(q, acc) -&gt; where(acc, ^q) end)
 </pre>
 
@@ -2134,7 +2134,7 @@ query. However, the devil&rsquo;s always in the details. We need to hide
 implementation in private functions:
 </p>
 
-<pre class="example" id="orgb3b7884">
+<pre class="example" id="orgd961174">
   defp dynamic_query(type, filters) when type in [:inclusion, :exclusion] do
     for {attr, values} &lt;- filters, present?(values),
       do: dynamic_query(type, attr, values)
@@ -2152,7 +2152,7 @@ need to check if these lists contain values or we shall skip building
 query:
 </p>
 
-<pre class="example" id="org18e7b36">
+<pre class="example" id="org266c63d">
   defp present?(list) when is_list(list), do: length(list) &gt; 0
   defp present?(_), do: false
 </pre>
@@ -2168,7 +2168,7 @@ first argument and builds dynamic query for the second one. Also notice
 that we need to use <code>field</code> macro to dynamically access attribute name:
 </p>
 
-<pre class="example" id="org7f2eedc">
+<pre class="example" id="org4bea411">
   defp dynamic_query(:inclusion, attr, values) do
     dynamic([q], field(q, ^attr) in ^values)
   end
@@ -2202,7 +2202,7 @@ what you really wished? Guess not :)
 So let&rsquo;s restrict filtered attributes by using <code>__using__</code> macro:
 </p>
 
-<pre class="example" id="orgc565302">
+<pre class="example" id="orgda9d9e9">
   defmacro __using__(attributes: allowed_attributes) do
   ...
 
@@ -2230,7 +2230,7 @@ Voila! No one ever will find out how your users relationships are going.
 Now let&rsquo;s take a quick look at our dynamic filter query:
 </p>
 
-<pre class="example" id="orgd77907d">
+<pre class="example" id="org8c0eaeb">
   defmodule FilterQuery do
     @moduledoc """
     Query that accepts inclusion or exclusion parameters and filters by this parameters
@@ -2294,7 +2294,7 @@ our query and set the list of allowed attributes through <code>use</code>
 construction:
 </p>
 
-<pre class="example" id="org0c9db4b">
+<pre class="example" id="orgb8170ad">
   {:ok, _} = Application.ensure_all_started(:ex_machina)
 
   defmodule Example do
@@ -2625,7 +2625,7 @@ queries in plain Ruby.
 </p>
 
 
-<figure id="org80086cc">
+<figure id="org035866a">
 <img src="https://cdn-images-1.medium.com/max/1600/1*-oIlwIWlt0BDN4b5a9rRCQ.png" alt="1*-oIlwIWlt0BDN4b5a9rRCQ.png">
 
 </figure>
@@ -2713,7 +2713,7 @@ class Article &lt; ActiveRecord::Base
 SORT<sub>OPTIONS</sub> = %w(by<sub>date</sub> by<sub>title</sub> by<sub>author</sub>).freeze
 </p>
 
-<pre class="example" id="org19e36d0">
+<pre class="example" id="orgd843931">
   def initialize(params = {}, relation = Article.includes(:user))
     @relation = relation
     @params = params
@@ -2743,7 +2743,7 @@ index @articles = OrderedArticlesQuery.new(sort<sub>query</sub><sub>params</sub>
 end
 </p>
 
-<pre class="example" id="org1b08963">
+<pre class="example" id="org9bdd1df">
   private
 
   def sort_query_params
@@ -2767,28 +2767,28 @@ isolate it using Ruby&rsquo;s <i>HEREDOC syntax:</i>
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby"> <span style="color: #b294bb;">class</span> <span style="color: #f0c674;">PopularArticlesQuery</span>
-  <span style="color: #f0c674;">POPULAR_TRESHOLD</span> = <span style="color: #de935f; font-weight: bold;">5</span>
+<pre class="src src-ruby"> <span style="color: #8959a8;">class</span> <span style="color: #eab700;">PopularArticlesQuery</span>
+  <span style="color: #eab700;">POPULAR_TRESHOLD</span> = <span style="color: #f5871f; font-weight: bold;">5</span>
 
-  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">initialize</span>(subscriptions = <span style="color: #f0c674;">Subscription</span>.all)
-    <span style="color: #cc6666;">@subscriptions</span> = subscriptions
-  <span style="color: #b294bb;">end</span>
+  <span style="color: #8959a8;">def</span> <span style="color: #3e999f;">initialize</span>(subscriptions = <span style="color: #eab700;">Subscription</span>.all)
+    <span style="color: #c82829;">@subscriptions</span> = subscriptions
+  <span style="color: #8959a8;">end</span>
 
-  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">all</span>
-    <span style="color: #cc6666;">@subscriptions</span>.where(query)
-  <span style="color: #b294bb;">end</span>
+  <span style="color: #8959a8;">def</span> <span style="color: #3e999f;">all</span>
+    <span style="color: #c82829;">@subscriptions</span>.where(query)
+  <span style="color: #8959a8;">end</span>
 
-  <span style="color: #81a2be;">private</span>
+  <span style="color: #3e999f;">private</span>
 
-  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">query</span>
-    <span style="color: #b5bd68;">&lt;&lt;-SQL</span>
-<span style="color: #b5bd68;">      articles.comments_count &gt;= </span><span style="color: #cc6666;">#{POPULAR_TRESHOLD}</span>
-<span style="color: #b5bd68;">      AND articles.content IS NOT NULL</span>
-<span style="color: #b5bd68;">      AND articles.status = </span><span style="color: #cc6666;">#{Article::STATUSES[:published]}</span>
-<span style="color: #b5bd68;">      ORDER BY articles.comments_count DESC</span>
-<span style="color: #b5bd68;">    SQL</span>
-  <span style="color: #b294bb;">end</span>
-<span style="color: #b294bb;">end</span>
+  <span style="color: #8959a8;">def</span> <span style="color: #3e999f;">query</span>
+    <span style="color: #718c00;">&lt;&lt;-SQL</span>
+<span style="color: #718c00;">      articles.comments_count &gt;= </span><span style="color: #c82829;">#{POPULAR_TRESHOLD}</span>
+<span style="color: #718c00;">      AND articles.content IS NOT NULL</span>
+<span style="color: #718c00;">      AND articles.status = </span><span style="color: #c82829;">#{Article::STATUSES[:published]}</span>
+<span style="color: #718c00;">      ORDER BY articles.comments_count DESC</span>
+<span style="color: #718c00;">    SQL</span>
+  <span style="color: #8959a8;">end</span>
+<span style="color: #8959a8;">end</span>
 </pre>
 </div>
 
@@ -2809,44 +2809,44 @@ method will help you:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby"><span style="color: #b294bb;">class</span> <span style="color: #f0c674;">OrderedArticlesQuery</span>
-  <span style="color: #f0c674;">SORT_OPTIONS</span> = <span style="color: #b5bd68;">%w(by_date by_title by_author)</span>.freeze
+<pre class="src src-ruby"><span style="color: #8959a8;">class</span> <span style="color: #eab700;">OrderedArticlesQuery</span>
+  <span style="color: #eab700;">SORT_OPTIONS</span> = <span style="color: #718c00;">%w(by_date by_title by_author)</span>.freeze
 
-  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">initialize</span>(params = {}, relation = <span style="color: #f0c674;">Article</span>.includes(<span style="color: #de935f;">:user</span>))
-    <span style="color: #cc6666;">@relation</span> = relation.extending(<span style="color: #f0c674;">Scopes</span>)
+  <span style="color: #8959a8;">def</span> <span style="color: #3e999f;">initialize</span>(params = {}, relation = <span style="color: #eab700;">Article</span>.includes(<span style="color: #f5871f;">:user</span>))
+    <span style="color: #c82829;">@relation</span> = relation.extending(<span style="color: #eab700;">Scopes</span>)
 
-    <span style="color: #cc6666;">@params</span> = params
-  <span style="color: #b294bb;">end</span>
+    <span style="color: #c82829;">@params</span> = params
+  <span style="color: #8959a8;">end</span>
 
-  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">all</span>
-    <span style="color: #cc6666;">@relation</span>.public_send(sort_by, direction)
-  <span style="color: #b294bb;">end</span>
+  <span style="color: #8959a8;">def</span> <span style="color: #3e999f;">all</span>
+    <span style="color: #c82829;">@relation</span>.public_send(sort_by, direction)
+  <span style="color: #8959a8;">end</span>
 
-  <span style="color: #81a2be;">private</span>
+  <span style="color: #3e999f;">private</span>
 
-  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">sort_by</span>
-    <span style="color: #cc6666;">@params</span>[<span style="color: #de935f;">:sort</span>].presence_in(<span style="color: #f0c674;">SORT_OPTIONS</span>) || <span style="color: #de935f;">:by_date</span>
-  <span style="color: #b294bb;">end</span>
+  <span style="color: #8959a8;">def</span> <span style="color: #3e999f;">sort_by</span>
+    <span style="color: #c82829;">@params</span>[<span style="color: #f5871f;">:sort</span>].presence_in(<span style="color: #eab700;">SORT_OPTIONS</span>) || <span style="color: #f5871f;">:by_date</span>
+  <span style="color: #8959a8;">end</span>
 
-  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">direction</span>
-    <span style="color: #cc6666;">@params</span>[<span style="color: #de935f;">:direction</span>] == <span style="color: #b5bd68;">"asc"</span> ? <span style="color: #de935f;">:asc</span> : <span style="color: #de935f;">:desc</span>
-  <span style="color: #b294bb;">end</span>
+  <span style="color: #8959a8;">def</span> <span style="color: #3e999f;">direction</span>
+    <span style="color: #c82829;">@params</span>[<span style="color: #f5871f;">:direction</span>] == <span style="color: #718c00;">"asc"</span> ? <span style="color: #f5871f;">:asc</span> : <span style="color: #f5871f;">:desc</span>
+  <span style="color: #8959a8;">end</span>
 
-  <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">Group additional scope methods in module in order to extend relation</span>
-  <span style="color: #b294bb;">module</span> <span style="color: #f0c674;">Scopes</span>
-    <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">by_title</span>(direction)
-      order(<span style="color: #de935f;">title:</span> direction)
-    <span style="color: #b294bb;">end</span>
+  <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">Group additional scope methods in module in order to extend relation</span>
+  <span style="color: #8959a8;">module</span> <span style="color: #eab700;">Scopes</span>
+    <span style="color: #8959a8;">def</span> <span style="color: #3e999f;">by_title</span>(direction)
+      order(<span style="color: #f5871f;">title:</span> direction)
+    <span style="color: #8959a8;">end</span>
 
-    <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">by_date</span>(direction)
-      order(<span style="color: #de935f;">created_at:</span> direction)
-    <span style="color: #b294bb;">end</span>
+    <span style="color: #8959a8;">def</span> <span style="color: #3e999f;">by_date</span>(direction)
+      order(<span style="color: #f5871f;">created_at:</span> direction)
+    <span style="color: #8959a8;">end</span>
 
-    <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">by_author</span>
-      order(<span style="color: #b5bd68;">"users.full_name </span><span style="color: #cc6666;">#{direction}</span><span style="color: #b5bd68;">"</span>)
-    <span style="color: #b294bb;">end</span>
-  <span style="color: #b294bb;">end</span>
-<span style="color: #b294bb;">end</span>
+    <span style="color: #8959a8;">def</span> <span style="color: #3e999f;">by_author</span>
+      order(<span style="color: #718c00;">"users.full_name </span><span style="color: #c82829;">#{direction}</span><span style="color: #718c00;">"</span>)
+    <span style="color: #8959a8;">end</span>
+  <span style="color: #8959a8;">end</span>
+<span style="color: #8959a8;">end</span>
 </pre>
 </div>
 
@@ -2867,31 +2867,31 @@ two composed Query Objects represent one SQL query:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby"><span style="color: #b294bb;">class</span> <span style="color: #f0c674;">FeaturedQuery</span>
-  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">initialize</span>(relation = <span style="color: #f0c674;">Article</span>.all)
-    <span style="color: #cc6666;">@relation</span> = relation
-  <span style="color: #b294bb;">end</span>
+<pre class="src src-ruby"><span style="color: #8959a8;">class</span> <span style="color: #eab700;">FeaturedQuery</span>
+  <span style="color: #8959a8;">def</span> <span style="color: #3e999f;">initialize</span>(relation = <span style="color: #eab700;">Article</span>.all)
+    <span style="color: #c82829;">@relation</span> = relation
+  <span style="color: #8959a8;">end</span>
 
-  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">all</span>
-    <span style="color: #cc6666;">@relation</span>.where(<span style="color: #de935f;">featured:</span> <span style="color: #de935f;">true</span>).where(<span style="color: #b5bd68;">"views_count &gt; ?"</span>, <span style="color: #de935f; font-weight: bold;">100</span>)
-  <span style="color: #b294bb;">end</span>
-<span style="color: #b294bb;">end</span>
+  <span style="color: #8959a8;">def</span> <span style="color: #3e999f;">all</span>
+    <span style="color: #c82829;">@relation</span>.where(<span style="color: #f5871f;">featured:</span> <span style="color: #f5871f;">true</span>).where(<span style="color: #718c00;">"views_count &gt; ?"</span>, <span style="color: #f5871f; font-weight: bold;">100</span>)
+  <span style="color: #8959a8;">end</span>
+<span style="color: #8959a8;">end</span>
 
-<span style="color: #b294bb;">class</span> <span style="color: #f0c674;">ArticlesController</span>
-  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">index</span>
-    <span style="color: #cc6666;">@articles</span> = <span style="color: #f0c674;">FeaturedArticlesQuery</span>.new(sorted_articles).all <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">SELECT "articles".* FROM "articles" WHERE "articles"."featured" = $1 # AND (views_count &gt;100) ORDER BY "articles"."created_at" DESC LIMIT 10 OFFSET 0</span>
-  <span style="color: #b294bb;">end</span>
+<span style="color: #8959a8;">class</span> <span style="color: #eab700;">ArticlesController</span>
+  <span style="color: #8959a8;">def</span> <span style="color: #3e999f;">index</span>
+    <span style="color: #c82829;">@articles</span> = <span style="color: #eab700;">FeaturedArticlesQuery</span>.new(sorted_articles).all <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">SELECT "articles".* FROM "articles" WHERE "articles"."featured" = $1 # AND (views_count &gt;100) ORDER BY "articles"."created_at" DESC LIMIT 10 OFFSET 0</span>
+  <span style="color: #8959a8;">end</span>
 
-  <span style="color: #81a2be;">private</span>
+  <span style="color: #3e999f;">private</span>
 
-  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">sorted_articles</span>
-    <span style="color: #f0c674;">SortedArticlesQuery</span>.new(sort_query_params).all
-  <span style="color: #b294bb;">end</span>
+  <span style="color: #8959a8;">def</span> <span style="color: #3e999f;">sorted_articles</span>
+    <span style="color: #eab700;">SortedArticlesQuery</span>.new(sort_query_params).all
+  <span style="color: #8959a8;">end</span>
 
-  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">sort_query_params</span>
-    { <span style="color: #de935f;">sort:</span> <span style="color: #de935f;">:by_title</span>, <span style="color: #de935f;">direction:</span> <span style="color: #de935f;">:desc</span> }
-  <span style="color: #b294bb;">end</span>
-<span style="color: #b294bb;">end</span>
+  <span style="color: #8959a8;">def</span> <span style="color: #3e999f;">sort_query_params</span>
+    { <span style="color: #f5871f;">sort:</span> <span style="color: #f5871f;">:by_title</span>, <span style="color: #f5871f;">direction:</span> <span style="color: #f5871f;">:desc</span> }
+  <span style="color: #8959a8;">end</span>
+<span style="color: #8959a8;">end</span>
 </pre>
 </div>
 
@@ -2910,33 +2910,33 @@ repetition and follow DRY principle:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby"><span style="color: #b294bb;">class</span> <span style="color: #f0c674;">ArticlesQuery</span>
-  <span style="color: #f0c674;">TEXT_LENGTH</span> = <span style="color: #de935f; font-weight: bold;">3</span>
+<pre class="src src-ruby"><span style="color: #8959a8;">class</span> <span style="color: #eab700;">ArticlesQuery</span>
+  <span style="color: #eab700;">TEXT_LENGTH</span> = <span style="color: #f5871f; font-weight: bold;">3</span>
 
-<span style="color: #5a5b5a;">#</span><span style="color: #5a5b5a;">+BEGIN_EXAMPLE</span>
-  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">initialize</span>(comments = <span style="color: #f0c674;">Comment</span>.all)
-    <span style="color: #cc6666;">@comments</span> = comments
-  <span style="color: #b294bb;">end</span>
+<span style="color: #a5a4a5;">#</span><span style="color: #a5a4a5;">+BEGIN_EXAMPLE</span>
+  <span style="color: #8959a8;">def</span> <span style="color: #3e999f;">initialize</span>(comments = <span style="color: #eab700;">Comment</span>.all)
+    <span style="color: #c82829;">@comments</span> = comments
+  <span style="color: #8959a8;">end</span>
 
-  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">all</span>
+  <span style="color: #8959a8;">def</span> <span style="color: #3e999f;">all</span>
     comments
-      .where(<span style="color: #b5bd68;">"user_id IS NOT NULL"</span>)
-      .where(<span style="color: #b5bd68;">"LENGTH(content) </span><span style="color: #cc6666;">#{condition}</span><span style="color: #b5bd68;">"</span>)
-  <span style="color: #b294bb;">end</span>
+      .where(<span style="color: #718c00;">"user_id IS NOT NULL"</span>)
+      .where(<span style="color: #718c00;">"LENGTH(content) </span><span style="color: #c82829;">#{condition}</span><span style="color: #718c00;">"</span>)
+  <span style="color: #8959a8;">end</span>
 
-  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">condition</span>
-    <span style="color: #b5bd68;">"&gt; </span><span style="color: #cc6666;">#{TEXT_LENGTH}</span><span style="color: #b5bd68;">"</span>
-  <span style="color: #b294bb;">end</span>
-<span style="color: #b294bb;">end</span>
+  <span style="color: #8959a8;">def</span> <span style="color: #3e999f;">condition</span>
+    <span style="color: #718c00;">"&gt; </span><span style="color: #c82829;">#{TEXT_LENGTH}</span><span style="color: #718c00;">"</span>
+  <span style="color: #8959a8;">end</span>
+<span style="color: #8959a8;">end</span>
 
-<span style="color: #b294bb;">class</span> <span style="color: #f0c674;">LongArticlesQuery</span> &lt; <span style="color: #f0c674;">ArticlesQuery</span>
-  <span style="color: #f0c674;">TEXT_LENGTH</span> = <span style="color: #de935f; font-weight: bold;">5</span>
+<span style="color: #8959a8;">class</span> <span style="color: #eab700;">LongArticlesQuery</span> &lt; <span style="color: #eab700;">ArticlesQuery</span>
+  <span style="color: #eab700;">TEXT_LENGTH</span> = <span style="color: #f5871f; font-weight: bold;">5</span>
 
-  <span style="color: #5a5b5a;">#</span><span style="color: #5a5b5a;">+BEGIN_EXAMPLE</span>
-  <span style="color: #b294bb;">def</span> <span style="color: #81a2be;">condition</span>
-    <span style="color: #b5bd68;">"&gt;= </span><span style="color: #cc6666;">#{TEXT_LENGTH}</span><span style="color: #b5bd68;">"</span>
-  <span style="color: #b294bb;">end</span>
-<span style="color: #b294bb;">end</span>
+  <span style="color: #a5a4a5;">#</span><span style="color: #a5a4a5;">+BEGIN_EXAMPLE</span>
+  <span style="color: #8959a8;">def</span> <span style="color: #3e999f;">condition</span>
+    <span style="color: #718c00;">"&gt;= </span><span style="color: #c82829;">#{TEXT_LENGTH}</span><span style="color: #718c00;">"</span>
+  <span style="color: #8959a8;">end</span>
+<span style="color: #8959a8;">end</span>
 </pre>
 </div>
 
@@ -2956,22 +2956,22 @@ results:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby"><span style="color: #81a2be;">require</span> <span style="color: #b5bd68;">"rails_helper"</span>
+<pre class="src src-ruby"><span style="color: #3e999f;">require</span> <span style="color: #718c00;">"rails_helper"</span>
 
-describe <span style="color: #f0c674;">LongArticlesQuery</span> <span style="color: #b294bb;">do</span>
-  describe <span style="color: #b5bd68;">"#all"</span> <span style="color: #b294bb;">do</span>
-    subject(<span style="color: #de935f;">:all</span>) { described_class.new.all }
+describe <span style="color: #eab700;">LongArticlesQuery</span> <span style="color: #8959a8;">do</span>
+  describe <span style="color: #718c00;">"#all"</span> <span style="color: #8959a8;">do</span>
+    subject(<span style="color: #f5871f;">:all</span>) { described_class.new.all }
 
-    before <span style="color: #b294bb;">do</span>
-      create <span style="color: #de935f;">:article</span>, <span style="color: #de935f;">text:</span> <span style="color: #b5bd68;">"abc"</span>
-      create <span style="color: #de935f;">:article</span>, <span style="color: #de935f;">text:</span> <span style="color: #b5bd68;">"this is long article"</span>
-    <span style="color: #b294bb;">end</span>
+    before <span style="color: #8959a8;">do</span>
+      create <span style="color: #f5871f;">:article</span>, <span style="color: #f5871f;">text:</span> <span style="color: #718c00;">"abc"</span>
+      create <span style="color: #f5871f;">:article</span>, <span style="color: #f5871f;">text:</span> <span style="color: #718c00;">"this is long article"</span>
+    <span style="color: #8959a8;">end</span>
 
-    it <span style="color: #b5bd68;">"returns one short comment"</span> <span style="color: #b294bb;">do</span>
-      expect(all.size).to eq(<span style="color: #de935f; font-weight: bold;">1</span>)
-    <span style="color: #b294bb;">end</span>
-  <span style="color: #b294bb;">end</span>
-<span style="color: #b294bb;">end</span>
+    it <span style="color: #718c00;">"returns one short comment"</span> <span style="color: #8959a8;">do</span>
+      expect(all.size).to eq(<span style="color: #f5871f; font-weight: bold;">1</span>)
+    <span style="color: #8959a8;">end</span>
+  <span style="color: #8959a8;">end</span>
+<span style="color: #8959a8;">end</span>
 </pre>
 </div>
 
@@ -3065,7 +3065,7 @@ chains as statistical models for real-world processes.
 </p>
 
 
-<figure id="org8091ed3">
+<figure id="orgc345e62">
 <img src="https://upload.wikimedia.org/wikipedia/commons/7/7a/Markov_Chain_weather_model_matrix_as_a_graph.png" alt="Markov_Chain_weather_model_matrix_as_a_graph.png">
 
 <figcaption><span class="figure-number">Figure 1: </span>Simple Markov chain</figcaption>
@@ -3085,7 +3085,7 @@ within Markov chain.
 Let&rsquo;s create an entry point of new application:
 </p>
 
-<pre class="example" id="org1075367">
+<pre class="example" id="orgd02eb3f">
     # lib/elixir markov chain.ex
     defmodule ElixirMarkovChain do
       alias ElixirMarkovChain.Model
@@ -3110,7 +3110,7 @@ At first, to process the source file for output sentences, we need to
 tokenize it:
 </p>
 
-<pre class="example" id="org7cd34df">
+<pre class="example" id="org2e8034e">
     # lib/elixir_markov_chain/tokenizer.ex
     defmodule ElixirMarkovChain.Tokenizer do
       def tokenize(text) do
@@ -3127,7 +3127,7 @@ Next we need to realize Markov model. We&rsquo;ll use agents to share state in
 application:
 </p>
 
-<pre class="example" id="orgb4597e7">
+<pre class="example" id="orgd8e5928">
     # lib/elixir_markov_chain/model.ex
     defmodule ElixirMarkovChain.Model do
       import ElixirMarkovChain.Tokenizer
@@ -3185,7 +3185,7 @@ When our Markov model is done, we can use it in application. For this
 example, we&rsquo;ll build a random sentence generator based on text source:
 </p>
 
-<pre class="example" id="org88069ef">
+<pre class="example" id="orgb6ce7ad">
     # lib/elixir_markov_chain/generator.ex
     defmodule ElixirMarkovChain.Generator do
       alias ElixirMarkovChain.Model
@@ -3233,7 +3233,7 @@ Now, when basic logic is implemented, we need to fill <code>process_source</code
 function:
 </p>
 
-<pre class="example" id="org5c71903">
+<pre class="example" id="orgca9bb60">
     # lib/elixir_markov_chain.ex
     defp process_source(text) do
       {:ok, model} = Model.start_link
@@ -3335,7 +3335,7 @@ Elixir equals sign is actually <i>match operator</i>. Using this operator we
 can assign and match values:
 </p>
 
-<pre class="example" id="org73d8c2f">
+<pre class="example" id="org3da6c96">
   x = 1
   1 = x
   x # 1
@@ -3345,7 +3345,7 @@ can assign and match values:
 But if we will provide invalid pattern?
 </p>
 
-<pre class="example" id="org4903563">
+<pre class="example" id="org9522081">
   2 = x # ** (MatchError) no match of right hand side value: 1
 </pre>
 
@@ -3355,7 +3355,7 @@ match operator are different - they don&rsquo;t match. You can assign variable
 only on the left side of match operator:
 </p>
 
-<pre class="example" id="org24ebd13">
+<pre class="example" id="org1e03903">
   true = undefined # * (CompileError) undefined function undefined/0
 </pre>
 </div>
@@ -3369,7 +3369,7 @@ You can use match operator not for assign only - it&rsquo;s useful for
 destructuring operations:
 </p>
 
-<pre class="example" id="org34ff6bd">
+<pre class="example" id="org0cb7f64">
     # Lists
     list = [1, 2]
     [1 | tail] = list
@@ -3392,7 +3392,7 @@ destructuring operations:
 You can also use pattern matching with functions:
 </p>
 
-<pre class="example" id="org9219484">
+<pre class="example" id="org8111db4">
   defmodule HelloWorld do
     def hello(:world), do: "Hello, world!"
     def hello(name), do: "Hello, #{ name }!"
@@ -3413,7 +3413,7 @@ You can also use pattern matching with functions:
 You can rebound Elixir&rsquo;s variables:
 </p>
 
-<pre class="example" id="orgd4bb0db">
+<pre class="example" id="org1c4d26e">
   x = 1
   x = 2
   x # 2
@@ -3424,7 +3424,7 @@ If you want to provide existing variable&rsquo;s value in pattern matching,
 then you should use <i>pin operator</i>:
 </p>
 
-<pre class="example" id="org1c13be6">
+<pre class="example" id="orgbda61eb">
   x = 1
   ^x = 2 # MatchError because 1 != 2
   [^x, y] = [1, 2] # [1, 2]
@@ -3535,7 +3535,7 @@ modules in Elixir.</li>
 <div id="outline-container-code-examples" class="outline-2">
 <h2 id="code-examples"><span class="section-number-2">4</span> Code examples</h2>
 <div class="outline-text-2" id="text-code-examples">
-<pre class="example" id="orgf4b5de0">
+<pre class="example" id="org6c44451">
     IO.puts "Hello Elixir!" # Hello Elixir!
 
     # Integers
@@ -3656,7 +3656,7 @@ arguments:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby"> multiply = -&gt; (x, y) { x * y } multiply.(<span style="color: #de935f; font-weight: bold;">2</span>, <span style="color: #de935f; font-weight: bold;">2</span>) <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">4</span>
+<pre class="src src-ruby"> multiply = -&gt; (x, y) { x * y } multiply.(<span style="color: #f5871f; font-weight: bold;">2</span>, <span style="color: #f5871f; font-weight: bold;">2</span>) <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">4</span>
 
 </pre>
 </div>
@@ -3668,10 +3668,10 @@ to create a new <i>double</i> function that takes just one argument:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby">double = -&gt; (x) { multiply.(<span style="color: #de935f; font-weight: bold;">2</span>, x) }
-double.arity <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">1</span>
-double.(<span style="color: #de935f; font-weight: bold;">2</span>) <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">4</span>
-double.(<span style="color: #de935f; font-weight: bold;">1984</span>) <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">3968</span>
+<pre class="src src-ruby">double = -&gt; (x) { multiply.(<span style="color: #f5871f; font-weight: bold;">2</span>, x) }
+double.arity <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">1</span>
+double.(<span style="color: #f5871f; font-weight: bold;">2</span>) <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">4</span>
+double.(<span style="color: #f5871f; font-weight: bold;">1984</span>) <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">3968</span>
 </pre>
 </div>
 
@@ -3681,8 +3681,8 @@ application even more simpler:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby">double = multiply.curry.(<span style="color: #de935f; font-weight: bold;">2</span>) double.(<span style="color: #de935f; font-weight: bold;">2</span>) <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">4</span>
-double.(<span style="color: #de935f; font-weight: bold;">300</span>) <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">600</span>
+<pre class="src src-ruby">double = multiply.curry.(<span style="color: #f5871f; font-weight: bold;">2</span>) double.(<span style="color: #f5871f; font-weight: bold;">2</span>) <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">4</span>
+double.(<span style="color: #f5871f; font-weight: bold;">300</span>) <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">600</span>
 </pre>
 </div>
 </div>
@@ -3712,7 +3712,7 @@ to multiply more than two arguments?
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby">multiply.(<span style="color: #de935f; font-weight: bold;">2</span>, <span style="color: #de935f; font-weight: bold;">2</span>, <span style="color: #de935f; font-weight: bold;">2</span>) <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">ArgumentError: wrong number of arguments (given 3, expected 2)</span>
+<pre class="src src-ruby">multiply.(<span style="color: #f5871f; font-weight: bold;">2</span>, <span style="color: #f5871f; font-weight: bold;">2</span>, <span style="color: #f5871f; font-weight: bold;">2</span>) <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">ArgumentError: wrong number of arguments (given 3, expected 2)</span>
 </pre>
 </div>
 
@@ -3722,9 +3722,9 @@ method:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby">multiply = -&gt; (head, <span style="color: #b5bd68;">/tail) { head /</span> tail.inject(<span style="color: #de935f; font-weight: bold;">1</span>, &amp;<span style="color: #de935f;">:*</span>) }
-multiply.curry.(<span style="color: #de935f; font-weight: bold;">2</span>, <span style="color: #de935f; font-weight: bold;">2</span>, <span style="color: #de935f; font-weight: bold;">2</span>) <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">8</span>
-multiply.curry.(<span style="color: #de935f; font-weight: bold;">2</span>, <span style="color: #de935f; font-weight: bold;">3</span>, <span style="color: #de935f; font-weight: bold;">7</span>) <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">42</span>
+<pre class="src src-ruby">multiply = -&gt; (head, <span style="color: #718c00;">/tail) { head /</span> tail.inject(<span style="color: #f5871f; font-weight: bold;">1</span>, &amp;<span style="color: #f5871f;">:*</span>) }
+multiply.curry.(<span style="color: #f5871f; font-weight: bold;">2</span>, <span style="color: #f5871f; font-weight: bold;">2</span>, <span style="color: #f5871f; font-weight: bold;">2</span>) <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">8</span>
+multiply.curry.(<span style="color: #f5871f; font-weight: bold;">2</span>, <span style="color: #f5871f; font-weight: bold;">3</span>, <span style="color: #f5871f; font-weight: bold;">7</span>) <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">42</span>
 </pre>
 </div>
 
@@ -3734,8 +3734,8 @@ argument in <i>Proc#curry</i> function:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby">multiply.curry(<span style="color: #de935f; font-weight: bold;">3</span>)[<span style="color: #de935f; font-weight: bold;">1</span>][<span style="color: #de935f; font-weight: bold;">2</span>][<span style="color: #de935f; font-weight: bold;">3</span>] <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">6</span>
-multiply.curry(<span style="color: #de935f; font-weight: bold;">3</span>)[<span style="color: #de935f; font-weight: bold;">1</span>][<span style="color: #de935f; font-weight: bold;">2</span>][<span style="color: #de935f; font-weight: bold;">3</span>][<span style="color: #de935f; font-weight: bold;">4</span>] <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">0 because of the last argument is nil</span>
+<pre class="src src-ruby">multiply.curry(<span style="color: #f5871f; font-weight: bold;">3</span>)[<span style="color: #f5871f; font-weight: bold;">1</span>][<span style="color: #f5871f; font-weight: bold;">2</span>][<span style="color: #f5871f; font-weight: bold;">3</span>] <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">6</span>
+multiply.curry(<span style="color: #f5871f; font-weight: bold;">3</span>)[<span style="color: #f5871f; font-weight: bold;">1</span>][<span style="color: #f5871f; font-weight: bold;">2</span>][<span style="color: #f5871f; font-weight: bold;">3</span>][<span style="color: #f5871f; font-weight: bold;">4</span>] <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">0 because of the last argument is nil</span>
 </pre>
 </div>
 
@@ -3745,12 +3745,12 @@ Ruby 2.2:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby"><span style="color: #b294bb;">def</span> <span style="color: #81a2be;">sum</span>(*args)
-  args.inject(<span style="color: #de935f;">:+</span>)
-<span style="color: #b294bb;">end</span>
+<pre class="src src-ruby"><span style="color: #8959a8;">def</span> <span style="color: #3e999f;">sum</span>(*args)
+  args.inject(<span style="color: #f5871f;">:+</span>)
+<span style="color: #8959a8;">end</span>
 
-plus_two = method(<span style="color: #de935f;">:sum</span>).curry(<span style="color: #de935f; font-weight: bold;">2</span>).(<span style="color: #de935f; font-weight: bold;">2</span>)
-plus_two.(<span style="color: #de935f; font-weight: bold;">3</span>) <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">5</span>
+plus_two = method(<span style="color: #f5871f;">:sum</span>).curry(<span style="color: #f5871f; font-weight: bold;">2</span>).(<span style="color: #f5871f; font-weight: bold;">2</span>)
+plus_two.(<span style="color: #f5871f; font-weight: bold;">3</span>) <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">5</span>
 </pre>
 </div>
 </div>
@@ -3812,9 +3812,9 @@ If you want to make Ruby hash immutable, you can use freeze it:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby">immutable = { <span style="color: #de935f;">foo:</span> <span style="color: #b5bd68;">'bar'</span> } immutable.freeze
+<pre class="src src-ruby">immutable = { <span style="color: #f5871f;">foo:</span> <span style="color: #718c00;">'bar'</span> } immutable.freeze
 
-immutable[<span style="color: #de935f;">:foo</span>] = <span style="color: #b5bd68;">'tball'</span><span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">RuntimeError: can't modify frozen Hash</span>
+immutable[<span style="color: #f5871f;">:foo</span>] = <span style="color: #718c00;">'tball'</span><span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">RuntimeError: can't modify frozen Hash</span>
 </pre>
 </div>
 
@@ -3837,7 +3837,7 @@ collection classes:
 
 <div class="org-src-container">
 <pre class="src src-ruby">gem i hamster
-<span style="color: #81a2be;">require</span> <span style="color: #b5bd68;">'hamster'</span>
+<span style="color: #3e999f;">require</span> <span style="color: #718c00;">'hamster'</span>
 </pre>
 </div>
 
@@ -3846,12 +3846,12 @@ or only certain types:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby"><span style="color: #81a2be;">require</span> <span style="color: #b5bd68;">'hamster/hash'</span>
-<span style="color: #81a2be;">require</span> <span style="color: #b5bd68;">'hamster/vector'</span>
-<span style="color: #81a2be;">require</span> <span style="color: #b5bd68;">'hamster/set'</span>
-<span style="color: #81a2be;">require</span> <span style="color: #b5bd68;">'hamster/sorted_set'</span>
-<span style="color: #81a2be;">require</span> <span style="color: #b5bd68;">'hamster/list'</span>
-<span style="color: #81a2be;">require</span> <span style="color: #b5bd68;">'hamster/deque'</span>
+<pre class="src src-ruby"><span style="color: #3e999f;">require</span> <span style="color: #718c00;">'hamster/hash'</span>
+<span style="color: #3e999f;">require</span> <span style="color: #718c00;">'hamster/vector'</span>
+<span style="color: #3e999f;">require</span> <span style="color: #718c00;">'hamster/set'</span>
+<span style="color: #3e999f;">require</span> <span style="color: #718c00;">'hamster/sorted_set'</span>
+<span style="color: #3e999f;">require</span> <span style="color: #718c00;">'hamster/list'</span>
+<span style="color: #3e999f;">require</span> <span style="color: #718c00;">'hamster/deque'</span>
 </pre>
 </div>
 </div>
@@ -3861,22 +3861,22 @@ or only certain types:
 <h2 id="hash"><span class="section-number-2">2</span> Hash</h2>
 <div class="outline-text-2" id="text-hash">
 <div class="org-src-container">
-<pre class="src src-ruby"><span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">Create new Hamster Hash</span>
-parrot = <span style="color: #f0c674;">Hamster</span>::<span style="color: #f0c674;">Hash</span>[<span style="color: #de935f;">type:</span> <span style="color: #b5bd68;">'bird'</span>, <span style="color: #b294bb;">class</span>: <span style="color: #b5bd68;">'parrot'</span>, <span style="color: #de935f;">color:</span> <span style="color: #b5bd68;">'yellow'</span>]
+<pre class="src src-ruby"><span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">Create new Hamster Hash</span>
+parrot = <span style="color: #eab700;">Hamster</span>::<span style="color: #eab700;">Hash</span>[<span style="color: #f5871f;">type:</span> <span style="color: #718c00;">'bird'</span>, <span style="color: #8959a8;">class</span>: <span style="color: #718c00;">'parrot'</span>, <span style="color: #f5871f;">color:</span> <span style="color: #718c00;">'yellow'</span>]
 
-parrot.get(<span style="color: #de935f;">:color</span>) <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">yellow</span>
-parrot[<span style="color: #de935f;">:type</span>] <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">bird</span>
+parrot.get(<span style="color: #f5871f;">:color</span>) <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">yellow</span>
+parrot[<span style="color: #f5871f;">:type</span>] <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">bird</span>
 
-<span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">You can not change hash because of immutability</span>
-parrot[<span style="color: #de935f;">:subclass</span>] = <span style="color: #b5bd68;">'budgie'</span> <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">NoMethodError: undefined method `[]='</span>
-<span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">But you can create a new</span>
+<span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">You can not change hash because of immutability</span>
+parrot[<span style="color: #f5871f;">:subclass</span>] = <span style="color: #718c00;">'budgie'</span> <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">NoMethodError: undefined method `[]='</span>
+<span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">But you can create a new</span>
 
-budgie = parrot.put <span style="color: #de935f;">:subclass</span>, <span style="color: #b5bd68;">'budgie'</span>
-budgie == parrot <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">false</span>
-budgie[<span style="color: #de935f;">:subclass</span>] <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">budgie</span>
-parrot[<span style="color: #de935f;">:subclass</span>] <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">nil</span>
+budgie = parrot.put <span style="color: #f5871f;">:subclass</span>, <span style="color: #718c00;">'budgie'</span>
+budgie == parrot <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">false</span>
+budgie[<span style="color: #f5871f;">:subclass</span>] <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">budgie</span>
+parrot[<span style="color: #f5871f;">:subclass</span>] <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">nil</span>
 
-budgie.to_hash.class <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">Plain Ruby Hash</span>
+budgie.to_hash.class <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">Plain Ruby Hash</span>
 </pre>
 </div>
 </div>
@@ -3886,8 +3886,8 @@ budgie.to_hash.class <span style="color: #5a5b5a;"># </span><span style="color: 
 <h2 id="list"><span class="section-number-2">3</span> List</h2>
 <div class="outline-text-2" id="text-list">
 <div class="org-src-container">
-<pre class="src src-ruby">list = <span style="color: #f0c674;">Hamster</span>::<span style="color: #f0c674;">List</span>[<span style="color: #de935f; font-weight: bold;">0</span>, <span style="color: #de935f; font-weight: bold;">1</span>, <span style="color: #de935f; font-weight: bold;">2</span>] list.tail <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">Hamster::List[1, 2]</span>
-list.head <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">0</span>
+<pre class="src src-ruby">list = <span style="color: #eab700;">Hamster</span>::<span style="color: #eab700;">List</span>[<span style="color: #f5871f; font-weight: bold;">0</span>, <span style="color: #f5871f; font-weight: bold;">1</span>, <span style="color: #f5871f; font-weight: bold;">2</span>] list.tail <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">Hamster::List[1, 2]</span>
+list.head <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">0</span>
 </pre>
 </div>
 </div>
@@ -3898,16 +3898,16 @@ list.head <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">0
 <h2 id="set"><span class="section-number-2">4</span> Set</h2>
 <div class="outline-text-2" id="text-set">
 <div class="org-src-container">
-<pre class="src src-ruby"><span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">Hamster's set is an unordered collection with no duplicates</span>
-colors = <span style="color: #f0c674;">Hamster</span>::<span style="color: #f0c674;">Set</span>[<span style="color: #de935f;">:green</span>, <span style="color: #de935f;">:white</span>]
-colors.include?(<span style="color: #de935f;">:green</span>) <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">true</span>
+<pre class="src src-ruby"><span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">Hamster's set is an unordered collection with no duplicates</span>
+colors = <span style="color: #eab700;">Hamster</span>::<span style="color: #eab700;">Set</span>[<span style="color: #f5871f;">:green</span>, <span style="color: #f5871f;">:white</span>]
+colors.include?(<span style="color: #f5871f;">:green</span>) <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">true</span>
 
-palette = colors.add <span style="color: #de935f;">:yellow</span> <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">Hamster::Set[:green, :yellow, :white]</span>
-colors.include?(<span style="color: #de935f;">:yellow</span>) <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">false palette.superset?(colors) # true</span>
-palette.intersection(colors) <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">Hamster::Set[:green, :white]</span>
-palette.difference(colors).first <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">:yellow</span>
+palette = colors.add <span style="color: #f5871f;">:yellow</span> <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">Hamster::Set[:green, :yellow, :white]</span>
+colors.include?(<span style="color: #f5871f;">:yellow</span>) <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">false palette.superset?(colors) # true</span>
+palette.intersection(colors) <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">Hamster::Set[:green, :white]</span>
+palette.difference(colors).first <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">:yellow</span>
 
-palette.to_a <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">Plain Ruby array: [:green, :white, :yellow]</span>
+palette.to_a <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">Plain Ruby array: [:green, :white, :yellow]</span>
 </pre>
 </div>
 </div>
@@ -3917,21 +3917,21 @@ palette.to_a <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;
 <h2 id="vector"><span class="section-number-2">5</span> Vector</h2>
 <div class="outline-text-2" id="text-vector">
 <div class="org-src-container">
-<pre class="src src-ruby"> <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">Vector is an integer-indexed immutable array</span>
-vector = <span style="color: #f0c674;">Hamster</span>::<span style="color: #f0c674;">Vector</span>[<span style="color: #de935f; font-weight: bold;">0</span>, <span style="color: #de935f; font-weight: bold;">1</span>, <span style="color: #de935f; font-weight: bold;">2</span>]
-vector[<span style="color: #de935f; font-weight: bold;">2</span>] <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">2</span>
-vector[-<span style="color: #de935f; font-weight: bold;">1</span>] <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">2</span>
-vector[-<span style="color: #de935f; font-weight: bold;">4</span>] <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">nil</span>
-vector[<span style="color: #de935f; font-weight: bold;">1</span>,<span style="color: #de935f; font-weight: bold;">2</span>] <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">Hamster::Vector[1, 2]</span>
-vector[<span style="color: #de935f; font-weight: bold;">0</span>..<span style="color: #de935f; font-weight: bold;">2</span>] <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">Hamster::Vector[0, 1, 2]</span>
+<pre class="src src-ruby"> <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">Vector is an integer-indexed immutable array</span>
+vector = <span style="color: #eab700;">Hamster</span>::<span style="color: #eab700;">Vector</span>[<span style="color: #f5871f; font-weight: bold;">0</span>, <span style="color: #f5871f; font-weight: bold;">1</span>, <span style="color: #f5871f; font-weight: bold;">2</span>]
+vector[<span style="color: #f5871f; font-weight: bold;">2</span>] <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">2</span>
+vector[-<span style="color: #f5871f; font-weight: bold;">1</span>] <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">2</span>
+vector[-<span style="color: #f5871f; font-weight: bold;">4</span>] <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">nil</span>
+vector[<span style="color: #f5871f; font-weight: bold;">1</span>,<span style="color: #f5871f; font-weight: bold;">2</span>] <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">Hamster::Vector[1, 2]</span>
+vector[<span style="color: #f5871f; font-weight: bold;">0</span>..<span style="color: #f5871f; font-weight: bold;">2</span>] <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">Hamster::Vector[0, 1, 2]</span>
 
-binary_vector = vector.delete_at <span style="color: #de935f; font-weight: bold;">0</span> <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">Hamster::Vector[1, 2]</span>
-vector.size <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">3</span>
-binary_vector.size <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">2</span>
-vector == binary_vector <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">false</span>
+binary_vector = vector.delete_at <span style="color: #f5871f; font-weight: bold;">0</span> <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">Hamster::Vector[1, 2]</span>
+vector.size <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">3</span>
+binary_vector.size <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">2</span>
+vector == binary_vector <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">false</span>
 
-(binary_vector + vector).sort.uniq <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">Hamster::Vector[0, 1, 2]</span>
-(binary_vector + vector).sort.uniq == vector <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">true</span>
+(binary_vector + vector).sort.uniq <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">Hamster::Vector[0, 1, 2]</span>
+(binary_vector + vector).sort.uniq == vector <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">true</span>
 </pre>
 </div>
 </div>
@@ -4003,7 +4003,7 @@ and require or import it as yet another Node.js module:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-javascript"> <span style="color: #b294bb;">import</span> _ from <span style="color: #b5bd68;">'highland'</span>;
+<pre class="src src-javascript"> <span style="color: #8959a8;">import</span> _ from <span style="color: #718c00;">'highland'</span>;
 </pre>
 </div>
 </div>
@@ -4017,8 +4017,8 @@ Converting from arrays to Highland Streams:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-javascript"> _([<span style="color: #de935f; font-weight: bold;">0</span>, <span style="color: #de935f; font-weight: bold;">1</span>, <span style="color: #de935f; font-weight: bold;">2</span>]).toArray(xs =&gt; console.log(xs));
-<span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">0, 1, 2</span>
+<pre class="src src-javascript"> _([<span style="color: #f5871f; font-weight: bold;">0</span>, <span style="color: #f5871f; font-weight: bold;">1</span>, <span style="color: #f5871f; font-weight: bold;">2</span>]).toArray(xs =&gt; console.log(xs));
+<span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">0, 1, 2</span>
 </pre>
 </div>
 
@@ -4027,8 +4027,8 @@ Map and reduce over a stream:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-javascript"> _([<span style="color: #de935f; font-weight: bold;">0</span>, <span style="color: #de935f; font-weight: bold;">1</span>, <span style="color: #de935f; font-weight: bold;">2</span>]).map(x =&gt; x + <span style="color: #de935f; font-weight: bold;">1</span>).reduce(<span style="color: #de935f; font-weight: bold;">1</span>, (a,
-b) =&gt; a * b); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">[6]</span>
+<pre class="src src-javascript"> _([<span style="color: #f5871f; font-weight: bold;">0</span>, <span style="color: #f5871f; font-weight: bold;">1</span>, <span style="color: #f5871f; font-weight: bold;">2</span>]).map(x =&gt; x + <span style="color: #f5871f; font-weight: bold;">1</span>).reduce(<span style="color: #f5871f; font-weight: bold;">1</span>, (a,
+b) =&gt; a * b); <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">[6]</span>
 </pre>
 </div>
 
@@ -4037,10 +4037,10 @@ Reading files in parallel:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-javascript"> <span style="color: #b294bb;">import</span> fs from <span style="color: #b5bd68;">'fs'</span>;
-<span style="color: #b294bb;">const</span> <span style="color: #cc6666;">readFile</span> =
-<span style="color: #b5bd68;">/.wrapCallback(fs.readFile); const stream = /</span>([<span style="color: #b5bd68;">'./.babelrc'</span>,
-<span style="color: #b5bd68;">'./.eslintrc'</span>]).map(readFile).parallel(<span style="color: #de935f; font-weight: bold;">2</span>);
+<pre class="src src-javascript"> <span style="color: #8959a8;">import</span> fs from <span style="color: #718c00;">'fs'</span>;
+<span style="color: #8959a8;">const</span> <span style="color: #c82829;">readFile</span> =
+<span style="color: #718c00;">/.wrapCallback(fs.readFile); const stream = /</span>([<span style="color: #718c00;">'./.babelrc'</span>,
+<span style="color: #718c00;">'./.eslintrc'</span>]).map(readFile).parallel(<span style="color: #f5871f; font-weight: bold;">2</span>);
 </pre>
 </div>
 
@@ -4072,7 +4072,7 @@ Constructor:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-javascript"> <span style="color: #b294bb;">const</span> <span style="color: #cc6666;">stream</span> = _(source); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">source - Array/Generator/Node Stream/Event Emitter/Promise/Iterator/Iterable</span>
+<pre class="src src-javascript"> <span style="color: #8959a8;">const</span> <span style="color: #c82829;">stream</span> = _(source); <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">source - Array/Generator/Node Stream/Event Emitter/Promise/Iterator/Iterable</span>
 </pre>
 </div>
 
@@ -4082,7 +4082,7 @@ General functions:
 
 <div class="org-src-container">
 <pre class="src src-javascript">stream.destroy(); stream.end();
-stream.pause(); stream.resume(); stream.write(x); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">Write x value to</span>
+stream.pause(); stream.resume(); stream.write(x); <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">Write x value to</span>
 stream
 </pre>
 </div>
@@ -4093,18 +4093,18 @@ stream
 <h2 id="transformations"><span class="section-number-2">4</span> Transformations</h2>
 <div class="outline-text-2" id="text-transformations">
 <div class="org-src-container">
-<pre class="src src-javascript"> ([<span style="color: #de935f; font-weight: bold;">0</span>, <span style="color: #de935f; font-weight: bold;">1</span>, <span style="color: #de935f; font-weight: bold;">2</span>]).append(<span style="color: #de935f; font-weight: bold;">3</span>); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">[0, 1, 2, 3]</span>
- ([<span style="color: #de935f; font-weight: bold;">0</span>, <span style="color: #de935f; font-weight: bold;">1</span>, <span style="color: #de935f; font-weight: bold;">2</span>, <span style="color: #de935f;">null</span>, <span style="color: #de935f;">undefined</span>]).compact(); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">[1, 2]</span>
- ([<span style="color: #de935f; font-weight: bold;">1</span>, <span style="color: #de935f; font-weight: bold;">2</span>, <span style="color: #de935f; font-weight: bold;">5</span>]).filter(x =&gt; x
-&lt;= <span style="color: #de935f; font-weight: bold;">3</span>); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">[1, 2]</span>
-([<span style="color: #de935f; font-weight: bold;">1</span>, <span style="color: #de935f; font-weight: bold;">2</span>, <span style="color: #de935f; font-weight: bold;">3</span>]).head(); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">1</span>
-([<span style="color: #de935f; font-weight: bold;">1</span>, <span style="color: #de935f; font-weight: bold;">2</span>, <span style="color: #de935f; font-weight: bold;">3</span>]).last(); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">3</span>
-([<span style="color: #b5bd68;">'ABC'</span>]).invoke(<span style="color: #b5bd68;">'toLowerCase'</span>, []); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">abc</span>
-([{ foo: <span style="color: #b5bd68;">'bar'</span> }]).pick([<span style="color: #b5bd68;">'foo'</span>]); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">{ foo: 'bar' }</span>
-([{ foo: <span style="color: #b5bd68;">'bar'</span> }]).pluck([<span style="color: #b5bd68;">'foo'</span>]); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">bar</span>
-[<span style="color: #de935f; font-weight: bold;">0</span>, <span style="color: #de935f; font-weight: bold;">1</span>, <span style="color: #de935f; font-weight: bold;">2</span>, <span style="color: #de935f; font-weight: bold;">3</span>]).slice(<span style="color: #de935f; font-weight: bold;">2</span>, <span style="color: #de935f; font-weight: bold;">4</span>); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">[2, 3]</span>
-([<span style="color: #b5bd68;">'c'</span>, <span style="color: #b5bd68;">'a'</span>, <span style="color: #b5bd68;">'b'</span>]).sort(); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">['a', 'b', 'c']</span>
-_([<span style="color: #de935f; font-weight: bold;">0</span>, <span style="color: #de935f; font-weight: bold;">0</span>, <span style="color: #de935f; font-weight: bold;">2</span>, <span style="color: #de935f; font-weight: bold;">3</span>]).uniq(); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">[0, 2, 3]</span>
+<pre class="src src-javascript"> ([<span style="color: #f5871f; font-weight: bold;">0</span>, <span style="color: #f5871f; font-weight: bold;">1</span>, <span style="color: #f5871f; font-weight: bold;">2</span>]).append(<span style="color: #f5871f; font-weight: bold;">3</span>); <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">[0, 1, 2, 3]</span>
+ ([<span style="color: #f5871f; font-weight: bold;">0</span>, <span style="color: #f5871f; font-weight: bold;">1</span>, <span style="color: #f5871f; font-weight: bold;">2</span>, <span style="color: #f5871f;">null</span>, <span style="color: #f5871f;">undefined</span>]).compact(); <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">[1, 2]</span>
+ ([<span style="color: #f5871f; font-weight: bold;">1</span>, <span style="color: #f5871f; font-weight: bold;">2</span>, <span style="color: #f5871f; font-weight: bold;">5</span>]).filter(x =&gt; x
+&lt;= <span style="color: #f5871f; font-weight: bold;">3</span>); <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">[1, 2]</span>
+([<span style="color: #f5871f; font-weight: bold;">1</span>, <span style="color: #f5871f; font-weight: bold;">2</span>, <span style="color: #f5871f; font-weight: bold;">3</span>]).head(); <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">1</span>
+([<span style="color: #f5871f; font-weight: bold;">1</span>, <span style="color: #f5871f; font-weight: bold;">2</span>, <span style="color: #f5871f; font-weight: bold;">3</span>]).last(); <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">3</span>
+([<span style="color: #718c00;">'ABC'</span>]).invoke(<span style="color: #718c00;">'toLowerCase'</span>, []); <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">abc</span>
+([{ foo: <span style="color: #718c00;">'bar'</span> }]).pick([<span style="color: #718c00;">'foo'</span>]); <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">{ foo: 'bar' }</span>
+([{ foo: <span style="color: #718c00;">'bar'</span> }]).pluck([<span style="color: #718c00;">'foo'</span>]); <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">bar</span>
+[<span style="color: #f5871f; font-weight: bold;">0</span>, <span style="color: #f5871f; font-weight: bold;">1</span>, <span style="color: #f5871f; font-weight: bold;">2</span>, <span style="color: #f5871f; font-weight: bold;">3</span>]).slice(<span style="color: #f5871f; font-weight: bold;">2</span>, <span style="color: #f5871f; font-weight: bold;">4</span>); <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">[2, 3]</span>
+([<span style="color: #718c00;">'c'</span>, <span style="color: #718c00;">'a'</span>, <span style="color: #718c00;">'b'</span>]).sort(); <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">['a', 'b', 'c']</span>
+_([<span style="color: #f5871f; font-weight: bold;">0</span>, <span style="color: #f5871f; font-weight: bold;">0</span>, <span style="color: #f5871f; font-weight: bold;">2</span>, <span style="color: #f5871f; font-weight: bold;">3</span>]).uniq(); <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">[0, 2, 3]</span>
 </pre>
 </div>
 </div>
@@ -4114,12 +4114,12 @@ _([<span style="color: #de935f; font-weight: bold;">0</span>, <span style="color
 <h2 id="high-order-streams"><span class="section-number-2">5</span> High-order Streams</h2>
 <div class="outline-text-2" id="text-high-order-streams">
 <div class="org-src-container">
-<pre class="src src-javascript">([<span style="color: #de935f; font-weight: bold;">0</span>, <span style="color: #de935f; font-weight: bold;">1</span>]).concat([<span style="color: #de935f; font-weight: bold;">2</span>, <span style="color: #de935f; font-weight: bold;">3</span>]); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">[0, 1, 2, 3]</span>
-([<span style="color: #de935f; font-weight: bold;">0</span>, <span style="color: #de935f; font-weight: bold;">1</span>, [<span style="color: #de935f; font-weight: bold;">2</span>, [<span style="color: #de935f; font-weight: bold;">3</span>]]]).flatten(); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">[0, 1, 2, 3]</span>
-(<span style="color: #b5bd68;">/([0, 1]), /</span>([<span style="color: #de935f; font-weight: bold;">2</span>, <span style="color: #de935f; font-weight: bold;">3</span>])).sequence(); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">[0, 1, 2, 3]</span>
-([<span style="color: #b5bd68;">'a'</span>, <span style="color: #b5bd68;">'b'</span>]).zip([<span style="color: #de935f; font-weight: bold;">1</span>, <span style="color: #de935f; font-weight: bold;">2</span>]); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">=&gt; ['a', 1], ['b', 2]</span>
+<pre class="src src-javascript">([<span style="color: #f5871f; font-weight: bold;">0</span>, <span style="color: #f5871f; font-weight: bold;">1</span>]).concat([<span style="color: #f5871f; font-weight: bold;">2</span>, <span style="color: #f5871f; font-weight: bold;">3</span>]); <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">[0, 1, 2, 3]</span>
+([<span style="color: #f5871f; font-weight: bold;">0</span>, <span style="color: #f5871f; font-weight: bold;">1</span>, [<span style="color: #f5871f; font-weight: bold;">2</span>, [<span style="color: #f5871f; font-weight: bold;">3</span>]]]).flatten(); <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">[0, 1, 2, 3]</span>
+(<span style="color: #718c00;">/([0, 1]), /</span>([<span style="color: #f5871f; font-weight: bold;">2</span>, <span style="color: #f5871f; font-weight: bold;">3</span>])).sequence(); <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">[0, 1, 2, 3]</span>
+([<span style="color: #718c00;">'a'</span>, <span style="color: #718c00;">'b'</span>]).zip([<span style="color: #f5871f; font-weight: bold;">1</span>, <span style="color: #f5871f; font-weight: bold;">2</span>]); <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">=&gt; ['a', 1], ['b', 2]</span>
 
-<span style="color: #b294bb;">const</span> <span style="color: #cc6666;">fork</span> = stream.fork(); <span style="color: #b294bb;">const</span> <span style="color: #cc6666;">observer</span> = stream.observe();
+<span style="color: #8959a8;">const</span> <span style="color: #c82829;">fork</span> = stream.fork(); <span style="color: #8959a8;">const</span> <span style="color: #c82829;">observer</span> = stream.observe();
 fork.resume();
 </pre>
 </div>
@@ -4130,12 +4130,12 @@ fork.resume();
 <h2 id="objects"><span class="section-number-2">6</span> Objects</h2>
 <div class="outline-text-2" id="text-objects">
 <div class="org-src-container">
-<pre class="src src-javascript"> .extend({ name: <span style="color: #b5bd68;">'foo'</span> }, { type: <span style="color: #b5bd68;">'obj'</span> });
-<span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">{ name: 'foo', type: 'obj' }</span>
-.get(<span style="color: #b5bd68;">'foo'</span>, { foo: <span style="color: #b5bd68;">'bar'</span> }); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">bar</span>
-.keys({ foo: <span style="color: #b5bd68;">'bar'</span> }); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">['foo']</span>
-.values({ foo: <span style="color: #b5bd68;">'bar'</span> }); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">['bar']</span>
-_.pairs({ foo: <span style="color: #b5bd68;">'bar'</span> }); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">['foo', 'bar']</span>
+<pre class="src src-javascript"> .extend({ name: <span style="color: #718c00;">'foo'</span> }, { type: <span style="color: #718c00;">'obj'</span> });
+<span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">{ name: 'foo', type: 'obj' }</span>
+.get(<span style="color: #718c00;">'foo'</span>, { foo: <span style="color: #718c00;">'bar'</span> }); <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">bar</span>
+.keys({ foo: <span style="color: #718c00;">'bar'</span> }); <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">['foo']</span>
+.values({ foo: <span style="color: #718c00;">'bar'</span> }); <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">['bar']</span>
+_.pairs({ foo: <span style="color: #718c00;">'bar'</span> }); <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">['foo', 'bar']</span>
 </pre>
 </div>
 </div>
@@ -4145,13 +4145,13 @@ _.pairs({ foo: <span style="color: #b5bd68;">'bar'</span> }); <span style="color
 <h2 id="utils"><span class="section-number-2">7</span> Utils</h2>
 <div class="outline-text-2" id="text-utils">
 <div class="org-src-container">
-<pre class="src src-javascript">.isStream([<span style="color: #de935f; font-weight: bold;">1</span>, <span style="color: #de935f; font-weight: bold;">2</span>, <span style="color: #de935f; font-weight: bold;">3</span>]); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">false</span>
-.isStream(stream); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">true</span>
+<pre class="src src-javascript">.isStream([<span style="color: #f5871f; font-weight: bold;">1</span>, <span style="color: #f5871f; font-weight: bold;">2</span>, <span style="color: #f5871f; font-weight: bold;">3</span>]); <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">false</span>
+.isStream(stream); <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">true</span>
 
-([<span style="color: #de935f; font-weight: bold;">1</span>, <span style="color: #de935f; font-weight: bold;">2</span>, <span style="color: #de935f; font-weight: bold;">3</span>]).each(.log); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">1, 2, 3</span>
+([<span style="color: #f5871f; font-weight: bold;">1</span>, <span style="color: #f5871f; font-weight: bold;">2</span>, <span style="color: #f5871f; font-weight: bold;">3</span>]).each(.log); <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">1, 2, 3</span>
 
-<span style="color: #b294bb;">const</span> <span style="color: #cc6666;">readFile</span> = .wrapCallback(fs.readFile); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">Wraps callback to Highland stream</span>
-.isStream(readFile); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">true</span>
+<span style="color: #8959a8;">const</span> <span style="color: #c82829;">readFile</span> = .wrapCallback(fs.readFile); <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">Wraps callback to Highland stream</span>
+.isStream(readFile); <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">true</span>
 </pre>
 </div>
 </div>
@@ -4241,7 +4241,7 @@ standards with <a href="https://babeljs.io/">Babel</a>:
 <i>npm install &#x2013;save babel babel-preset-stage-0 babel-preset-es2015</i>
 </p>
 <div class="org-src-container">
-<pre class="src src-javascript"> <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">.babelrc { "presets": ["stage-0", "es2015"]</span>
+<pre class="src src-javascript"> <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">.babelrc { "presets": ["stage-0", "es2015"]</span>
 }
 </pre>
 </div>
@@ -4259,10 +4259,10 @@ and import to your project required functions:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-javascript"> <span style="color: #b294bb;">import</span> { last } from <span style="color: #b5bd68;">'trine/iterable/last'</span>;
+<pre class="src src-javascript"> <span style="color: #8959a8;">import</span> { last } from <span style="color: #718c00;">'trine/iterable/last'</span>;
 
- <span style="color: #b294bb;">const</span> <span style="color: #cc6666;">lastCh</span> = [<span style="color: #b5bd68;">'a'</span>, <span style="color: #b5bd68;">'b'</span>, <span style="color: #b5bd68;">'c'</span>]::last(<span style="color: #de935f; font-weight: bold;">0</span>); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">yields 'c'</span>
- lastCh.next().value; <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">c</span>
+ <span style="color: #8959a8;">const</span> <span style="color: #c82829;">lastCh</span> = [<span style="color: #718c00;">'a'</span>, <span style="color: #718c00;">'b'</span>, <span style="color: #718c00;">'c'</span>]::last(<span style="color: #f5871f; font-weight: bold;">0</span>); <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">yields 'c'</span>
+ lastCh.next().value; <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">c</span>
 </pre>
 </div>
 </div>
@@ -4276,11 +4276,11 @@ Trine provides common boolean helpers:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-javascript"><span style="color: #de935f;">true</span>::not() <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">false</span>
-<span style="color: #de935f;">true</span>::and(<span style="color: #de935f;">false</span>) <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">false</span>
-<span style="color: #de935f;">true</span>::or(<span style="color: #de935f;">false</span>) <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">true</span>
-<span style="color: #de935f;">true</span>::xor(<span style="color: #de935f;">false</span>) <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">true</span>
-<span style="color: #de935f; font-weight: bold;">0</span>::not() <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">true</span>
+<pre class="src src-javascript"><span style="color: #f5871f;">true</span>::not() <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">false</span>
+<span style="color: #f5871f;">true</span>::and(<span style="color: #f5871f;">false</span>) <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">false</span>
+<span style="color: #f5871f;">true</span>::or(<span style="color: #f5871f;">false</span>) <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">true</span>
+<span style="color: #f5871f;">true</span>::xor(<span style="color: #f5871f;">false</span>) <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">true</span>
+<span style="color: #f5871f; font-weight: bold;">0</span>::not() <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">true</span>
 </pre>
 </div>
 </div>
@@ -4308,9 +4308,9 @@ Extract , compare or convert values to functions:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-javascript"><span style="color: #b5bd68;">'foo'</span>::equals(<span style="color: #b5bd68;">'bar'</span>)::is(<span style="color: #de935f;">false</span>); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">true</span>
-<span style="color: #b294bb;">const</span> <span style="color: #cc6666;">func</span> = { foo: <span style="color: #b5bd68;">'bar'</span> }::prop(<span style="color: #b5bd68;">'foo'</span>)::toFunction();
-func(); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">bar</span>
+<pre class="src src-javascript"><span style="color: #718c00;">'foo'</span>::equals(<span style="color: #718c00;">'bar'</span>)::is(<span style="color: #f5871f;">false</span>); <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">true</span>
+<span style="color: #8959a8;">const</span> <span style="color: #c82829;">func</span> = { foo: <span style="color: #718c00;">'bar'</span> }::prop(<span style="color: #718c00;">'foo'</span>)::toFunction();
+func(); <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">bar</span>
 
 </pre>
 </div>
@@ -4325,7 +4325,7 @@ Trine includes partial helper:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-javascript">parseInt::partial(_, <span style="color: #de935f; font-weight: bold;">2</span>)(<span style="color: #b5bd68;">'1010'</span>) <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">10</span>
+<pre class="src src-javascript">parseInt::partial(_, <span style="color: #f5871f; font-weight: bold;">2</span>)(<span style="color: #718c00;">'1010'</span>) <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">10</span>
 </pre>
 </div>
 </div>
@@ -4335,9 +4335,9 @@ Trine includes partial helper:
 <h2 id="object"><span class="section-number-2">6</span> Object</h2>
 <div class="outline-text-2" id="text-object">
 <div class="org-src-container">
-<pre class="src src-javascript"><span style="color: #b294bb;">let</span> <span style="color: #cc6666;">obj</span> = { foo: <span style="color: #b5bd68;">'bar'</span> };
-obj::keys().next().value; <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">foo</span>
-obj::values().next().value; <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">bar</span>
+<pre class="src src-javascript"><span style="color: #8959a8;">let</span> <span style="color: #c82829;">obj</span> = { foo: <span style="color: #718c00;">'bar'</span> };
+obj::keys().next().value; <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">foo</span>
+obj::values().next().value; <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">bar</span>
 </pre>
 </div>
 </div>
@@ -4347,11 +4347,11 @@ obj::values().next().value; <span style="color: #5a5b5a;">// </span><span style=
 <h2 id="iterable"><span class="section-number-2">7</span> Iterable</h2>
 <div class="outline-text-2" id="text-iterable">
 <div class="org-src-container">
-<pre class="src src-javascript"> <span style="color: #b294bb;">let</span> <span style="color: #cc6666;">nums</span> = [<span style="color: #de935f; font-weight: bold;">5</span>, <span style="color: #de935f; font-weight: bold;">1</span>];
-nums::count().next().value; <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">2</span>
-nums::reverse()::to(Array); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">1, 5</span>
-<span style="color: #b5bd68;">'cab'</span>::sortAlphabetically()::to(Array) <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">a, b, c</span>
-[nums, [<span style="color: #de935f; font-weight: bold;">2</span>, <span style="color: #de935f; font-weight: bold;">3</span>]]::flatten()::map(<span style="color: #b294bb;">function</span>() { <span style="color: #b294bb;">return</span> <span style="color: #de935f;">this</span> * <span style="color: #de935f; font-weight: bold;">3</span> })::to(Array); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">15, 3, 6, 9</span>
+<pre class="src src-javascript"> <span style="color: #8959a8;">let</span> <span style="color: #c82829;">nums</span> = [<span style="color: #f5871f; font-weight: bold;">5</span>, <span style="color: #f5871f; font-weight: bold;">1</span>];
+nums::count().next().value; <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">2</span>
+nums::reverse()::to(Array); <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">1, 5</span>
+<span style="color: #718c00;">'cab'</span>::sortAlphabetically()::to(Array) <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">a, b, c</span>
+[nums, [<span style="color: #f5871f; font-weight: bold;">2</span>, <span style="color: #f5871f; font-weight: bold;">3</span>]]::flatten()::map(<span style="color: #8959a8;">function</span>() { <span style="color: #8959a8;">return</span> <span style="color: #f5871f;">this</span> * <span style="color: #f5871f; font-weight: bold;">3</span> })::to(Array); <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">15, 3, 6, 9</span>
 </pre>
 </div>
 </div>
@@ -4429,7 +4429,7 @@ Install this gem with or without bundler:
 
 <div class="org-src-container">
 <pre class="src src-shell">gem install functional-ruby
-<span style="color: #5a5b5a;">#  </span><span style="color: #5a5b5a;">gem 'functional-ruby'</span>
+<span style="color: #a5a4a5;">#  </span><span style="color: #a5a4a5;">gem 'functional-ruby'</span>
 </pre>
 </div>
 
@@ -4600,13 +4600,13 @@ type or class:
 
 <div class="org-src-container">
 <pre class="src src-ruby">
-<span style="color: #b294bb;">def</span> <span style="color: #81a2be;">foo</span>(bar)
-  <span style="color: #b294bb;">fail</span> <span style="color: #b5bd68;">'I supposed it`s not a bar!'</span>
-  <span style="color: #b294bb;">unless</span> bar.is_a?(<span style="color: #f0c674;">String</span>) <span style="color: #81a2be;">p</span> <span style="color: #b5bd68;">'Hi, bar!'</span>
-<span style="color: #b294bb;">end</span>
+<span style="color: #8959a8;">def</span> <span style="color: #3e999f;">foo</span>(bar)
+  <span style="color: #8959a8;">fail</span> <span style="color: #718c00;">'I supposed it`s not a bar!'</span>
+  <span style="color: #8959a8;">unless</span> bar.is_a?(<span style="color: #eab700;">String</span>) <span style="color: #3e999f;">p</span> <span style="color: #718c00;">'Hi, bar!'</span>
+<span style="color: #8959a8;">end</span>
 
-foo <span style="color: #b5bd68;">'bar'</span> <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">Hi, bar!</span>
-foo 100_500 <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">RuntimeError: I supposed it`s not a bar!</span>
+foo <span style="color: #718c00;">'bar'</span> <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">Hi, bar!</span>
+foo 100_500 <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">RuntimeError: I supposed it`s not a bar!</span>
 </pre>
 </div>
 
@@ -4632,19 +4632,19 @@ For example, there is a simple contract:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby"><span style="color: #81a2be;">require</span> <span style="color: #b5bd68;">'contracts'</span>
+<pre class="src src-ruby"><span style="color: #3e999f;">require</span> <span style="color: #718c00;">'contracts'</span>
 
-<span style="color: #b294bb;">class</span> <span style="color: #f0c674;">Square</span>
-  <span style="color: #81a2be;">include</span> <span style="color: #f0c674;">Contracts</span>::<span style="color: #f0c674;">Core</span>
-  <span style="color: #81a2be;">include</span> <span style="color: #f0c674;">Contracts</span>::<span style="color: #f0c674;">Builtin</span>
+<span style="color: #8959a8;">class</span> <span style="color: #eab700;">Square</span>
+  <span style="color: #3e999f;">include</span> <span style="color: #eab700;">Contracts</span>::<span style="color: #eab700;">Core</span>
+  <span style="color: #3e999f;">include</span> <span style="color: #eab700;">Contracts</span>::<span style="color: #eab700;">Builtin</span>
 
-  <span style="color: #f0c674;">Contract</span> <span style="color: #f0c674;">Num</span> =&gt; <span style="color: #f0c674;">Num</span>
-  <span style="color: #b294bb;">def</span> <span style="color: #b294bb;">self</span>.<span style="color: #81a2be;">area</span>(a) a**<span style="color: #de935f; font-weight: bold;">2</span> <span style="color: #b294bb;">end</span>
-<span style="color: #b294bb;">end</span>
+  <span style="color: #eab700;">Contract</span> <span style="color: #eab700;">Num</span> =&gt; <span style="color: #eab700;">Num</span>
+  <span style="color: #8959a8;">def</span> <span style="color: #8959a8;">self</span>.<span style="color: #3e999f;">area</span>(a) a**<span style="color: #f5871f; font-weight: bold;">2</span> <span style="color: #8959a8;">end</span>
+<span style="color: #8959a8;">end</span>
 
-<span style="color: #f0c674;">Square</span>.area <span style="color: #de935f; font-weight: bold;">10</span> <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">100</span>
-<span style="color: #f0c674;">Square</span>.area <span style="color: #b5bd68;">'a'</span> <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">ParamContractError: Contract violation for argument 1 of 1</span>
-<span style="color: #f0c674;">Square</span>.area [] <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">ParamContractError: Contract violation for argument 1 of 1</span>
+<span style="color: #eab700;">Square</span>.area <span style="color: #f5871f; font-weight: bold;">10</span> <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">100</span>
+<span style="color: #eab700;">Square</span>.area <span style="color: #718c00;">'a'</span> <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">ParamContractError: Contract violation for argument 1 of 1</span>
+<span style="color: #eab700;">Square</span>.area [] <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">ParamContractError: Contract violation for argument 1 of 1</span>
 </pre>
 </div>
 
@@ -4653,19 +4653,19 @@ You can also use it on multiple arguments or returns:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby"><span style="color: #b294bb;">class</span> <span style="color: #f0c674;">Rectangle</span>
-  <span style="color: #81a2be;">include</span> <span style="color: #f0c674;">Contracts</span>::<span style="color: #f0c674;">Core</span>
-  <span style="color: #81a2be;">include</span> <span style="color: #f0c674;">Contracts</span>::<span style="color: #f0c674;">Builtin</span>
+<pre class="src src-ruby"><span style="color: #8959a8;">class</span> <span style="color: #eab700;">Rectangle</span>
+  <span style="color: #3e999f;">include</span> <span style="color: #eab700;">Contracts</span>::<span style="color: #eab700;">Core</span>
+  <span style="color: #3e999f;">include</span> <span style="color: #eab700;">Contracts</span>::<span style="color: #eab700;">Builtin</span>
 
-  <span style="color: #f0c674;">Contract</span> <span style="color: #f0c674;">Num</span>, <span style="color: #f0c674;">Num</span> =&gt; <span style="color: #f0c674;">Num</span>
-  <span style="color: #b294bb;">def</span> <span style="color: #b294bb;">self</span>.<span style="color: #81a2be;">area</span>(a, b)
+  <span style="color: #eab700;">Contract</span> <span style="color: #eab700;">Num</span>, <span style="color: #eab700;">Num</span> =&gt; <span style="color: #eab700;">Num</span>
+  <span style="color: #8959a8;">def</span> <span style="color: #8959a8;">self</span>.<span style="color: #3e999f;">area</span>(a, b)
     a * b
-  <span style="color: #b294bb;">end</span>
-<span style="color: #b294bb;">end</span>
+  <span style="color: #8959a8;">end</span>
+<span style="color: #8959a8;">end</span>
 
-<span style="color: #f0c674;">Rectangle</span>.area <span style="color: #de935f; font-weight: bold;">10</span>, <span style="color: #de935f; font-weight: bold;">10</span> <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">100</span>
-<span style="color: #f0c674;">Rectangle</span>.area [], <span style="color: #de935f;">false</span> <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">ParamContractError: Contract violation for argument 1 of 2</span>
-<span style="color: #f0c674;">Rectangle</span>.area <span style="color: #de935f; font-weight: bold;">10</span>, <span style="color: #b5bd68;">'a'</span> <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">ParamContractError: Contract violation for argument 2 of 2</span>
+<span style="color: #eab700;">Rectangle</span>.area <span style="color: #f5871f; font-weight: bold;">10</span>, <span style="color: #f5871f; font-weight: bold;">10</span> <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">100</span>
+<span style="color: #eab700;">Rectangle</span>.area [], <span style="color: #f5871f;">false</span> <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">ParamContractError: Contract violation for argument 1 of 2</span>
+<span style="color: #eab700;">Rectangle</span>.area <span style="color: #f5871f; font-weight: bold;">10</span>, <span style="color: #718c00;">'a'</span> <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">ParamContractError: Contract violation for argument 2 of 2</span>
 </pre>
 </div>
 
@@ -4675,12 +4675,12 @@ callback:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby"><span style="color: #f0c674;">Contract</span>.override_failure_callback <span style="color: #b294bb;">do</span> |data|
-  <span style="color: #81a2be;">puts</span> <span style="color: #b5bd68;">'IT`S AN OM~ ERROR!1'</span>
-  <span style="color: #81a2be;">p</span> data
-<span style="color: #b294bb;">end</span>
+<pre class="src src-ruby"><span style="color: #eab700;">Contract</span>.override_failure_callback <span style="color: #8959a8;">do</span> |data|
+  <span style="color: #3e999f;">puts</span> <span style="color: #718c00;">'IT`S AN OM~ ERROR!1'</span>
+  <span style="color: #3e999f;">p</span> data
+<span style="color: #8959a8;">end</span>
 
-<span style="color: #f0c674;">Rectangle</span>.area <span style="color: #de935f; font-weight: bold;">10</span>, <span style="color: #b5bd68;">'a'</span> <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">'IT`S AN OM~ ERROR!1'</span>
+<span style="color: #eab700;">Rectangle</span>.area <span style="color: #f5871f; font-weight: bold;">10</span>, <span style="color: #718c00;">'a'</span> <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">'IT`S AN OM~ ERROR!1'</span>
 </pre>
 </div>
 </div>
@@ -4705,23 +4705,23 @@ complex conditions, then you have to use lambdas:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby"><span style="color: #b294bb;">class</span> <span style="color: #f0c674;">CharCounter</span>
-  <span style="color: #81a2be;">include</span> <span style="color: #f0c674;">Contracts</span>::<span style="color: #f0c674;">Core</span>
-  <span style="color: #81a2be;">include</span> <span style="color: #f0c674;">Contracts</span>::<span style="color: #f0c674;">Builtin</span>
+<pre class="src src-ruby"><span style="color: #8959a8;">class</span> <span style="color: #eab700;">CharCounter</span>
+  <span style="color: #3e999f;">include</span> <span style="color: #eab700;">Contracts</span>::<span style="color: #eab700;">Core</span>
+  <span style="color: #3e999f;">include</span> <span style="color: #eab700;">Contracts</span>::<span style="color: #eab700;">Builtin</span>
 
-  <span style="color: #f0c674;">Char</span> = -&gt; (char) { char.is_a?(<span style="color: #f0c674;">String</span>) &amp;&amp; char.length == <span style="color: #de935f; font-weight: bold;">1</span> &amp;&amp; char =~ <span style="color: #b5bd68;">/\w/</span> }
+  <span style="color: #eab700;">Char</span> = -&gt; (char) { char.is_a?(<span style="color: #eab700;">String</span>) &amp;&amp; char.length == <span style="color: #f5871f; font-weight: bold;">1</span> &amp;&amp; char =~ <span style="color: #718c00;">/\w/</span> }
 
-  <span style="color: #f0c674;">Contract</span> <span style="color: #f0c674;">Maybe</span>[<span style="color: #f0c674;">String</span>], <span style="color: #f0c674;">Char</span> =&gt; <span style="color: #f0c674;">Num</span>
+  <span style="color: #eab700;">Contract</span> <span style="color: #eab700;">Maybe</span>[<span style="color: #eab700;">String</span>], <span style="color: #eab700;">Char</span> =&gt; <span style="color: #eab700;">Num</span>
 
-  <span style="color: #b294bb;">def</span> <span style="color: #b294bb;">self</span>.<span style="color: #81a2be;">count_chars</span>(str, ch)
+  <span style="color: #8959a8;">def</span> <span style="color: #8959a8;">self</span>.<span style="color: #3e999f;">count_chars</span>(str, ch)
     str.count ch
-    <span style="color: #b294bb;">end</span>
-<span style="color: #b294bb;">end</span>
+    <span style="color: #8959a8;">end</span>
+<span style="color: #8959a8;">end</span>
 
-<span style="color: #f0c674;">CharCounter</span>.count_chars <span style="color: #b5bd68;">'hello'</span>, <span style="color: #b5bd68;">'N'</span> <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">0</span>
-<span style="color: #f0c674;">CharCounter</span>.count_chars <span style="color: #b5bd68;">'hello'</span>, <span style="color: #b5bd68;">'l'</span> <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">2</span>
-<span style="color: #f0c674;">CharCounter</span>.count_chars <span style="color: #b5bd68;">'hello'</span>, <span style="color: #b5bd68;">'*'</span> <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">ParamContractError: Contract violation for argument 2 of 2</span>
-<span style="color: #f0c674;">CharCounter</span>.count_chars <span style="color: #b5bd68;">'llo'</span>, <span style="color: #b5bd68;">'llo'</span> <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">ParamContractError: Contract violation for argument 2 of 2</span>
+<span style="color: #eab700;">CharCounter</span>.count_chars <span style="color: #718c00;">'hello'</span>, <span style="color: #718c00;">'N'</span> <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">0</span>
+<span style="color: #eab700;">CharCounter</span>.count_chars <span style="color: #718c00;">'hello'</span>, <span style="color: #718c00;">'l'</span> <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">2</span>
+<span style="color: #eab700;">CharCounter</span>.count_chars <span style="color: #718c00;">'hello'</span>, <span style="color: #718c00;">'*'</span> <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">ParamContractError: Contract violation for argument 2 of 2</span>
+<span style="color: #eab700;">CharCounter</span>.count_chars <span style="color: #718c00;">'llo'</span>, <span style="color: #718c00;">'llo'</span> <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">ParamContractError: Contract violation for argument 2 of 2</span>
 </pre>
 </div>
 </div>
@@ -4852,9 +4852,9 @@ let&rsquo;s create new <i>.js</i> file:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-javascript"><span style="color: #5a5b5a;">#!/usr/bin/env babel-node</span>
+<pre class="src src-javascript"><span style="color: #a5a4a5;">#!/usr/bin/env babel-node</span>
 
-<span style="color: #b294bb;">import</span> R from <span style="color: #b5bd68;">'ramda'</span>;
+<span style="color: #8959a8;">import</span> R from <span style="color: #718c00;">'ramda'</span>;
 </pre>
 </div>
 
@@ -4864,22 +4864,22 @@ Ramda.js API has some general use functions:
 
 <div class="org-src-container">
 <pre class="src src-javascript">
-<span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">Typing let str = 'test';</span>
-R.is(String, str); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; true // The same with currying</span>
-R.is(String)(str); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; true</span>
-<span style="color: #b294bb;">let</span> <span style="color: #cc6666;">isString</span> = R.is(String); isString(<span style="color: #b5bd68;">'string'</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; true</span>
-R.type(isString); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; String</span>
+<span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">Typing let str = 'test';</span>
+R.is(String, str); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; true // The same with currying</span>
+R.is(String)(str); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; true</span>
+<span style="color: #8959a8;">let</span> <span style="color: #c82829;">isString</span> = R.is(String); isString(<span style="color: #718c00;">'string'</span>); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; true</span>
+R.type(isString); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; String</span>
 
-<span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">Math</span>
-R.add(<span style="color: #de935f; font-weight: bold;">100</span>, <span style="color: #de935f; font-weight: bold;">500</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 600</span>
-R.add(<span style="color: #de935f; font-weight: bold;">100</span>)(<span style="color: #de935f; font-weight: bold;">500</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 600</span>
-R.mean([<span style="color: #de935f; font-weight: bold;">2</span>,<span style="color: #de935f; font-weight: bold;">3</span>,<span style="color: #de935f; font-weight: bold;">7</span>]); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 4 R.sum(R.range(1, 5)); //=&gt; 10</span>
+<span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">Math</span>
+R.add(<span style="color: #f5871f; font-weight: bold;">100</span>, <span style="color: #f5871f; font-weight: bold;">500</span>); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; 600</span>
+R.add(<span style="color: #f5871f; font-weight: bold;">100</span>)(<span style="color: #f5871f; font-weight: bold;">500</span>); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; 600</span>
+R.mean([<span style="color: #f5871f; font-weight: bold;">2</span>,<span style="color: #f5871f; font-weight: bold;">3</span>,<span style="color: #f5871f; font-weight: bold;">7</span>]); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; 4 R.sum(R.range(1, 5)); //=&gt; 10</span>
 
-<span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">Logic</span>
-R.and(<span style="color: #de935f;">true</span>, <span style="color: #de935f;">false</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; false</span>
-R.and([])(<span style="color: #de935f; font-weight: bold;">0</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 0</span>
-R.not(<span style="color: #de935f; font-weight: bold;">1</span>);<span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; false</span>
-R.both(isString, R.is(String))(str); <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">=&gt; true</span>
+<span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">Logic</span>
+R.and(<span style="color: #f5871f;">true</span>, <span style="color: #f5871f;">false</span>); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; false</span>
+R.and([])(<span style="color: #f5871f; font-weight: bold;">0</span>); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; 0</span>
+R.not(<span style="color: #f5871f; font-weight: bold;">1</span>);<span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; false</span>
+R.both(isString, R.is(String))(str); <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">=&gt; true</span>
 </pre>
 </div>
 
@@ -4890,16 +4890,16 @@ functions:
 
 <div class="org-src-container">
 <pre class="src src-javascript">
-<span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">Lists</span>
-<span style="color: #b294bb;">let</span> <span style="color: #cc6666;">animals</span> = [ { name: <span style="color: #b5bd68;">'goose'</span>,
-type: <span style="color: #b5bd68;">'bird'</span>, color: <span style="color: #b5bd68;">'white'</span> }, { name: <span style="color: #b5bd68;">'parrot'</span>, type: <span style="color: #b5bd68;">'bird'</span>, color:
-<span style="color: #b5bd68;">'yellow'</span> }, { name: <span style="color: #b5bd68;">'cat'</span>, type: <span style="color: #b5bd68;">'mammal'</span>, color: <span style="color: #b5bd68;">'grey'</span> }];
+<span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">Lists</span>
+<span style="color: #8959a8;">let</span> <span style="color: #c82829;">animals</span> = [ { name: <span style="color: #718c00;">'goose'</span>,
+type: <span style="color: #718c00;">'bird'</span>, color: <span style="color: #718c00;">'white'</span> }, { name: <span style="color: #718c00;">'parrot'</span>, type: <span style="color: #718c00;">'bird'</span>, color:
+<span style="color: #718c00;">'yellow'</span> }, { name: <span style="color: #718c00;">'cat'</span>, type: <span style="color: #718c00;">'mammal'</span>, color: <span style="color: #718c00;">'grey'</span> }];
 
-R.map(animal =&gt; animal.color + <span style="color: #b5bd68;">' '</span> + animal.name, animals); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; [</span>
-<span style="color: #b5bd68;">'white goose'</span>, <span style="color: #b5bd68;">'yellow parrot'</span>, <span style="color: #b5bd68;">'grey cat'</span> ] R.head(animals).name; <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt;</span>
-goose R.last(animals).name; <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; cat</span>
-R.uniq(R.pluck(<span style="color: #b5bd68;">'type'</span>, animals)); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; [ 'bird', 'mammal' ]</span>
-R.length(R.filter(animal =&gt; animal.type === <span style="color: #b5bd68;">'bird'</span>, animals)); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 2</span>
+R.map(animal =&gt; animal.color + <span style="color: #718c00;">' '</span> + animal.name, animals); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; [</span>
+<span style="color: #718c00;">'white goose'</span>, <span style="color: #718c00;">'yellow parrot'</span>, <span style="color: #718c00;">'grey cat'</span> ] R.head(animals).name; <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt;</span>
+goose R.last(animals).name; <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; cat</span>
+R.uniq(R.pluck(<span style="color: #718c00;">'type'</span>, animals)); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; [ 'bird', 'mammal' ]</span>
+R.length(R.filter(animal =&gt; animal.type === <span style="color: #718c00;">'bird'</span>, animals)); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; 2</span>
 </pre>
 </div>
 
@@ -4909,18 +4909,18 @@ And object helpers too:
 
 <div class="org-src-container">
 <pre class="src src-javascript">
-<span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">Objects let cat = { type: 'animal',</span>
-subclass: <span style="color: #b5bd68;">'mammal'</span>, binomialName: <span style="color: #b5bd68;">'Felis catus'</span> };
-R.assoc(<span style="color: #b5bd68;">'status'</span>, <span style="color: #b5bd68;">'domesticated'</span>, cat).status; <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; domesticated</span>
-R.dissoc(<span style="color: #b5bd68;">'binomialName'</span>, cat).binomialName; <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; undefined</span>
-R.keys(cat); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; [ 'type', 'subclass', 'binomialName' ]</span>
-R.has(<span style="color: #b5bd68;">'type'</span>, cat); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; true</span>
-R.prop(<span style="color: #b5bd68;">'type'</span>, cat); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; animal</span>
-R.values(cat); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; [ 'animal', 'mammal', 'felis catus' ]</span>
+<span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">Objects let cat = { type: 'animal',</span>
+subclass: <span style="color: #718c00;">'mammal'</span>, binomialName: <span style="color: #718c00;">'Felis catus'</span> };
+R.assoc(<span style="color: #718c00;">'status'</span>, <span style="color: #718c00;">'domesticated'</span>, cat).status; <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; domesticated</span>
+R.dissoc(<span style="color: #718c00;">'binomialName'</span>, cat).binomialName; <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; undefined</span>
+R.keys(cat); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; [ 'type', 'subclass', 'binomialName' ]</span>
+R.has(<span style="color: #718c00;">'type'</span>, cat); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; true</span>
+R.prop(<span style="color: #718c00;">'type'</span>, cat); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; animal</span>
+R.values(cat); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; [ 'animal', 'mammal', 'felis catus' ]</span>
 
-<span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">Object transformation</span>
-<span style="color: #b294bb;">let</span> <span style="color: #cc6666;">transformations</span> = { type: R.toUpper, binomialName: R.toLower }
-R.evolve(transformations, cat).type; <span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">=&gt; ANIMAL</span>
+<span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">Object transformation</span>
+<span style="color: #8959a8;">let</span> <span style="color: #c82829;">transformations</span> = { type: R.toUpper, binomialName: R.toLower }
+R.evolve(transformations, cat).type; <span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">=&gt; ANIMAL</span>
 
 </pre>
 </div>
@@ -4930,15 +4930,15 @@ compose multiple functions in different orders:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-javascript"><span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">Compose and pipe R.join(' and ',</span>
-R.uniq(R.map(R.toUpper)(R.pluck(<span style="color: #b5bd68;">'type'</span>, animals)))); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; BIRD and MAMMAL</span>
-<span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">Performs right-to-left function composition</span>
-R.compose(R.join(<span style="color: #b5bd68;">' and '</span>), R.uniq, R.map(R.toUpper), R.pluck(<span style="color: #b5bd68;">'type'</span>) )(animals);
-<span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; BIRD and MAMMAL</span>
+<pre class="src src-javascript"><span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">Compose and pipe R.join(' and ',</span>
+R.uniq(R.map(R.toUpper)(R.pluck(<span style="color: #718c00;">'type'</span>, animals)))); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; BIRD and MAMMAL</span>
+<span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">Performs right-to-left function composition</span>
+R.compose(R.join(<span style="color: #718c00;">' and '</span>), R.uniq, R.map(R.toUpper), R.pluck(<span style="color: #718c00;">'type'</span>) )(animals);
+<span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; BIRD and MAMMAL</span>
 
-<span style="color: #5a5b5a;">// </span><span style="color: #5a5b5a;">Performs left-to-right function composition</span>
-R.pipe(R.pluck(<span style="color: #b5bd68;">'type'</span>) R.map(R.toUpper), R.uniq, R.join(<span style="color: #b5bd68;">' and '</span>)
-)(animals); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; BIRD and MAMMAL</span>
+<span style="color: #a5a4a5;">// </span><span style="color: #a5a4a5;">Performs left-to-right function composition</span>
+R.pipe(R.pluck(<span style="color: #718c00;">'type'</span>) R.map(R.toUpper), R.uniq, R.join(<span style="color: #718c00;">' and '</span>)
+)(animals); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; BIRD and MAMMAL</span>
 </pre>
 </div>
 
@@ -4949,12 +4949,12 @@ evaluating a sequence of functions, each with one argument.
 </p>
 
 <div class="org-src-container">
-<pre class="src src-javascript"><span style="color: #b294bb;">let</span> <span style="color: #cc6666;">tripleMultiply</span> = (a, b, c) =&gt; a * b * c;
-tripleMultiply(<span style="color: #de935f; font-weight: bold;">3</span>, <span style="color: #de935f; font-weight: bold;">9</span>, <span style="color: #de935f; font-weight: bold;">2</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 54</span>
-tripleMultiply(<span style="color: #de935f; font-weight: bold;">3</span>, <span style="color: #de935f; font-weight: bold;">9</span>)(<span style="color: #de935f; font-weight: bold;">2</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; TypeError: tripleMultiply(..) is not a function</span>
-<span style="color: #b294bb;">let</span> <span style="color: #cc6666;">curriedMultiply</span> = R.curry(tripleMultiply);
-curriedMultiply(<span style="color: #de935f; font-weight: bold;">3</span>, <span style="color: #de935f; font-weight: bold;">9</span>)(<span style="color: #de935f; font-weight: bold;">2</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 54</span>
-curriedMultiply(<span style="color: #de935f; font-weight: bold;">3</span>)(<span style="color: #de935f; font-weight: bold;">9</span>)(<span style="color: #de935f; font-weight: bold;">2</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 54</span>
+<pre class="src src-javascript"><span style="color: #8959a8;">let</span> <span style="color: #c82829;">tripleMultiply</span> = (a, b, c) =&gt; a * b * c;
+tripleMultiply(<span style="color: #f5871f; font-weight: bold;">3</span>, <span style="color: #f5871f; font-weight: bold;">9</span>, <span style="color: #f5871f; font-weight: bold;">2</span>); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; 54</span>
+tripleMultiply(<span style="color: #f5871f; font-weight: bold;">3</span>, <span style="color: #f5871f; font-weight: bold;">9</span>)(<span style="color: #f5871f; font-weight: bold;">2</span>); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; TypeError: tripleMultiply(..) is not a function</span>
+<span style="color: #8959a8;">let</span> <span style="color: #c82829;">curriedMultiply</span> = R.curry(tripleMultiply);
+curriedMultiply(<span style="color: #f5871f; font-weight: bold;">3</span>, <span style="color: #f5871f; font-weight: bold;">9</span>)(<span style="color: #f5871f; font-weight: bold;">2</span>); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; 54</span>
+curriedMultiply(<span style="color: #f5871f; font-weight: bold;">3</span>)(<span style="color: #f5871f; font-weight: bold;">9</span>)(<span style="color: #f5871f; font-weight: bold;">2</span>); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; 54</span>
 </pre>
 </div>
 
@@ -4964,15 +4964,15 @@ check sequence of conditions to match different patterns:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-javascript"><span style="color: #b294bb;">let</span> <span style="color: #cc6666;">checkNumber</span> = R.cond([ [R.is(Number),
+<pre class="src src-javascript"><span style="color: #8959a8;">let</span> <span style="color: #c82829;">checkNumber</span> = R.cond([ [R.is(Number),
 R.identity], [R.is(String), parseInt], [R.is(Boolean), Number],
-[R.isEmpty, R.always(<span style="color: #de935f; font-weight: bold;">0</span>)], [R.T, R.always(<span style="color: #de935f;">NaN</span>)]]); checkNumber(<span style="color: #de935f; font-weight: bold;">100500</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 100500</span>
-checkNumber(<span style="color: #b5bd68;">'146%'</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 146</span>
-checkNumber(<span style="color: #b5bd68;">'Hodor'</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; NaN</span>
-checkNumber(<span style="color: #de935f;">true</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 1</span>
-checkNumber(<span style="color: #de935f;">false</span>); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 0</span>
-checkNumber([]); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; 0</span>
-checkNumber([<span style="color: #b5bd68;">'test'</span>]); <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=&gt; NaN</span>
+[R.isEmpty, R.always(<span style="color: #f5871f; font-weight: bold;">0</span>)], [R.T, R.always(<span style="color: #f5871f;">NaN</span>)]]); checkNumber(<span style="color: #f5871f; font-weight: bold;">100500</span>); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; 100500</span>
+checkNumber(<span style="color: #718c00;">'146%'</span>); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; 146</span>
+checkNumber(<span style="color: #718c00;">'Hodor'</span>); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; NaN</span>
+checkNumber(<span style="color: #f5871f;">true</span>); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; 1</span>
+checkNumber(<span style="color: #f5871f;">false</span>); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; 0</span>
+checkNumber([]); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; 0</span>
+checkNumber([<span style="color: #718c00;">'test'</span>]); <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=&gt; NaN</span>
 </pre>
 </div>
 
@@ -5006,8 +5006,8 @@ add this lines:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby">source <span style="color: #b5bd68;">'https://rubygems.org'</span>
-gem <span style="color: #b5bd68;">'capistrano'</span>, <span style="color: #b5bd68;">'~&gt; 3.4.0'</span>
+<pre class="src src-ruby">source <span style="color: #718c00;">'https://rubygems.org'</span>
+gem <span style="color: #718c00;">'capistrano'</span>, <span style="color: #718c00;">'~&gt; 3.4.0'</span>
 </pre>
 </div>
 
@@ -5028,8 +5028,8 @@ server data (<i>/config/deploy/production.rb</i>):
 
 <div class="org-src-container">
 <pre class="src src-ruby">
-role <span style="color: #de935f;">:app</span>, <span style="color: #b5bd68;">%w{user@server}</span>
-role <span style="color: #de935f;">:web</span>, <span style="color: #b5bd68;">%w{user@server}</span>
+role <span style="color: #f5871f;">:app</span>, <span style="color: #718c00;">%w{user@server}</span>
+role <span style="color: #f5871f;">:web</span>, <span style="color: #718c00;">%w{user@server}</span>
 </pre>
 </div>
 
@@ -5054,7 +5054,7 @@ Next you should add Capistrano plugin for rbenv in <i>Gemfile</i>:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby">gem <span style="color: #b5bd68;">'capistrano-rbenv'</span>, <span style="color: #b5bd68;">'~&gt; 2.0'</span>
+<pre class="src src-ruby">gem <span style="color: #718c00;">'capistrano-rbenv'</span>, <span style="color: #718c00;">'~&gt; 2.0'</span>
 </pre>
 </div>
 
@@ -5072,7 +5072,7 @@ And add this line to <i>Capfile</i>:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby"><span style="color: #81a2be;">require</span> <span style="color: #b5bd68;">'capistrano/rbenv'</span>
+<pre class="src src-ruby"><span style="color: #3e999f;">require</span> <span style="color: #718c00;">'capistrano/rbenv'</span>
 </pre>
 </div>
 
@@ -5082,7 +5082,7 @@ Install Jekyll gem on server and add it to rbenv binaries list in
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby">set <span style="color: #de935f;">:rbenv_map_bins</span>, <span style="color: #b5bd68;">%w{rake gem bundle ruby jekyll}</span>
+<pre class="src src-ruby">set <span style="color: #f5871f;">:rbenv_map_bins</span>, <span style="color: #718c00;">%w{rake gem bundle ruby jekyll}</span>
 </pre>
 </div>
 
@@ -5094,8 +5094,8 @@ changes:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby"><span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">Gemfile</span>
-gem <span style="color: #b5bd68;">'capistrano-jekyll'</span>
+<pre class="src src-ruby"><span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">Gemfile</span>
+gem <span style="color: #718c00;">'capistrano-jekyll'</span>
 </pre>
 </div>
 
@@ -5134,9 +5134,9 @@ Rails assets dependencies management:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-javascript">  <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=require 'jquery'</span>
-  <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=require 'parallax'</span>
-  <span style="color: #5a5b5a;">//</span><span style="color: #5a5b5a;">=require 'slideout'</span>
+<pre class="src src-javascript">  <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=require 'jquery'</span>
+  <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=require 'parallax'</span>
+  <span style="color: #a5a4a5;">//</span><span style="color: #a5a4a5;">=require 'slideout'</span>
 </pre>
 </div></li>
 
@@ -5153,11 +5153,11 @@ add required packages in your <i>Gemfile</i> like this:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby">source <span style="color: #b5bd68;">'https://rails-assets.org'</span> <span style="color: #b294bb;">do</span>
-  gem <span style="color: #b5bd68;">'rails-assets-jquery'</span>
-  gem <span style="color: #b5bd68;">'rails-assets-normalize-scss'</span>
-  gem <span style="color: #b5bd68;">'rails-assets-slideout.js'</span>
-<span style="color: #b294bb;">end</span>
+<pre class="src src-ruby">source <span style="color: #718c00;">'https://rails-assets.org'</span> <span style="color: #8959a8;">do</span>
+  gem <span style="color: #718c00;">'rails-assets-jquery'</span>
+  gem <span style="color: #718c00;">'rails-assets-normalize-scss'</span>
+  gem <span style="color: #718c00;">'rails-assets-slideout.js'</span>
+<span style="color: #8959a8;">end</span>
 </pre>
 </div>
 
@@ -5169,16 +5169,16 @@ include rails-assets paths. To fix this, you can load paths with
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby"><span style="color: #81a2be;">require</span> <span style="color: #b5bd68;">'jekyll-assets'</span>
-<span style="color: #81a2be;">require</span> <span style="color: #b5bd68;">'bundler/setup'</span>
+<pre class="src src-ruby"><span style="color: #3e999f;">require</span> <span style="color: #718c00;">'jekyll-assets'</span>
+<span style="color: #3e999f;">require</span> <span style="color: #718c00;">'bundler/setup'</span>
 
-<span style="color: #f0c674;">Bundler</span>.require(<span style="color: #de935f;">:default</span>, <span style="color: #b5bd68;">'development'</span>)
+<span style="color: #eab700;">Bundler</span>.require(<span style="color: #f5871f;">:default</span>, <span style="color: #718c00;">'development'</span>)
 
-<span style="color: #b294bb;">if</span> <span style="color: #b294bb;">defined?</span>(<span style="color: #f0c674;">RailsAssets</span>)
-  <span style="color: #f0c674;">RailsAssets</span>.load_paths.each <span style="color: #b294bb;">do</span> |path|
-    <span style="color: #f0c674;">Sprockets</span>.append_path path
-  <span style="color: #b294bb;">end</span>
-<span style="color: #b294bb;">end</span>
+<span style="color: #8959a8;">if</span> <span style="color: #8959a8;">defined?</span>(<span style="color: #eab700;">RailsAssets</span>)
+  <span style="color: #eab700;">RailsAssets</span>.load_paths.each <span style="color: #8959a8;">do</span> |path|
+    <span style="color: #eab700;">Sprockets</span>.append_path path
+  <span style="color: #8959a8;">end</span>
+<span style="color: #8959a8;">end</span>
 </pre>
 </div>
 
@@ -5219,7 +5219,7 @@ I love programming as endless act of self-perfection.
 </p>
 
 <p>
-This is why I want to share with you my hacks, reviews, thoughts about
+This is why i would share with you my hacks, reviews, thoughts about
 programming, code snippets and more interesting stuff.
 </p>
 <div class="taglist"></div>]]></description>

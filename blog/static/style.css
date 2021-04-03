@@ -1,5 +1,5 @@
 body {
-    font-family: 'Libre Baskerville', Noto Serif, Open Serif, Helvetica, Arial, serif;
+    font-family: 'Merriweather', Noto Serif, Open Serif, Helvetica, Arial, serif;
     padding: 1em;
     background: #FAFAFA;
     color: #111;
@@ -13,7 +13,8 @@ body {
 
 @media screen and (min-width: 1024px) {
     html {
-        font-size: 15pt;
+        font-size: 14pt;
+        line-height: 1.5;
     }
 }
 

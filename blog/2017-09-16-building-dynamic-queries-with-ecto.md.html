@@ -9,12 +9,15 @@
 <title>Building dynamic queries with Ecto</title>
 <meta name="author" content="Aleksei Kuznetsov">
     <meta name="referrer" content="no-referrer">
-    <link href= "https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet" type="text/css" />
-    <link href= "static/style.css" rel="stylesheet" type="text/css" />
-    <link rel="icon" href="static/favicon.ico"></head>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet" type="text/css" />
+    <link href="static/style.css" rel="stylesheet" type="text/css" />
+    <link rel="icon" href="static/favicon.ico">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link rel="canonical" href="https://neiro.io/" />
+    <link rel="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"/></head>
 <body>
 <div id="preamble" class="status"><div class="header">
-    <a href="https://neiro.io">Neiro - Functional programming, software architecture</a>
+    <a href="https://neiro.io">Neiro | Functional programming, software architecture</a>
   </div></div>
 <div id="content">
 <div class="post-date">16 Sep 2017</div><h1 class="post-title"><a href="https://neiro.io/2017-09-16-building-dynamic-queries-with-ecto.md.html">Building dynamic queries with Ecto</a></h1>
@@ -68,7 +71,7 @@ Let&rsquo;s create a new Elixir module that will implement logic of our future
 dynamic query. I will name it <code>FilterQuery</code> :
 </p>
 
-<pre class="example" id="org7f2fa77">
+<pre class="example" id="orgb676492">
   defmodule FilterQuery do
     @moduledoc """
     Query that accepts inclusion or exclusion parameters and filters by this parameters
@@ -84,7 +87,7 @@ accepts incoming query, inclusion and exclusion parameters as the
 arguments:
 </p>
 
-<pre class="example" id="orgdd4474f">
+<pre class="example" id="orgf8e16a8">
   @spec filter(Ecto.Query.t, map, map) :: Ecto.Query.t
   def filter(query, inclusion, exclusion) 
 </pre>
@@ -95,7 +98,7 @@ we need to build two lists of dynamic queries both for inclusion and
 exclusion parameters:
 </p>
 
-<pre class="example" id="orgbc468d7">
+<pre class="example" id="orge4f3310">
   queries = dynamic_query(:inclusion, inclusion) ++ dynamic_query(:exclusion, exclusion)
 </pre>
 
@@ -104,7 +107,7 @@ Now we need to merge all these dynamic queries into a new big one. It
 can be implemented using <code>Enum.reduce</code> :
 </p>
 
-<pre class="example" id="org87772e3">
+<pre class="example" id="org3b714ad">
   Enum.reduce(queries, query, fn(q, acc) -&gt; where(acc, ^q) end)
 </pre>
 
@@ -124,7 +127,7 @@ query. However, the devil&rsquo;s always in the details. We need to hide
 implementation in private functions:
 </p>
 
-<pre class="example" id="orgb3b7884">
+<pre class="example" id="orgd961174">
   defp dynamic_query(type, filters) when type in [:inclusion, :exclusion] do
     for {attr, values} &lt;- filters, present?(values),
       do: dynamic_query(type, attr, values)
@@ -142,7 +145,7 @@ need to check if these lists contain values or we shall skip building
 query:
 </p>
 
-<pre class="example" id="org18e7b36">
+<pre class="example" id="org266c63d">
   defp present?(list) when is_list(list), do: length(list) &gt; 0
   defp present?(_), do: false
 </pre>
@@ -158,7 +161,7 @@ first argument and builds dynamic query for the second one. Also notice
 that we need to use <code>field</code> macro to dynamically access attribute name:
 </p>
 
-<pre class="example" id="org7f2eedc">
+<pre class="example" id="org4bea411">
   defp dynamic_query(:inclusion, attr, values) do
     dynamic([q], field(q, ^attr) in ^values)
   end
@@ -192,7 +195,7 @@ what you really wished? Guess not :)
 So let&rsquo;s restrict filtered attributes by using <code>__using__</code> macro:
 </p>
 
-<pre class="example" id="orgc565302">
+<pre class="example" id="orgda9d9e9">
   defmacro __using__(attributes: allowed_attributes) do
   ...
 
@@ -220,7 +223,7 @@ Voila! No one ever will find out how your users relationships are going.
 Now let&rsquo;s take a quick look at our dynamic filter query:
 </p>
 
-<pre class="example" id="orgd77907d">
+<pre class="example" id="org8c0eaeb">
   defmodule FilterQuery do
     @moduledoc """
     Query that accepts inclusion or exclusion parameters and filters by this parameters
@@ -284,7 +287,7 @@ our query and set the list of allowed attributes through <code>use</code>
 construction:
 </p>
 
-<pre class="example" id="org0c9db4b">
+<pre class="example" id="orgb8170ad">
   {:ok, _} = Application.ensure_all_started(:ex_machina)
 
   defmodule Example do

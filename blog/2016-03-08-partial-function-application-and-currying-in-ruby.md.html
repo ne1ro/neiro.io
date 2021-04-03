@@ -9,12 +9,15 @@
 <title>Partial function application and currying in Ruby</title>
 <meta name="author" content="Aleksei Kuznetsov">
     <meta name="referrer" content="no-referrer">
-    <link href= "https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet" type="text/css" />
-    <link href= "static/style.css" rel="stylesheet" type="text/css" />
-    <link rel="icon" href="static/favicon.ico"></head>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet" type="text/css" />
+    <link href="static/style.css" rel="stylesheet" type="text/css" />
+    <link rel="icon" href="static/favicon.ico">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link rel="canonical" href="https://neiro.io/" />
+    <link rel="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"/></head>
 <body>
 <div id="preamble" class="status"><div class="header">
-    <a href="https://neiro.io">Neiro - Functional programming, software architecture</a>
+    <a href="https://neiro.io">Neiro | Functional programming, software architecture</a>
   </div></div>
 <div id="content">
 <div class="post-date">08 Mär 2016</div><h1 class="post-title"><a href="https://neiro.io/2016-03-08-partial-function-application-and-currying-in-ruby.md.html">Partial function application and currying in Ruby</a></h1>
@@ -57,7 +60,7 @@ arguments:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby"> multiply = -&gt; (x, y) { x * y } multiply.(<span style="color: #de935f; font-weight: bold;">2</span>, <span style="color: #de935f; font-weight: bold;">2</span>) <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">4</span>
+<pre class="src src-ruby"> multiply = -&gt; (x, y) { x * y } multiply.(<span style="color: #f5871f; font-weight: bold;">2</span>, <span style="color: #f5871f; font-weight: bold;">2</span>) <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">4</span>
 
 </pre>
 </div>
@@ -69,10 +72,10 @@ to create a new <i>double</i> function that takes just one argument:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby">double = -&gt; (x) { multiply.(<span style="color: #de935f; font-weight: bold;">2</span>, x) }
-double.arity <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">1</span>
-double.(<span style="color: #de935f; font-weight: bold;">2</span>) <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">4</span>
-double.(<span style="color: #de935f; font-weight: bold;">1984</span>) <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">3968</span>
+<pre class="src src-ruby">double = -&gt; (x) { multiply.(<span style="color: #f5871f; font-weight: bold;">2</span>, x) }
+double.arity <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">1</span>
+double.(<span style="color: #f5871f; font-weight: bold;">2</span>) <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">4</span>
+double.(<span style="color: #f5871f; font-weight: bold;">1984</span>) <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">3968</span>
 </pre>
 </div>
 
@@ -82,8 +85,8 @@ application even more simpler:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby">double = multiply.curry.(<span style="color: #de935f; font-weight: bold;">2</span>) double.(<span style="color: #de935f; font-weight: bold;">2</span>) <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">4</span>
-double.(<span style="color: #de935f; font-weight: bold;">300</span>) <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">600</span>
+<pre class="src src-ruby">double = multiply.curry.(<span style="color: #f5871f; font-weight: bold;">2</span>) double.(<span style="color: #f5871f; font-weight: bold;">2</span>) <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">4</span>
+double.(<span style="color: #f5871f; font-weight: bold;">300</span>) <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">600</span>
 </pre>
 </div>
 </div>
@@ -113,7 +116,7 @@ to multiply more than two arguments?
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby">multiply.(<span style="color: #de935f; font-weight: bold;">2</span>, <span style="color: #de935f; font-weight: bold;">2</span>, <span style="color: #de935f; font-weight: bold;">2</span>) <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">ArgumentError: wrong number of arguments (given 3, expected 2)</span>
+<pre class="src src-ruby">multiply.(<span style="color: #f5871f; font-weight: bold;">2</span>, <span style="color: #f5871f; font-weight: bold;">2</span>, <span style="color: #f5871f; font-weight: bold;">2</span>) <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">ArgumentError: wrong number of arguments (given 3, expected 2)</span>
 </pre>
 </div>
 
@@ -123,9 +126,9 @@ method:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby">multiply = -&gt; (head, <span style="color: #b5bd68;">/tail) { head /</span> tail.inject(<span style="color: #de935f; font-weight: bold;">1</span>, &amp;<span style="color: #de935f;">:*</span>) }
-multiply.curry.(<span style="color: #de935f; font-weight: bold;">2</span>, <span style="color: #de935f; font-weight: bold;">2</span>, <span style="color: #de935f; font-weight: bold;">2</span>) <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">8</span>
-multiply.curry.(<span style="color: #de935f; font-weight: bold;">2</span>, <span style="color: #de935f; font-weight: bold;">3</span>, <span style="color: #de935f; font-weight: bold;">7</span>) <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">42</span>
+<pre class="src src-ruby">multiply = -&gt; (head, <span style="color: #718c00;">/tail) { head /</span> tail.inject(<span style="color: #f5871f; font-weight: bold;">1</span>, &amp;<span style="color: #f5871f;">:*</span>) }
+multiply.curry.(<span style="color: #f5871f; font-weight: bold;">2</span>, <span style="color: #f5871f; font-weight: bold;">2</span>, <span style="color: #f5871f; font-weight: bold;">2</span>) <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">8</span>
+multiply.curry.(<span style="color: #f5871f; font-weight: bold;">2</span>, <span style="color: #f5871f; font-weight: bold;">3</span>, <span style="color: #f5871f; font-weight: bold;">7</span>) <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">42</span>
 </pre>
 </div>
 
@@ -135,8 +138,8 @@ argument in <i>Proc#curry</i> function:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby">multiply.curry(<span style="color: #de935f; font-weight: bold;">3</span>)[<span style="color: #de935f; font-weight: bold;">1</span>][<span style="color: #de935f; font-weight: bold;">2</span>][<span style="color: #de935f; font-weight: bold;">3</span>] <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">6</span>
-multiply.curry(<span style="color: #de935f; font-weight: bold;">3</span>)[<span style="color: #de935f; font-weight: bold;">1</span>][<span style="color: #de935f; font-weight: bold;">2</span>][<span style="color: #de935f; font-weight: bold;">3</span>][<span style="color: #de935f; font-weight: bold;">4</span>] <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">0 because of the last argument is nil</span>
+<pre class="src src-ruby">multiply.curry(<span style="color: #f5871f; font-weight: bold;">3</span>)[<span style="color: #f5871f; font-weight: bold;">1</span>][<span style="color: #f5871f; font-weight: bold;">2</span>][<span style="color: #f5871f; font-weight: bold;">3</span>] <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">6</span>
+multiply.curry(<span style="color: #f5871f; font-weight: bold;">3</span>)[<span style="color: #f5871f; font-weight: bold;">1</span>][<span style="color: #f5871f; font-weight: bold;">2</span>][<span style="color: #f5871f; font-weight: bold;">3</span>][<span style="color: #f5871f; font-weight: bold;">4</span>] <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">0 because of the last argument is nil</span>
 </pre>
 </div>
 
@@ -146,12 +149,12 @@ Ruby 2.2:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-ruby"><span style="color: #b294bb;">def</span> <span style="color: #81a2be;">sum</span>(*args)
-  args.inject(<span style="color: #de935f;">:+</span>)
-<span style="color: #b294bb;">end</span>
+<pre class="src src-ruby"><span style="color: #8959a8;">def</span> <span style="color: #3e999f;">sum</span>(*args)
+  args.inject(<span style="color: #f5871f;">:+</span>)
+<span style="color: #8959a8;">end</span>
 
-plus_two = method(<span style="color: #de935f;">:sum</span>).curry(<span style="color: #de935f; font-weight: bold;">2</span>).(<span style="color: #de935f; font-weight: bold;">2</span>)
-plus_two.(<span style="color: #de935f; font-weight: bold;">3</span>) <span style="color: #5a5b5a;"># </span><span style="color: #5a5b5a;">5</span>
+plus_two = method(<span style="color: #f5871f;">:sum</span>).curry(<span style="color: #f5871f; font-weight: bold;">2</span>).(<span style="color: #f5871f; font-weight: bold;">2</span>)
+plus_two.(<span style="color: #f5871f; font-weight: bold;">3</span>) <span style="color: #a5a4a5;"># </span><span style="color: #a5a4a5;">5</span>
 </pre>
 </div>
 </div>

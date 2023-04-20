@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://neiro.io/rss.xml"
+      title="RSS feed for https://neiro.io/">
+<title>Taming the Time: how to install & develop with XTDB</title>
+<meta name="author" content="Aleksei Kuznetsov">
+    <meta name="referrer" content="no-referrer">
+    <link href= "https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet" type="text/css" />
+    <link href= "static/style.css" rel="stylesheet" type="text/css" />
+    <link rel="icon" href="static/favicon.ico">
+    <link rel="canonical" href="https://dev.to/marleyspoon/taming-the-time-how-to-install-develop-with-xtdb-2lbf"></head>
+<body>
+<div id="preamble" class="status"><div class="header">
+    <a href="https://neiro.io">Neiro - Functional programming, software architecture</a>
+  </div></div>
+<div id="content">
+<div class="post-date">31 Mar 2023</div><h1 class="post-title"><a href="https://neiro.io/2023-02-12-taming-the-time:-how-we've-used-xtdb.html">Taming the Time: how to install & develop with XTDB</a></h1>
+<nav id="table-of-contents" role="doc-toc">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents" role="doc-toc">
+<ul>
+<li><a href="#org3843391">1. What is XTDB</a></li>
+<li><a href="#org7c0df15">2. How we planned to use XTDB</a></li>
+<li><a href="#orgd089519">3. Installing XTDB</a>
+<ul>
+<li><a href="#org983fde4">3.1. Installing dependencies</a></li>
+<li><a href="#org28de186">3.2. Application entry point &amp; configuration</a></li>
+</ul>
+</li>
+<li><a href="#orgd77d3b0">4. Running XT on a local machine</a>
+<ul>
+<li><a href="#org33712ca">4.1. Connecting from REPL</a></li>
+<li><a href="#org457f711">4.2. Connecting to a remote node</a></li>
+</ul>
+</li>
+<li><a href="#orgc915c05">5. REST API</a>
+<ul>
+<li><a href="#orgf73d054">5.1. API formats</a></li>
+<li><a href="#orgdf8f440">5.2. Main endpoints</a></li>
+</ul>
+</li>
+<li><a href="#org97b0674">6. Elixir HTTP client</a>
+<ul>
+<li>
+<ul>
+<li><a href="#org82530aa">6.0.1. Umbrella application</a></li>
+<li><a href="#orgfdc815a">6.0.2. HTTP2</a></li>
+<li><a href="#orgde9ab45">6.0.3. Telemetry &amp; OpenTelemetry</a></li>
+<li><a href="#orgf455515">6.0.4. Encoding EDN</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#org15ec514">7. Testing XTDB</a></li>
+<li><a href="#orga239462">8. What&rsquo;s next?</a></li>
+</ul>
+</div>
+</nav>
+<p>
+The article was originally posted on <a href="https://dev.to/marleyspoon/taming-the-time-how-to-install-develop-with-xtdb-2lbf">MarleySpoon Dev Blog</a>
+</p>
+
+<p>
+In the <a href="https://dev.to/marleyspoon/bitemporality-or-how-to-change-the-past-3k4f">previous article</a>, we discussed the concept of bitemporality and how it can be used to solve complex architectural problems.
+At MarleySpoon, we&rsquo;ve used XTDB (or &rsquo;XT&rsquo; for short) for our new order management system <i>(OMS)</i>, and discovered a lot of interesting insights about the database itself, the concept of bitemporality, and how developing a project using an immutable, bitemporal database could look like.
+</p>
+
+<p>
+In this article, we will be focusing primarily on our development experience (installing, testing with XTDB) from an Elixir application, and we cover more details about deploying, running XT in cluster, and tuning in production in the upcoming article.
+</p>
+
+<div id="outline-container-org3843391" class="outline-2">
+<h2 id="org3843391"><span class="section-number-2">1.</span> What is XTDB</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+<a href="https://xtdb.com/">XTDB</a>, or Cross-Time Database, is a distributed and transactional database system designed to handle complex and changing data with ease.
+It is based on a bitemporal model, which allows for the tracking of both the valid time and transaction time of data, enabling powerful and flexible querying capabilities.
+With XTDB, developers can work with immutable data structures, which simplifies development and improves reliability.
+Its graph query language, Datalog, provides a powerful and expressive way to navigate relationships within the data.
+</p>
+
+<p>
+As we&rsquo;ve illustrated before, XT has a lot of benefits:
+</p>
+<ul class="org-ul">
+<li>Bitemporal</li>
+<li>Supports retroactive corrections</li>
+<li>Document and graph-based</li>
+<li>Flexible data schema</li>
+<li>Unbundled (can be deployed on top of a lot of other DBs and persistence solutions)</li>
+<li>Can be used within JVM or through REST API</li>
+</ul>
+
+<p>
+As one can see, XT is quite different from most of the widely used SQL and NoSQL databases - and while it provides great benefits for dealing with immutable data and retroactive corrections, it also requires an understanding of some of its implementation principles.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org7c0df15" class="outline-2">
+<h2 id="org7c0df15"><span class="section-number-2">2.</span> How we planned to use XTDB</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+At MarleySpoon, we ship boxes with recipes and ingredients to our customers. The <b>orders</b> and our subscription model are the backbone of the whole bussiness logic and that is also reflected in how we build our software.
+</p>
+
+<p>
+The core of the orders system is the orders state machine, and although the states are essentially simple, there might still be cases where we could have discrepancies - and in such cases, we would like to have more options to debug or restore orders to a previous state, as well as <i>retroactively</i> correct their data and push the change to dependent subsystems.
+</p>
+
+<p>
+The shift from the legacy monolith architecture to service-oriented architecture coupled with the introduction of new OMS also required us to be more careful when it comes to eventual consistency - the <b>transaction</b> and <b>valid</b> times can be different in the resulting systems so we can&rsquo;t just work around it by using the persistence stack we&rsquo;ve used to (e.g. relational DBs with updates in place).
+</p>
+
+<p>
+Initially, we considered adding transaction and valid time columns to PostgreSQL to implement bitemporality, as this seemed like a straightforward solution. However, upon further analysis, we realized that this approach would introduce significant complexity to the system design. In particular, any foreign keys would need to take the bitemporal columns into account, meaning that queries would need to consider both the entity relationship and its temporal context. This would require significant changes to the database schema, query design, and application code, and would likely lead to a higher risk of errors and data inconsistencies.
+</p>
+
+<p>
+We also considered event sourcing for our needs, but it would add significant incidental complexity, requiring changes to other services&rsquo; architectures and a significant amount of application-level code changes to ensure that all events were captured and persisted correctly.
+</p>
+
+<p>
+After considering various approaches to implementing bitemporality in our system, we decided to give XTDB a try due to its native support for bitemporality and graph database capabilities. We designed our data model around XTDB&rsquo;s capabilities and incorporated the database into our Elixir application.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgd089519" class="outline-2">
+<h2 id="orgd089519"><span class="section-number-2">3.</span> Installing XTDB</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+There are multiple ways to install and use XTDB:
+</p>
+<ul class="org-ul">
+<li><p>
+Use it as a JVM dependency by simply adding it to your JVM project
+</p>
+<div class="org-src-container">
+<pre class="src src-clojure">    <span style="color: #8e908c;">; deps.edn</span>
+    <span style="color: #bb9200;">com.xtdb</span>/xtdb-core <span style="color: #8959a8;">{</span><span style="color: #f5871f;">:</span><span style="color: #bb9200;">mvn</span><span style="color: #4d4d4c; background-color: #f2f2f2;">/</span><span style="color: #f5871f;">version</span> <span style="color: #718c00;">"1.21.0"</span><span style="color: #8959a8;">}</span>
+</pre>
+</div></li>
+<li>Using a pre-built XTDB JAR on a local machine</li>
+<li>Through a <a href="https://hub.docker.com/r/juxt/xtdb-in-memory">Docker image</a></li>
+</ul>
+
+<p>
+XTDB is developed in the Clojure programming language and it is very convenient to run it from any Clojure program - so we&rsquo;ve decided to write a simple app in Clojure that would run XTDB for us and provide all required setup.
+</p>
+</div>
+
+<div id="outline-container-org983fde4" class="outline-3">
+<h3 id="org983fde4"><span class="section-number-3">3.1.</span> Installing dependencies</h3>
+<div class="outline-text-3" id="text-3-1">
+<p>
+We&rsquo;ve installed Clojure using <span class="underline">asdf</span> version manager as it&rsquo;s very convenient to pin JVM and Clojure versions:
+</p>
+<div class="org-src-container">
+<pre class="src src-bash"><span style="color: #8e908c;"># </span><span style="color: #8e908c;">.tool-versions</span>
+openjdk-18
+clojure 1.11.0.1100
+</pre>
+</div>
+
+<p>
+The next step was creating a new Clojure app using <a href="https://clojure.org/guides/deps_and_cli">deps CLI</a> - all of the necessary dependencies were provided in a single file <i>(deps.edn)</i>.
+XTDB is very modular so we have to install PostgreSQL support, HTTP client and server, metrics, and other tools as separate packages:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure"><span style="color: #8e908c;">;; </span><span style="color: #8e908c;">deps.edn</span>
+<span style="color: #8959a8;">{</span><span style="color: #f5871f;">:paths</span> <span style="color: #4271ae;">[</span><span style="color: #718c00;">"src"</span><span style="color: #4271ae;">]</span>
+ <span style="color: #f5871f;">:deps</span> <span style="color: #4271ae;">{</span><span style="color: #bb9200;">org.clojure</span>/clojure <span style="color: #718c00;">{</span><span style="color: #f5871f;">:</span><span style="color: #bb9200;">mvn</span><span style="color: #4d4d4c; background-color: #f2f2f2;">/</span><span style="color: #f5871f;">version</span> <span style="color: #718c00;">"1.11.0"</span><span style="color: #718c00;">}</span>
+        <span style="color: #bb9200;">com.xtdb</span>/xtdb-core <span style="color: #718c00;">{</span><span style="color: #f5871f;">:</span><span style="color: #bb9200;">mvn</span><span style="color: #4d4d4c; background-color: #f2f2f2;">/</span><span style="color: #f5871f;">version</span> <span style="color: #718c00;">"1.21.0"</span><span style="color: #718c00;">}</span>
+        <span style="color: #8e908c;">;; </span><span style="color: #8e908c;">Persistence</span>
+        <span style="color: #bb9200;">org.postgresql</span>/postgresql <span style="color: #718c00;">{</span><span style="color: #f5871f;">:</span><span style="color: #bb9200;">mvn</span><span style="color: #4d4d4c; background-color: #f2f2f2;">/</span><span style="color: #f5871f;">version</span> <span style="color: #718c00;">"42.2.18"</span><span style="color: #718c00;">}</span>
+        <span style="color: #bb9200;">com.xtdb</span>/xtdb-jdbc <span style="color: #718c00;">{</span><span style="color: #f5871f;">:</span><span style="color: #bb9200;">mvn</span><span style="color: #4d4d4c; background-color: #f2f2f2;">/</span><span style="color: #f5871f;">version</span> <span style="color: #718c00;">"1.21.0"</span><span style="color: #718c00;">}</span>
+        <span style="color: #bb9200;">com.xtdb</span>/xtdb-rocksdb <span style="color: #718c00;">{</span><span style="color: #f5871f;">:</span><span style="color: #bb9200;">mvn</span><span style="color: #4d4d4c; background-color: #f2f2f2;">/</span><span style="color: #f5871f;">version</span> <span style="color: #718c00;">"1.21.0"</span><span style="color: #718c00;">}</span>
+        <span style="color: #8e908c;">;; </span><span style="color: #8e908c;">HTTP Client</span>
+        <span style="color: #bb9200;">com.xtdb</span>/xtdb-http-client <span style="color: #718c00;">{</span><span style="color: #f5871f;">:</span><span style="color: #bb9200;">mvn</span><span style="color: #4d4d4c; background-color: #f2f2f2;">/</span><span style="color: #f5871f;">version</span> <span style="color: #718c00;">"1.21.0"</span><span style="color: #718c00;">}</span>
+        <span style="color: #8e908c;">;; </span><span style="color: #8e908c;">HTTP Server</span>
+        <span style="color: #bb9200;">com.xtdb</span>/xtdb-http-server <span style="color: #718c00;">{</span><span style="color: #f5871f;">:</span><span style="color: #bb9200;">mvn</span><span style="color: #4d4d4c; background-color: #f2f2f2;">/</span><span style="color: #f5871f;">version</span> <span style="color: #718c00;">"1.21.0"</span><span style="color: #718c00;">}</span><span style="color: #4271ae;">}</span>
+<span style="color: #8959a8;">}</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org28de186" class="outline-3">
+<h3 id="org28de186"><span class="section-number-3">3.2.</span> Application entry point &amp; configuration</h3>
+<div class="outline-text-3" id="text-3-2">
+<p>
+One of the primary reasons we developed a wrapper for XTDB was to enable us to run an XTDB cluster in a Kubernetes environment. We wanted to simplify the setup process by allowing configuration through environment variables, rather than relying on external configuration files. This allowed us to easily manage XTDB&rsquo;s configuration within Kubernetes and provided us with greater flexibility in managing our XTDB cluster.
+</p>
+
+<p>
+We&rsquo;ve created a <span class="underline">xtdb.clj</span> file that is the entry point to the database wrapper and which also has all the required configuration there:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure"><span style="color: #8959a8;">(</span><span style="color: #8959a8;">def</span> <span style="color: #c82829;">db-spec</span>
+  <span style="color: #4271ae;">{</span><span style="color: #f5871f;">:host</span> <span style="color: #718c00;">(</span><span style="color: #bb9200;">System</span>/getenv <span style="color: #718c00;">"POSTGRES_HOST"</span><span style="color: #718c00;">)</span>
+   <span style="color: #f5871f;">:port</span> <span style="color: #718c00;">(</span><span style="color: #bb9200;">System</span>/getenv <span style="color: #718c00;">"POSTGRES_PORT"</span><span style="color: #718c00;">)</span>
+   <span style="color: #f5871f;">:dbname</span> <span style="color: #718c00;">(</span><span style="color: #bb9200;">System</span>/getenv <span style="color: #718c00;">"POSTGRES_DB"</span><span style="color: #718c00;">)</span>
+   <span style="color: #f5871f;">:user</span> <span style="color: #718c00;">(</span><span style="color: #bb9200;">System</span>/getenv <span style="color: #718c00;">"POSTGRES_USER"</span><span style="color: #718c00;">)</span>
+   <span style="color: #f5871f;">:password</span> <span style="color: #718c00;">(</span><span style="color: #bb9200;">System</span>/getenv <span style="color: #718c00;">"POSTGRES_PASSWORD"</span><span style="color: #718c00;">)</span><span style="color: #4271ae;">}</span><span style="color: #8959a8;">)</span>
+
+<span style="color: #8959a8;">(</span><span style="color: #8959a8;">def</span> <span style="color: #c82829;">config</span>
+  <span style="color: #4271ae;">{</span><span style="color: #f5871f;">:</span><span style="color: #bb9200;">xtdb.http-server</span><span style="color: #4d4d4c; background-color: #f2f2f2;">/</span><span style="color: #f5871f;">server</span> <span style="color: #718c00;">{</span><span style="color: #f5871f;">:port</span> <span style="color: #f5871f; font-weight: bold;">3000</span>
+                             <span style="color: #f5871f;">:jwks</span> <span style="color: #c678dd;">(</span><span style="color: #bb9200;">System</span>/getenv <span style="color: #718c00;">"XTDB_JWKS"</span><span style="color: #c678dd;">)</span><span style="color: #718c00;">}</span> <span style="color: #8e908c;">; auth</span>
+   <span style="color: #f5871f;">:</span><span style="color: #bb9200;">xtdb.rocksdb</span><span style="color: #4d4d4c; background-color: #f2f2f2;">/</span><span style="color: #f5871f;">block-cache</span> <span style="color: #718c00;">{</span><span style="color: #f5871f;">:</span><span style="color: #bb9200;">xtdb</span><span style="color: #4d4d4c; background-color: #f2f2f2;">/</span><span style="color: #f5871f;">module</span> '<span style="color: #bb9200;">xtdb.rocksdb</span>/-&gt;lru-block-cache
+                              <span style="color: #f5871f;">:cache-size</span> <span style="color: #c678dd;">(</span>* <span style="color: #f5871f; font-weight: bold;">1024</span> <span style="color: #f5871f; font-weight: bold;">1024</span> <span style="color: #f5871f; font-weight: bold;">1024</span><span style="color: #c678dd;">)</span><span style="color: #718c00;">}</span> <span style="color: #8e908c;">; RocksDB cache size</span>
+   <span style="color: #f5871f;">:</span><span style="color: #bb9200;">xtdb</span><span style="color: #4d4d4c; background-color: #f2f2f2;">/</span><span style="color: #f5871f;">index-store</span> <span style="color: #718c00;">{</span><span style="color: #f5871f;">:kv-store</span> <span style="color: #c678dd;">{</span><span style="color: #f5871f;">:</span><span style="color: #bb9200;">xtdb</span><span style="color: #4d4d4c; background-color: #f2f2f2;">/</span><span style="color: #f5871f;">module</span> '<span style="color: #bb9200;">xtdb.rocksdb</span>/-&gt;kv-store
+                                 <span style="color: #f5871f;">:db-dir</span> <span style="color: #718c00;">"/tmp/xtdb/indexes"</span>
+                                 <span style="color: #f5871f;">:checkpointer</span> checkpoint-config
+                                 <span style="color: #f5871f;">:block-cache</span> <span style="color: #f5871f;">:</span><span style="color: #bb9200;">xtdb.rocksdb</span><span style="color: #4d4d4c; background-color: #f2f2f2;">/</span><span style="color: #f5871f;">block-cache</span>
+                                 <span style="color: #f5871f;">:metrics</span> <span style="color: #8959a8;">{</span><span style="color: #f5871f;">:</span><span style="color: #bb9200;">xtdb</span><span style="color: #4d4d4c; background-color: #f2f2f2;">/</span><span style="color: #f5871f;">module</span> '<span style="color: #bb9200;">xtdb.rocksdb.metrics</span>/-&gt;metrics<span style="color: #8959a8;">}</span><span style="color: #c678dd;">}</span><span style="color: #718c00;">}</span>
+   <span style="color: #f5871f;">:</span><span style="color: #bb9200;">xtdb.jdbc</span><span style="color: #4d4d4c; background-color: #f2f2f2;">/</span><span style="color: #f5871f;">connection-pool</span> <span style="color: #718c00;">{</span><span style="color: #f5871f;">:dialect</span> <span style="color: #c678dd;">{</span><span style="color: #f5871f;">:</span><span style="color: #bb9200;">xtdb</span><span style="color: #4d4d4c; background-color: #f2f2f2;">/</span><span style="color: #f5871f;">module</span> '<span style="color: #bb9200;">xtdb.jdbc.psql</span>/-&gt;dialect<span style="color: #c678dd;">}</span>
+                               <span style="color: #f5871f;">:pool-opts</span> <span style="color: #c678dd;">{</span><span style="color: #f5871f;">:maximumPoolSize</span> <span style="color: #f5871f; font-weight: bold;">10</span><span style="color: #c678dd;">}</span>
+                               <span style="color: #f5871f;">:db-spec</span> db-spec<span style="color: #718c00;">}</span>
+   <span style="color: #f5871f;">:</span><span style="color: #bb9200;">xtdb</span><span style="color: #4d4d4c; background-color: #f2f2f2;">/</span><span style="color: #f5871f;">tx-log</span> <span style="color: #718c00;">{</span><span style="color: #f5871f;">:</span><span style="color: #bb9200;">xtdb</span><span style="color: #4d4d4c; background-color: #f2f2f2;">/</span><span style="color: #f5871f;">module</span> '<span style="color: #bb9200;">xtdb.jdbc</span>/-&gt;tx-log
+                 <span style="color: #f5871f;">:connection-pool</span> <span style="color: #f5871f;">:</span><span style="color: #bb9200;">xtdb.jdbc</span><span style="color: #4d4d4c; background-color: #f2f2f2;">/</span><span style="color: #f5871f;">connection-pool</span><span style="color: #718c00;">}</span>
+   <span style="color: #f5871f;">:</span><span style="color: #bb9200;">xtdb</span><span style="color: #4d4d4c; background-color: #f2f2f2;">/</span><span style="color: #f5871f;">document-store</span> <span style="color: #718c00;">{</span><span style="color: #f5871f;">:</span><span style="color: #bb9200;">xtdb</span><span style="color: #4d4d4c; background-color: #f2f2f2;">/</span><span style="color: #f5871f;">module</span> '<span style="color: #bb9200;">xtdb.jdbc</span>/-&gt;document-store
+                         <span style="color: #f5871f;">:connection-pool</span> <span style="color: #f5871f;">:</span><span style="color: #bb9200;">xtdb.jdbc</span><span style="color: #4d4d4c; background-color: #f2f2f2;">/</span><span style="color: #f5871f;">connection-pool</span><span style="color: #718c00;">}</span><span style="color: #4271ae;">}</span><span style="color: #8959a8;">)</span>
+</pre>
+</div>
+
+<p>
+Once the initial configuration is done we can provide a simple entry point function that will start an XT node:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure"><span style="color: #8e908c;">;; </span><span style="color: #8e908c;">XT node - hydrated on start</span>
+<span style="color: #8959a8;">(</span><span style="color: #8959a8;">def</span> <span style="color: #c82829;">xt-node</span> <span style="color: #4271ae;">(</span>atom <span style="color: #f5871f;">nil</span><span style="color: #4271ae;">)</span><span style="color: #8959a8;">)</span>
+
+<span style="color: #8959a8;">(</span><span style="color: #8959a8;">defn</span> <span style="color: #4271ae;">-main</span>
+  <span style="color: #8e908c; font-style: italic;">"Starts a new XTDB node"</span>
+  <span style="color: #4271ae;">[]</span>
+  <span style="color: #4271ae;">(</span><span style="color: #8959a8;">let</span> <span style="color: #718c00;">[</span>node <span style="color: #c678dd;">(</span><span style="color: #bb9200;">xtdb</span>/start-node config<span style="color: #c678dd;">)</span><span style="color: #718c00;">]</span>
+    <span style="color: #718c00;">(</span><span style="color: #bb9200;">log</span>/info <span style="color: #718c00;">"Started a new XT node ..."</span><span style="color: #718c00;">)</span>
+    <span style="color: #718c00;">(</span><span style="color: #bb9200;">seed</span>/seed node<span style="color: #718c00;">)</span> <span style="color: #8e908c;">; seed data that we need on start</span>
+    <span style="color: #718c00;">(</span><span style="color: #bb9200;">xtdb</span>/sync node<span style="color: #718c00;">)</span>
+    <span style="color: #718c00;">(</span><span style="color: #bb9200;">log</span>/info <span style="color: #718c00;">"Loaded data into a new XT node"</span><span style="color: #718c00;">)</span>
+    <span style="color: #718c00;">(</span>reset! @xt-node node<span style="color: #718c00;">)</span> <span style="color: #8e908c;">; set xt-node with the started node</span>
+    node<span style="color: #4271ae;">)</span><span style="color: #8959a8;">)</span>
+
+<span style="color: #8e908c;">;; </span><span style="color: #8e908c;">Can be used to run REPL or local XT instance</span>
+<span style="color: #8e908c;">;;</span>
+<span style="color: #8e908c;">;; </span><span style="color: #8e908c;">As running it from CLI can assume passing some command line arguments</span>
+<span style="color: #8e908c;">;; </span><span style="color: #8e908c;">we should accept a list of optional arguments as a function param</span>
+<span style="color: #8959a8;">(</span><span style="color: #8959a8;">defn</span> <span style="color: #4271ae;">start</span>
+  <span style="color: #4271ae;">[</span>&amp;args<span style="color: #4271ae;">]</span>
+  <span style="color: #8e908c;">;; </span><span style="color: #8e908c;">Runs -main function to start a new XT node</span>
+  <span style="color: #4271ae;">(</span>-main<span style="color: #4271ae;">)</span><span style="color: #8959a8;">)</span>
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgd77d3b0" class="outline-2">
+<h2 id="orgd77d3b0"><span class="section-number-2">4.</span> Running XT on a local machine</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+Once our XT app is installed and configured, we can run `clj -X xtdb.core/start` in order to start it on a local machine.
+This will enable web UI and REST API on <span class="underline"><a href="http://localhost:3000">http://localhost:3000</a></span>.
+</p>
+</div>
+
+<div id="outline-container-org33712ca" class="outline-3">
+<h3 id="org33712ca"><span class="section-number-3">4.1.</span> Connecting from REPL</h3>
+<div class="outline-text-3" id="text-4-1">
+<p>
+To run XT in REPL we can instead just execute <span class="underline">clj</span> in shell, given that we are in the root directory of the Clojure project.
+</p>
+
+<p>
+That will start a new Clojure REPL, and if we want to start XT from there, it&rsquo;s sufficient to use functions we&rsquo;ve implemented beforehand:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure"><span style="color: #8959a8;">(</span><span style="color: #8959a8;">in-ns</span> 'xtdb.core<span style="color: #8959a8;">)</span> <span style="color: #8e908c;">; switches current namespace to XT wrapper's core namespace</span>
+<span style="color: #8959a8;">(</span>-main<span style="color: #8959a8;">)</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org457f711" class="outline-3">
+<h3 id="org457f711"><span class="section-number-3">4.2.</span> Connecting to a remote node</h3>
+<div class="outline-text-3" id="text-4-2">
+<p>
+Another important benefit of XT that we unfortunately didn&rsquo;t explore enough is that by using the <span class="underline">http-client</span> dependency, we&rsquo;re able to connect to any remote node that is accessible to us by HTTP:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure"><span style="color: #8959a8;">(</span><span style="color: #8959a8;">def</span> <span style="color: #c82829;">remote-node</span> <span style="color: #4271ae;">(</span><span style="color: #bb9200;">xt</span>/new-api-client remote-url<span style="color: #4271ae;">)</span><span style="color: #8959a8;">)</span>
+<span style="color: #8959a8;">(</span><span style="color: #bb9200;">xt</span>/submit-tx remote-node <span style="color: #4271ae;">[</span><span style="color: #718c00;">[</span><span style="color: #f5871f;">::</span><span style="color: #bb9200;">xt</span><span style="color: #4d4d4c; background-color: #f2f2f2;">/</span><span style="color: #f5871f;">put</span> <span style="color: #c678dd;">{</span><span style="color: #f5871f;">:</span><span style="color: #bb9200;">xt</span><span style="color: #4d4d4c; background-color: #f2f2f2;">/</span><span style="color: #f5871f;">id</span> <span style="color: #f5871f;">:foo</span> <span style="color: #f5871f;">:bar</span> <span style="color: #f5871f;">:bar</span><span style="color: #c678dd;">}</span><span style="color: #718c00;">]</span><span style="color: #4271ae;">]</span><span style="color: #8959a8;">)</span> <span style="color: #8e908c;">; submits a transaction on the remote node</span>
+</pre>
+</div>
+
+<p>
+Thus, we can connect from REPL to any production XT instance and run queries / submit transactions there.
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-orgc915c05" class="outline-2">
+<h2 id="orgc915c05"><span class="section-number-2">5.</span> REST API</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+XT is very convenient to use from any Clojure or JVM-based application, however, for clients implemented in other programming languages or different virtual machines, we should be using<a href="https://xtdb.com/docs/"> XT&rsquo;s REST API</a>.
+XT has a very rich HTTP API that covers most of its functionality <i>(although some of it is only available by Clojure/Java client)</i>.
+</p>
+</div>
+
+<div id="outline-container-orgf73d054" class="outline-3">
+<h3 id="orgf73d054"><span class="section-number-3">5.1.</span> API formats</h3>
+<div class="outline-text-3" id="text-5-1">
+<p>
+XT supports multiple formats: <i>application/edn, application/json and application/transit+json</i>.
+</p>
+
+<p>
+As XT is written in Clojure and it natively supports Clojure&rsquo;s data types, we were not satisfied with available JSON types and decided to give <a href="https://github.com/edn-format/edn">EDN</a> a try - that way we would have way more supported types:
+</p>
+<ul class="org-ul">
+<li>symbols, e.g. Elixir atoms</li>
+<li>decimals</li>
+<li>dates and timestamps</li>
+</ul>
+
+<p>
+However, we had some issues with encoding Elixir/BEAM VM terms to EDN and, in general, the performance of the format - so the <a href="https://github.com/cognitect/transit-format">Transit/JSON</a> would be an improvement as apart from being compatible with regular JSON and essentially more performant it also has a more precise types conversion.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgdf8f440" class="outline-3">
+<h3 id="orgdf8f440"><span class="section-number-3">5.2.</span> Main endpoints</h3>
+<div class="outline-text-3" id="text-5-2">
+<ul class="org-ul">
+<li><span class="underline">GET /<sub>xtdb</sub>/status</span> - can be used as a health check for an XT node</li>
+<li><span class="underline">GET /<sub>xtdb</sub>/entity</span> - gets a single entity from the database</li>
+<li><span class="underline">GET /<sub>xtdb</sub>/query</span> - performs a single Datalog query</li>
+<li><span class="underline">POST /<sub>xtdb</sub>/submit-tx</span> - submits database transactions</li>
+<li><span class="underline">GET /<sub>xtdb</sub>/await-tx</span> - waits until the transaction was indexed on the node</li>
+<li><span class="underline">GET /<sub>xtdb</sub>/tx-committed</span>  - checks if the transaction was successfully committed</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="outline-container-org97b0674" class="outline-2">
+<h2 id="org97b0674"><span class="section-number-2">6.</span> Elixir HTTP client</h2>
+<div class="outline-text-2" id="text-6">
+<p>
+As at that point in time when we started applying XT at MarleySpoon there were no Elixir libraries fully supporting XT&rsquo;s REST API and covering our needs so we&rsquo;ve started writing our own HTTP adapter.
+</p>
+</div>
+
+<div id="outline-container-org82530aa" class="outline-4">
+<h4 id="org82530aa"><span class="section-number-4">6.0.1.</span> Umbrella application</h4>
+<div class="outline-text-4" id="text-6-0-1">
+<p>
+As OMS was the only project where we were trying XTDB, we&rsquo;ve decided to move all the Clojure code, as well as the new Elixir HTTP into the same umbrella app:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell">apps/
+  ...
+  xtdb/
+</pre>
+</div>
+
+<p>
+That way we could also easily start an XTDB node right in our project and use it from the Elixir application, e.g. by starting through docker-compose.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgfdc815a" class="outline-4">
+<h4 id="orgfdc815a"><span class="section-number-4">6.0.2.</span> HTTP2</h4>
+<div class="outline-text-4" id="text-6-0-2">
+<p>
+XT&rsquo;s REST API supports the second revision of HTTP format out of the box - which means that we can have a stable and more performant connection between XT clients (application servers) and the database instances.
+</p>
+
+<p>
+When running an XTDB cluster in production, HTTP2 can be particularly useful. By using HTTP2, direct connections can be established between the client application and an XTDB node, rather than relying on load balancing across multiple instances. Since XTDB doesn&rsquo;t enforce an equal state between nodes, the same request could yield different results on different nodes - but using HTTP2 eliminates the issue and ensures consistent results for each request.
+</p>
+
+<p>
+However, not every Elixir&rsquo;s HTTP client supports sending requests using HTTP2 - so we have to search for another option rather than using HTTPoison that we widely use in other projects.
+We&rsquo;ve decided to go with <a href="https://github.com/sneako/finch">Finch</a>, as apart from supporting HTTP2 it also focuses on performance and provides telemetry support out of the box - which we&rsquo;ve found very useful for tracing and debugging purposes.
+</p>
+
+<p>
+Using HTTP2 with Finch requires some initial configuration as we have to have just one connection in a connection pool:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elixir"><span style="color: #8e908c;"># apps/xtdb/lib/application.ex</span>
+<span style="color: #c82829;">children</span> <span style="color: #8959a8;">=</span> <span style="color: #4d4d4c; background-color: #ffffff;">[</span>
+      <span style="color: #4d4d4c; background-color: #ffffff;">{</span>
+        <span style="color: #bb9200;">Finch</span><span style="color: #4d4d4c; background-color: #ffffff;">,</span>
+        <span style="color: #f5871f;">name: </span><span style="color: #bb9200;">Xtdb.ConnectionPool</span><span style="color: #4d4d4c; background-color: #ffffff;">,</span>
+        <span style="color: #f5871f;">pools: </span><span style="color: #4d4d4c; background-color: #ffffff;">%</span><span style="color: #4d4d4c; background-color: #ffffff;">{</span>
+          <span style="color: #f5871f;">default: </span><span style="color: #4d4d4c; background-color: #ffffff;">[</span><span style="color: #f5871f;">count: </span><span style="color: #f5871f;">1</span><span style="color: #4d4d4c; background-color: #ffffff;">,</span> <span style="color: #f5871f;">protocol: :http2</span><span style="color: #4d4d4c; background-color: #ffffff;">,</span> <span style="color: #f5871f;">size: </span><span style="color: #f5871f;">1</span><span style="color: #4d4d4c; background-color: #ffffff;">]</span>
+        <span style="color: #4d4d4c; background-color: #ffffff;">}</span>
+      <span style="color: #4d4d4c; background-color: #ffffff;">}</span>
+    <span style="color: #4d4d4c; background-color: #ffffff;">]</span>
+
+<span style="color: #bb9200;">Supervisor</span><span style="color: #8959a8;">.</span><span style="color: #4271ae; font-weight: bold;">start_link</span><span style="color: #4d4d4c; background-color: #ffffff;">(</span><span style="color: #c82829;">children</span><span style="color: #4d4d4c; background-color: #ffffff;">,</span> <span style="color: #f5871f;">strategy: :one_for_one</span><span style="color: #4d4d4c; background-color: #ffffff;">,</span> <span style="color: #f5871f;">name: </span><span style="color: #bb9200;">Xtdb.Supervisor</span><span style="color: #4d4d4c; background-color: #ffffff;">)</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgde9ab45" class="outline-4">
+<h4 id="orgde9ab45"><span class="section-number-4">6.0.3.</span> Telemetry &amp; OpenTelemetry</h4>
+<div class="outline-text-4" id="text-6-0-3">
+<p>
+As was mentioned in a previous section, using Finch as an HTTP Client library is a great step to have a seamless telemetry integration.
+</p>
+
+<p>
+Finch provides the next Telemetry events:
+</p>
+<ul class="org-ul">
+<li>request start/stop</li>
+<li>request exception</li>
+<li>queue start/stop/exception</li>
+<li>connection start/stop/exception</li>
+</ul>
+
+<p>
+and others, but for our purpose, we will be more interested only in the first two events.
+</p>
+
+<p>
+In order to integrate the XTDB client with OpenTelemetry we wrote a simple module that watches Finch&rsquo;s telemetry events and pushes them to the OpenTelemetry collector:
+</p>
+<div class="org-src-container">
+<pre class="src src-elixir"><span style="color: #8e908c;"># Checking for optional opentelemetry dependency</span>
+<span style="color: #8959a8; font-weight: bold;">case</span> <span style="color: #bb9200;">Code</span><span style="color: #8959a8;">.</span><span style="color: #4271ae; font-weight: bold;">ensure_compiled</span><span style="color: #4d4d4c; background-color: #ffffff;">(</span><span style="color: #bb9200;">OpenTelemetry</span><span style="color: #4d4d4c; background-color: #ffffff;">)</span> <span style="color: #8959a8;">do</span>
+  <span style="color: #4d4d4c; background-color: #ffffff;">{</span><span style="color: #f5871f;">:module</span><span style="color: #4d4d4c; background-color: #ffffff;">,</span> <span style="color: #8e908c;">_</span><span style="color: #4d4d4c; background-color: #ffffff;">}</span> <span style="color: #8959a8;">-&gt;</span>
+    <span style="color: #8959a8; font-weight: bold;">defmodule</span> <span style="color: #bb9200;">Xtdb.OpenTelemetry</span> <span style="color: #8959a8;">do</span>
+      <span style="color: #4d4d4c; font-weight: bold;">@</span><span style="color: #4d4d4c; font-weight: bold;">tracer_id</span> <span style="color: #4271ae;">__MODULE__</span>
+
+      <span style="color: #4d4d4c; font-weight: bold;">@</span><span style="color: #4d4d4c; font-weight: bold;">spec</span> <span style="color: #c82829;">setup</span> <span style="color: #8959a8;">::</span> <span style="color: #f5871f;">:ok</span>
+      <span style="color: #8959a8; font-weight: bold;">def</span> <span style="color: #c82829;">setup</span> <span style="color: #8959a8;">do</span>
+        <span style="color: #4271ae; font-weight: bold;">attach_http_request_start</span><span style="color: #4d4d4c; background-color: #ffffff;">()</span>
+        <span style="color: #4271ae; font-weight: bold;">attach_http_request_stop</span><span style="color: #4d4d4c; background-color: #ffffff;">()</span>
+
+        <span style="color: #f5871f;">:ok</span>
+      <span style="color: #8959a8;">end</span>
+
+      <span style="color: #8959a8; font-weight: bold;">defp</span> <span style="color: #4271ae; font-weight: bold;">attach_http_request_start</span><span style="color: #4d4d4c; background-color: #ffffff;">()</span> <span style="color: #8959a8;">do</span>
+        <span style="color: #bb9200;">:telemetry</span><span style="color: #8959a8;">.</span><span style="color: #4271ae; font-weight: bold;">attach</span><span style="color: #4d4d4c; background-color: #ffffff;">(</span>
+          <span style="color: #4d4d4c; background-color: #ffffff;">{</span><span style="color: #4271ae;">__MODULE__</span><span style="color: #4d4d4c; background-color: #ffffff;">,</span> <span style="color: #f5871f;">:http_request_start</span><span style="color: #4d4d4c; background-color: #ffffff;">}</span><span style="color: #4d4d4c; background-color: #ffffff;">,</span>
+          <span style="color: #4d4d4c; background-color: #ffffff;">[</span><span style="color: #4d4d4c; font-weight: bold;">@</span><span style="color: #4d4d4c; font-weight: bold;">http_client</span><span style="color: #4d4d4c; background-color: #ffffff;">,</span> <span style="color: #f5871f;">:send</span><span style="color: #4d4d4c; background-color: #ffffff;">,</span> <span style="color: #f5871f;">:start</span><span style="color: #4d4d4c; background-color: #ffffff;">]</span><span style="color: #4d4d4c; background-color: #ffffff;">,</span>
+          <span style="color: #8959a8;">&amp;</span><span style="color: #4271ae;">__MODULE__</span><span style="color: #8959a8;">.</span><span style="color: #4271ae; font-weight: bold;">handle_http_request_start</span><span style="color: #8959a8;">/</span><span style="color: #f5871f;">4</span><span style="color: #4d4d4c; background-color: #ffffff;">,</span>
+          <span style="color: #4d4d4c; background-color: #ffffff;">%</span><span style="color: #4d4d4c; background-color: #ffffff;">{}</span>
+        <span style="color: #4d4d4c; background-color: #ffffff;">)</span>
+      <span style="color: #8959a8;">end</span>
+
+      <span style="color: #8959a8; font-weight: bold;">defp</span> <span style="color: #4271ae; font-weight: bold;">attach_http_request_stop</span><span style="color: #4d4d4c; background-color: #ffffff;">()</span> <span style="color: #8959a8;">do</span>
+        <span style="color: #bb9200;">:telemetry</span><span style="color: #8959a8;">.</span><span style="color: #4271ae; font-weight: bold;">attach</span><span style="color: #4d4d4c; background-color: #ffffff;">(</span>
+          <span style="color: #4d4d4c; background-color: #ffffff;">{</span><span style="color: #4271ae;">__MODULE__</span><span style="color: #4d4d4c; background-color: #ffffff;">,</span> <span style="color: #f5871f;">:http_request_stop</span><span style="color: #4d4d4c; background-color: #ffffff;">}</span><span style="color: #4d4d4c; background-color: #ffffff;">,</span>
+          <span style="color: #4d4d4c; background-color: #ffffff;">[</span><span style="color: #4d4d4c; font-weight: bold;">@</span><span style="color: #4d4d4c; font-weight: bold;">http_client</span><span style="color: #4d4d4c; background-color: #ffffff;">,</span> <span style="color: #f5871f;">:request</span><span style="color: #4d4d4c; background-color: #ffffff;">,</span> <span style="color: #f5871f;">:stop</span><span style="color: #4d4d4c; background-color: #ffffff;">]</span><span style="color: #4d4d4c; background-color: #ffffff;">,</span>
+          <span style="color: #8959a8;">&amp;</span><span style="color: #4271ae;">__MODULE__</span><span style="color: #8959a8;">.</span><span style="color: #4271ae; font-weight: bold;">handle_http_request_stop</span><span style="color: #8959a8;">/</span><span style="color: #f5871f;">4</span><span style="color: #4d4d4c; background-color: #ffffff;">,</span>
+          <span style="color: #4d4d4c; background-color: #ffffff;">%</span><span style="color: #4d4d4c; background-color: #ffffff;">{}</span>
+        <span style="color: #4d4d4c; background-color: #ffffff;">)</span>
+      <span style="color: #8959a8;">end</span>
+
+      <span style="color: #8959a8; font-weight: bold;">def</span> <span style="color: #4271ae; font-weight: bold;">handle_http_request_start</span><span style="color: #4d4d4c; background-color: #ffffff;">(</span>
+            <span style="color: #8e908c;">_event</span><span style="color: #4d4d4c; background-color: #ffffff;">,</span>
+            <span style="color: #8e908c;">_measurements</span><span style="color: #4d4d4c; background-color: #ffffff;">,</span>
+            <span style="color: #4d4d4c; background-color: #ffffff;">%</span><span style="color: #4d4d4c; background-color: #ffffff;">{</span><span style="color: #f5871f;">request: </span><span style="color: #c82829;">request</span><span style="color: #4d4d4c; background-color: #ffffff;">}</span><span style="color: #4d4d4c; background-color: #ffffff;">,</span>
+            <span style="color: #8e908c;">_config</span>
+          <span style="color: #4d4d4c; background-color: #ffffff;">)</span> <span style="color: #8959a8;">do</span>
+        <span style="color: #c82829;">...</span>
+        <span style="color: #bb9200;">Otel</span><span style="color: #8959a8;">.</span><span style="color: #4271ae; font-weight: bold;">start_telemetry_span</span><span style="color: #4d4d4c; background-color: #ffffff;">(</span><span style="color: #4d4d4c; font-weight: bold;">@</span><span style="color: #4d4d4c; font-weight: bold;">tracer_id</span><span style="color: #4d4d4c; background-color: #ffffff;">,</span> <span style="color: #718c00;">"XT </span><span style="color: #8959a8;">#{</span><span style="color: #4d4d4c; background-color: #ffffff;">request_url</span><span style="color: #8959a8; background-color: #ffffff;">}</span><span style="color: #718c00;">"</span><span style="color: #4d4d4c; background-color: #ffffff;">,</span> <span style="color: #4d4d4c; background-color: #ffffff;">%</span><span style="color: #4d4d4c; background-color: #ffffff;">{}</span><span style="color: #4d4d4c; background-color: #ffffff;">,</span> <span style="color: #4d4d4c; background-color: #ffffff;">%</span><span style="color: #4d4d4c; background-color: #ffffff;">{</span>
+          <span style="color: #f5871f;">kind: :internal</span><span style="color: #4d4d4c; background-color: #ffffff;">,</span>
+          <span style="color: #f5871f;">attributes: </span><span style="color: #c82829;">attributes</span>
+        <span style="color: #4d4d4c; background-color: #ffffff;">})</span>
+      <span style="color: #8959a8;">end</span>
+
+      <span style="color: #8959a8; font-weight: bold;">def</span> <span style="color: #4271ae; font-weight: bold;">handle_http_request_stop</span><span style="color: #4d4d4c; background-color: #ffffff;">(</span>
+            <span style="color: #8e908c;">_event</span><span style="color: #4d4d4c; background-color: #ffffff;">,</span>
+            <span style="color: #8e908c;">_measurements</span><span style="color: #4d4d4c; background-color: #ffffff;">,</span>
+            <span style="color: #4d4d4c; background-color: #ffffff;">%</span><span style="color: #4d4d4c; background-color: #ffffff;">{</span><span style="color: #f5871f;">request: </span><span style="color: #8e908c;">_request</span><span style="color: #4d4d4c; background-color: #ffffff;">,</span> <span style="color: #f5871f;">name: </span><span style="color: #bb9200;">ConnectionPool</span><span style="color: #4d4d4c; background-color: #ffffff;">,</span> <span style="color: #f5871f;">result: </span><span style="color: #4d4d4c; background-color: #ffffff;">{</span><span style="color: #8e908c;">_</span><span style="color: #4d4d4c; background-color: #ffffff;">,</span> <span style="color: #4d4d4c; background-color: #ffffff;">%</span><span style="color: #4d4d4c; background-color: #ffffff;">{</span><span style="color: #f5871f;">status: </span><span style="color: #c82829;">status</span><span style="color: #4d4d4c; background-color: #ffffff;">}</span> <span style="color: #8959a8;">=</span> <span style="color: #c82829;">result</span><span style="color: #4d4d4c; background-color: #ffffff;">}}</span><span style="color: #4d4d4c; background-color: #ffffff;">,</span>
+            <span style="color: #8e908c;">_config</span>
+          <span style="color: #4d4d4c; background-color: #ffffff;">)</span> <span style="color: #8959a8;">do</span>
+        <span style="color: #c82829;">context</span> <span style="color: #8959a8;">=</span> <span style="color: #bb9200;">Otel</span><span style="color: #8959a8;">.</span><span style="color: #4271ae; font-weight: bold;">set_current_telemetry_span</span><span style="color: #4d4d4c; background-color: #ffffff;">(</span><span style="color: #4d4d4c; font-weight: bold;">@</span><span style="color: #4d4d4c; font-weight: bold;">tracer_id</span><span style="color: #4d4d4c; background-color: #ffffff;">,</span> <span style="color: #4d4d4c; background-color: #ffffff;">%</span><span style="color: #4d4d4c; background-color: #ffffff;">{})</span>
+        <span style="color: #bb9200;">Span</span><span style="color: #8959a8;">.</span><span style="color: #4271ae; font-weight: bold;">set_attribute</span><span style="color: #4d4d4c; background-color: #ffffff;">(</span><span style="color: #c82829;">context</span><span style="color: #4d4d4c; background-color: #ffffff;">,</span> <span style="color: #f5871f;">:"http.status"</span><span style="color: #4d4d4c; background-color: #ffffff;">,</span> <span style="color: #c82829;">status</span><span style="color: #4d4d4c; background-color: #ffffff;">)</span>
+        <span style="color: #c82829;">...</span>
+        <span style="color: #bb9200;">OpenTelemetry</span><span style="color: #8959a8;">.</span><span style="color: #4271ae; font-weight: bold;">end_telemetry_span</span><span style="color: #4d4d4c; background-color: #ffffff;">(</span><span style="color: #4d4d4c; font-weight: bold;">@</span><span style="color: #4d4d4c; font-weight: bold;">tracer_id</span><span style="color: #4d4d4c; background-color: #ffffff;">,</span> <span style="color: #4d4d4c; background-color: #ffffff;">%</span><span style="color: #4d4d4c; background-color: #ffffff;">{})</span>
+      <span style="color: #8959a8;">end</span>
+    <span style="color: #8959a8;">end</span>
+
+  <span style="color: #8e908c;">_</span> <span style="color: #8959a8;">-&gt;</span>
+    <span style="color: #f5871f;">nil</span>
+<span style="color: #8959a8;">end</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgf455515" class="outline-4">
+<h4 id="orgf455515"><span class="section-number-4">6.0.4.</span> Encoding EDN</h4>
+<div class="outline-text-4" id="text-6-0-4">
+<p>
+In Elixir are using <a href="https://github.com/jfacorro/Eden">Eden</a> library in order to decode and encode data from and to EDN format. In most cases it works without any issues, however, for decimals we had to implement protocol support for Elixir <i>Decimal</i> type:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elixir"><span style="color: #8e908c;"># Implements Eden.Encode protocol for Decimal structs</span>
+<span style="color: #8959a8; font-weight: bold;">defimpl</span> <span style="color: #bb9200;">Eden.Encode</span><span style="color: #4d4d4c; background-color: #ffffff;">,</span> <span style="color: #f5871f;">for: </span><span style="color: #bb9200;">Decimal</span> <span style="color: #8959a8;">do</span>
+  <span style="color: #8e908c;"># Adds a decimal digit number so it can be picked by EDN</span>
+  <span style="color: #4d4d4c; font-weight: bold;">@</span><span style="color: #4d4d4c; font-weight: bold;">spec</span> <span style="color: #4271ae; font-weight: bold;">encode</span><span style="color: #4d4d4c; background-color: #ffffff;">(</span><span style="color: #bb9200;">Decimal</span><span style="color: #8959a8;">.</span><span style="color: #4271ae; font-weight: bold;">t</span><span style="color: #4d4d4c; background-color: #ffffff;">())</span> <span style="color: #8959a8;">::</span> <span style="color: #bb9200;">String</span><span style="color: #8959a8;">.</span><span style="color: #4271ae; font-weight: bold;">t</span><span style="color: #4d4d4c; background-color: #ffffff;">()</span>
+  <span style="color: #8959a8; font-weight: bold;">def</span> <span style="color: #4271ae; font-weight: bold;">encode</span><span style="color: #4d4d4c; background-color: #ffffff;">(</span><span style="color: #c82829;">decimal</span><span style="color: #4d4d4c; background-color: #ffffff;">)</span><span style="color: #4d4d4c; background-color: #ffffff;">,</span> <span style="color: #f5871f;">do: </span><span style="color: #c82829;">decimal</span> <span style="color: #8959a8;">|&gt;</span> <span style="color: #bb9200;">Decimal</span><span style="color: #8959a8;">.</span><span style="color: #4271ae; font-weight: bold;">to_string</span><span style="color: #4d4d4c; background-color: #ffffff;">()</span> <span style="color: #8959a8;">|&gt;</span> <span style="color: #bb9200;">Kernel</span><span style="color: #8959a8;">.&lt;&gt;</span><span style="color: #4d4d4c; background-color: #ffffff;">(</span><span style="color: #718c00;">"M"</span><span style="color: #4d4d4c; background-color: #ffffff;">)</span>
+<span style="color: #8959a8;">end</span>
+</pre>
+</div>
+
+<p>
+That way you can also implement support of any other custom type or struct that you might need to persist in XT.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org15ec514" class="outline-2">
+<h2 id="org15ec514"><span class="section-number-2">7.</span> Testing XTDB</h2>
+<div class="outline-text-2" id="text-7">
+<p>
+Because XTDB is an immutable database, it&rsquo;s not so simple to delete data from it. This can have implications when it comes to testing, as traditional methods of clearing and resetting a database may not be effective. To integrate XT into a test suite, the most straightforward approach is to run an in-memory node alongside the suite. This allows for more granular control over data, as the in-memory node can be reset or recreated as needed.
+</p>
+
+<p>
+We&rsquo;ve achieved that by using the in-memory XTDB Docker image in our docker-compose setup:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-yaml">  <span style="color: #8e908c;"># </span><span style="color: #8e908c;">Wait for Docker container to be ready</span>
+  <span style="color: #c82829;">wait</span>:
+    <span style="color: #c82829;">image</span>: dokku/wait
+
+  <span style="color: #c82829;">xtdb_test</span>:
+    <span style="color: #c82829;">image</span>: juxt/xtdb-in-memory:1.21.0
+    <span style="color: #c82829;">ports</span>:
+      - 3000:3000
+</pre>
+</div>
+
+<p>
+and also created a simple shell script that we use in order to run the integration test suite:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell">docker-compose up --remove-orphans -d xtdb_test
+docker-compose run wait -c xtdb_test:3000
+docker-compose run mix_test
+docker-compose stop xtdb_test mix_test
+</pre>
+</div>
+
+<p>
+In the case of unit tests, as any request coming through the XTDB client is basically an HTTP request, we could also use VCR cassettes as mocks in order to avoid sending real requests to the test instances.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orga239462" class="outline-2">
+<h2 id="orga239462"><span class="section-number-2">8.</span> What&rsquo;s next?</h2>
+<div class="outline-text-2" id="text-8">
+<p>
+In this article, we&rsquo;ve discussed how XTDB can be used alongside applications written in Elixir and demonstrated how to implement a simple HTTP client for working with the database. We also covered how to develop and test applications using XTDB, and the importance of running an in-memory node for testing purposes.
+</p>
+
+<p>
+In the third and final part of this series, we&rsquo;ll be sharing how we used Docker and docker-compose to set up a local development environment for XTDB, as well as how we deployed and ran it in production. We&rsquo;ll also be discussing caveats and issues we encountered, and how we addressed them.
+</p>
+
+<p>
+We can also recommend some more reading on the topic if you&rsquo;re interested in developing with XTDB:
+</p>
+
+<ul class="org-ul">
+<li><a href="https://xtdb.com/docs/">https://xtdb.com/docs/</a></li>
+<li><a href="https://xtdb.com/blog/xtdb-command-line/">https://xtdb.com/blog/xtdb-command-line/</a></li>
+</ul>
+
+<p>
+Happy Hacking and stay tuned!
+</p>
+</div>
+</div>
+<div class="taglist"><a href="https://neiro.io/tags.html">Tags</a>: <a href="https://neiro.io/tag-bitemporality.html">bitemporality</a> <a href="https://neiro.io/tag-databases.html">databases</a> <a href="https://neiro.io/tag-elixir.html">elixir</a> <a href="https://neiro.io/tag-xtdb.html">xtdb</a> <a href="https://neiro.io/tag-clojure.html">clojure</a> </div></div>
+<div id="postamble" class="status"></div>
+</body>
+</html>

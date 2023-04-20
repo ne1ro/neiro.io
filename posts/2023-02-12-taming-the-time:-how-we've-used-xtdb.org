@@ -1,0 +1,350 @@
+#+title: Taming the Time: how to install & develop with XTDB
+#+date: <2023-03-31 12:40>
+#+filetags: :bitemporality:databases:elixir:xtdb:clojure:
+
+/The article was originally posted on [[https://dev.to/marleyspoon/taming-the-time-how-to-install-develop-with-xtdb-2lbf][MarleySpoon Dev Blog]]
+
+In the [[https://dev.to/marleyspoon/bitemporality-or-how-to-change-the-past-3k4f][previous article]], we discussed the concept of bitemporality and how it can be used to solve complex architectural problems.
+At MarleySpoon, we've used XTDB (or 'XT' for short) for our new order management system /(OMS)/, and discovered a lot of interesting insights about the database itself, the concept of bitemporality, and how developing a project using an immutable, bitemporal database could look like.
+
+In this article, we will be focusing primarily on our development experience (installing, testing with XTDB) from an Elixir application, and we cover more details about deploying, running XT in cluster, and tuning in production in the upcoming article.
+
+* What is XTDB
+[[https://xtdb.com/][XTDB]], or Cross-Time Database, is a distributed and transactional database system designed to handle complex and changing data with ease.
+It is based on a bitemporal model, which allows for the tracking of both the valid time and transaction time of data, enabling powerful and flexible querying capabilities.
+With XTDB, developers can work with immutable data structures, which simplifies development and improves reliability.
+Its graph query language, Datalog, provides a powerful and expressive way to navigate relationships within the data.
+
+As we've illustrated before, XT has a lot of benefits:
+- Bitemporal
+- Supports retroactive corrections
+- Document and graph-based
+- Flexible data schema
+- Unbundled (can be deployed on top of a lot of other DBs and persistence solutions)
+- Can be used within JVM or through REST API
+
+As one can see, XT is quite different from most of the widely used SQL and NoSQL databases - and while it provides great benefits for dealing with immutable data and retroactive corrections, it also requires an understanding of some of its implementation principles.
+
+* How we planned to use XTDB
+At MarleySpoon, we ship boxes with recipes and ingredients to our customers. The *orders* and our subscription model are the backbone of the whole bussiness logic and that is also reflected in how we build our software.
+
+The core of the orders system is the orders state machine, and although the states are essentially simple, there might still be cases where we could have discrepancies - and in such cases, we would like to have more options to debug or restore orders to a previous state, as well as /retroactively/ correct their data and push the change to dependent subsystems.
+
+The shift from the legacy monolith architecture to service-oriented architecture coupled with the introduction of new OMS also required us to be more careful when it comes to eventual consistency - the *transaction* and *valid* times can be different in the resulting systems so we can't just work around it by using the persistence stack we've used to (e.g. relational DBs with updates in place).
+
+Initially, we considered adding transaction and valid time columns to PostgreSQL to implement bitemporality, as this seemed like a straightforward solution. However, upon further analysis, we realized that this approach would introduce significant complexity to the system design. In particular, any foreign keys would need to take the bitemporal columns into account, meaning that queries would need to consider both the entity relationship and its temporal context. This would require significant changes to the database schema, query design, and application code, and would likely lead to a higher risk of errors and data inconsistencies.
+
+We also considered event sourcing for our needs, but it would add significant incidental complexity, requiring changes to other services' architectures and a significant amount of application-level code changes to ensure that all events were captured and persisted correctly.
+
+After considering various approaches to implementing bitemporality in our system, we decided to give XTDB a try due to its native support for bitemporality and graph database capabilities. We designed our data model around XTDB's capabilities and incorporated the database into our Elixir application.
+
+* Installing XTDB
+There are multiple ways to install and use XTDB:
+- Use it as a JVM dependency by simply adding it to your JVM project
+  #+begin_src clojure
+    ; deps.edn
+    com.xtdb/xtdb-core {:mvn/version "1.21.0"}
+  #+end_src
+- Using a pre-built XTDB JAR on a local machine
+- Through a [[https://hub.docker.com/r/juxt/xtdb-in-memory][Docker image]]
+
+XTDB is developed in the Clojure programming language and it is very convenient to run it from any Clojure program - so we've decided to write a simple app in Clojure that would run XTDB for us and provide all required setup.
+
+** Installing dependencies
+We've installed Clojure using _asdf_ version manager as it's very convenient to pin JVM and Clojure versions:
+#+begin_src bash
+# .tool-versions
+openjdk-18
+clojure 1.11.0.1100
+#+end_src
+
+The next step was creating a new Clojure app using [[https://clojure.org/guides/deps_and_cli][deps CLI]] - all of the necessary dependencies were provided in a single file /(deps.edn)/.
+XTDB is very modular so we have to install PostgreSQL support, HTTP client and server, metrics, and other tools as separate packages:
+
+#+begin_src clojure
+;; deps.edn
+{:paths ["src"]
+ :deps {org.clojure/clojure {:mvn/version "1.11.0"}
+        com.xtdb/xtdb-core {:mvn/version "1.21.0"}
+        ;; Persistence
+        org.postgresql/postgresql {:mvn/version "42.2.18"}
+        com.xtdb/xtdb-jdbc {:mvn/version "1.21.0"}
+        com.xtdb/xtdb-rocksdb {:mvn/version "1.21.0"}
+        ;; HTTP Client
+        com.xtdb/xtdb-http-client {:mvn/version "1.21.0"}
+        ;; HTTP Server
+        com.xtdb/xtdb-http-server {:mvn/version "1.21.0"}}
+}
+#+end_src
+
+** Application entry point & configuration
+One of the primary reasons we developed a wrapper for XTDB was to enable us to run an XTDB cluster in a Kubernetes environment. We wanted to simplify the setup process by allowing configuration through environment variables, rather than relying on external configuration files. This allowed us to easily manage XTDB's configuration within Kubernetes and provided us with greater flexibility in managing our XTDB cluster.
+
+We've created a _xtdb.clj_ file that is the entry point to the database wrapper and which also has all the required configuration there:
+
+#+begin_src clojure
+(def db-spec
+  {:host (System/getenv "POSTGRES_HOST")
+   :port (System/getenv "POSTGRES_PORT")
+   :dbname (System/getenv "POSTGRES_DB")
+   :user (System/getenv "POSTGRES_USER")
+   :password (System/getenv "POSTGRES_PASSWORD")})
+
+(def config
+  {:xtdb.http-server/server {:port 3000
+                             :jwks (System/getenv "XTDB_JWKS")} ; auth
+   :xtdb.rocksdb/block-cache {:xtdb/module 'xtdb.rocksdb/->lru-block-cache
+                              :cache-size (* 1024 1024 1024)} ; RocksDB cache size
+   :xtdb/index-store {:kv-store {:xtdb/module 'xtdb.rocksdb/->kv-store
+                                 :db-dir "/tmp/xtdb/indexes"
+                                 :checkpointer checkpoint-config
+                                 :block-cache :xtdb.rocksdb/block-cache
+                                 :metrics {:xtdb/module 'xtdb.rocksdb.metrics/->metrics}}}
+   :xtdb.jdbc/connection-pool {:dialect {:xtdb/module 'xtdb.jdbc.psql/->dialect}
+                               :pool-opts {:maximumPoolSize 10}
+                               :db-spec db-spec}
+   :xtdb/tx-log {:xtdb/module 'xtdb.jdbc/->tx-log
+                 :connection-pool :xtdb.jdbc/connection-pool}
+   :xtdb/document-store {:xtdb/module 'xtdb.jdbc/->document-store
+                         :connection-pool :xtdb.jdbc/connection-pool}})
+#+end_src
+
+Once the initial configuration is done we can provide a simple entry point function that will start an XT node:
+
+#+begin_src clojure
+;; XT node - hydrated on start
+(def xt-node (atom nil))
+
+(defn -main
+  "Starts a new XTDB node"
+  []
+  (let [node (xtdb/start-node config)]
+    (log/info "Started a new XT node ...")
+    (seed/seed node) ; seed data that we need on start
+    (xtdb/sync node)
+    (log/info "Loaded data into a new XT node")
+    (reset! @xt-node node) ; set xt-node with the started node
+    node))
+
+;; Can be used to run REPL or local XT instance
+;;
+;; As running it from CLI can assume passing some command line arguments
+;; we should accept a list of optional arguments as a function param
+(defn start
+  [&args]
+  ;; Runs -main function to start a new XT node
+  (-main))
+#+end_src
+
+* Running XT on a local machine
+Once our XT app is installed and configured, we can run `clj -X xtdb.core/start` in order to start it on a local machine.
+This will enable web UI and REST API on _http://localhost:3000_.
+
+** Connecting from REPL
+To run XT in REPL we can instead just execute _clj_ in shell, given that we are in the root directory of the Clojure project.
+
+That will start a new Clojure REPL, and if we want to start XT from there, it's sufficient to use functions we've implemented beforehand:
+
+#+begin_src clojure
+(in-ns 'xtdb.core) ; switches current namespace to XT wrapper's core namespace
+(-main)
+#+end_src
+
+** Connecting to a remote node
+Another important benefit of XT that we unfortunately didn't explore enough is that by using the _http-client_ dependency, we're able to connect to any remote node that is accessible to us by HTTP:
+
+#+begin_src clojure
+(def remote-node (xt/new-api-client remote-url))
+(xt/submit-tx remote-node [[::xt/put {:xt/id :foo :bar :bar}]]) ; submits a transaction on the remote node
+#+end_src
+
+Thus, we can connect from REPL to any production XT instance and run queries / submit transactions there.
+* REST API
+XT is very convenient to use from any Clojure or JVM-based application, however, for clients implemented in other programming languages or different virtual machines, we should be using[[https://xtdb.com/docs/][ XT's REST API]].
+XT has a very rich HTTP API that covers most of its functionality /(although some of it is only available by Clojure/Java client)/.
+
+** API formats
+XT supports multiple formats: /application/edn, application/json and application/transit+json/.
+
+As XT is written in Clojure and it natively supports Clojure's data types, we were not satisfied with available JSON types and decided to give [[https://github.com/edn-format/edn][EDN]] a try - that way we would have way more supported types:
+- symbols, e.g. Elixir atoms
+- decimals
+- dates and timestamps
+
+However, we had some issues with encoding Elixir/BEAM VM terms to EDN and, in general, the performance of the format - so the [[https://github.com/cognitect/transit-format][Transit/JSON]] would be an improvement as apart from being compatible with regular JSON and essentially more performant it also has a more precise types conversion.
+
+** Main endpoints
+- _GET /_xtdb/status_ - can be used as a health check for an XT node
+- _GET /_xtdb/entity_ - gets a single entity from the database
+- _GET /_xtdb/query_ - performs a single Datalog query
+- _POST /_xtdb/submit-tx_ - submits database transactions
+- _GET /_xtdb/await-tx_ - waits until the transaction was indexed on the node
+- _GET /_xtdb/tx-committed/ - checks if the transaction was successfully committed
+* Elixir HTTP client
+As at that point in time when we started applying XT at MarleySpoon there were no Elixir libraries fully supporting XT's REST API and covering our needs so we've started writing our own HTTP adapter.
+
+*** Umbrella application
+As OMS was the only project where we were trying XTDB, we've decided to move all the Clojure code, as well as the new Elixir HTTP into the same umbrella app:
+
+#+begin_src shell
+apps/
+  ...
+  xtdb/
+#+end_src
+
+That way we could also easily start an XTDB node right in our project and use it from the Elixir application, e.g. by starting through docker-compose.
+
+*** HTTP2
+XT's REST API supports the second revision of HTTP format out of the box - which means that we can have a stable and more performant connection between XT clients (application servers) and the database instances.
+
+When running an XTDB cluster in production, HTTP2 can be particularly useful. By using HTTP2, direct connections can be established between the client application and an XTDB node, rather than relying on load balancing across multiple instances. Since XTDB doesn't enforce an equal state between nodes, the same request could yield different results on different nodes - but using HTTP2 eliminates the issue and ensures consistent results for each request.
+
+However, not every Elixir's HTTP client supports sending requests using HTTP2 - so we have to search for another option rather than using HTTPoison that we widely use in other projects.
+We've decided to go with [[https://github.com/sneako/finch][Finch]], as apart from supporting HTTP2 it also focuses on performance and provides telemetry support out of the box - which we've found very useful for tracing and debugging purposes.
+
+Using HTTP2 with Finch requires some initial configuration as we have to have just one connection in a connection pool:
+
+#+begin_src elixir
+# apps/xtdb/lib/application.ex
+children = [
+      {
+        Finch,
+        name: Xtdb.ConnectionPool,
+        pools: %{
+          default: [count: 1, protocol: :http2, size: 1]
+        }
+      }
+    ]
+
+Supervisor.start_link(children, strategy: :one_for_one, name: Xtdb.Supervisor)
+#+end_src
+
+*** Telemetry & OpenTelemetry
+As was mentioned in a previous section, using Finch as an HTTP Client library is a great step to have a seamless telemetry integration.
+
+Finch provides the next Telemetry events:
+- request start/stop
+- request exception
+- queue start/stop/exception
+- connection start/stop/exception
+
+and others, but for our purpose, we will be more interested only in the first two events.
+
+In order to integrate the XTDB client with OpenTelemetry we wrote a simple module that watches Finch's telemetry events and pushes them to the OpenTelemetry collector:
+#+begin_src elixir
+# Checking for optional opentelemetry dependency
+case Code.ensure_compiled(OpenTelemetry) do
+  {:module, _} ->
+    defmodule Xtdb.OpenTelemetry do
+      @tracer_id __MODULE__
+
+      @spec setup :: :ok
+      def setup do
+        attach_http_request_start()
+        attach_http_request_stop()
+
+        :ok
+      end
+
+      defp attach_http_request_start() do
+        :telemetry.attach(
+          {__MODULE__, :http_request_start},
+          [@http_client, :send, :start],
+          &__MODULE__.handle_http_request_start/4,
+          %{}
+        )
+      end
+
+      defp attach_http_request_stop() do
+        :telemetry.attach(
+          {__MODULE__, :http_request_stop},
+          [@http_client, :request, :stop],
+          &__MODULE__.handle_http_request_stop/4,
+          %{}
+        )
+      end
+
+      def handle_http_request_start(
+            _event,
+            _measurements,
+            %{request: request},
+            _config
+          ) do
+        ...
+        Otel.start_telemetry_span(@tracer_id, "XT #{request_url}", %{}, %{
+          kind: :internal,
+          attributes: attributes
+        })
+      end
+
+      def handle_http_request_stop(
+            _event,
+            _measurements,
+            %{request: _request, name: ConnectionPool, result: {_, %{status: status} = result}},
+            _config
+          ) do
+        context = Otel.set_current_telemetry_span(@tracer_id, %{})
+        Span.set_attribute(context, :"http.status", status)
+        ...
+        OpenTelemetry.end_telemetry_span(@tracer_id, %{})
+      end
+    end
+
+  _ ->
+    nil
+end
+#+end_src
+
+*** Encoding EDN
+
+In Elixir are using [[https://github.com/jfacorro/Eden][Eden]] library in order to decode and encode data from and to EDN format. In most cases it works without any issues, however, for decimals we had to implement protocol support for Elixir /Decimal/ type:
+
+#+begin_src elixir
+# Implements Eden.Encode protocol for Decimal structs
+defimpl Eden.Encode, for: Decimal do
+  # Adds a decimal digit number so it can be picked by EDN
+  @spec encode(Decimal.t()) :: String.t()
+  def encode(decimal), do: decimal |> Decimal.to_string() |> Kernel.<>("M")
+end
+#+end_src
+
+That way you can also implement support of any other custom type or struct that you might need to persist in XT.
+
+* Testing XTDB
+Because XTDB is an immutable database, it's not so simple to delete data from it. This can have implications when it comes to testing, as traditional methods of clearing and resetting a database may not be effective. To integrate XT into a test suite, the most straightforward approach is to run an in-memory node alongside the suite. This allows for more granular control over data, as the in-memory node can be reset or recreated as needed.
+
+We've achieved that by using the in-memory XTDB Docker image in our docker-compose setup:
+
+#+begin_src yaml
+  # Wait for Docker container to be ready
+  wait:
+    image: dokku/wait
+
+  xtdb_test:
+    image: juxt/xtdb-in-memory:1.21.0
+    ports:
+      - 3000:3000
+#+end_src
+
+and also created a simple shell script that we use in order to run the integration test suite:
+
+#+begin_src shell
+docker-compose up --remove-orphans -d xtdb_test
+docker-compose run wait -c xtdb_test:3000
+docker-compose run mix_test
+docker-compose stop xtdb_test mix_test
+#+end_src
+
+In the case of unit tests, as any request coming through the XTDB client is basically an HTTP request, we could also use VCR cassettes as mocks in order to avoid sending real requests to the test instances.
+
+* What's next?
+In this article, we've discussed how XTDB can be used alongside applications written in Elixir and demonstrated how to implement a simple HTTP client for working with the database. We also covered how to develop and test applications using XTDB, and the importance of running an in-memory node for testing purposes.
+
+In the third and final part of this series, we'll be sharing how we used Docker and docker-compose to set up a local development environment for XTDB, as well as how we deployed and ran it in production. We'll also be discussing caveats and issues we encountered, and how we addressed them.
+
+We can also recommend some more reading on the topic if you're interested in developing with XTDB:
+
+- https://xtdb.com/docs/
+- https://xtdb.com/blog/xtdb-command-line/
+
+Happy Hacking and stay tuned!

@@ -1,0 +1,8 @@
+# Hugo-generated content
+/public/
+/resources/_gen/
+
+# Hugo configuration files
+hugo_stats.json
+.hugo_build.lock
+

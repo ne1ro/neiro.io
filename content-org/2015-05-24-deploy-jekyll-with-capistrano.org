@@ -1,0 +1,82 @@
+#+title:  Deploy Jekyll with Capistrano
+#+date: <2015-05-24 10:00>
+#+filetags: :jekyll:capistrano:deploy:
+
+If you're using Jekyll to generate your static website, you may want to
+deploy it as simple and fast, as Jekyll works. For this case, Ruby
+ecosystem has remote server automation and deployment tool that called
+[[http://capistranorb.com/][Capistrano]] .
+
+First of all, you need to create /Gemfile/ in your Jekyll project and
+add this lines:
+
+#+BEGIN_SRC ruby
+source 'https://rubygems.org'
+gem 'capistrano', '~> 3.4.0'
+#+END_SRC
+
+Then execute:
+
+#+BEGIN_SRC shell
+bundle install && bundle exec cap install
+#+END_SRC
+
+This creates configuration files, that you can change with your
+parameters. Make sure that you set up production configuration with your
+server data (//config/deploy/production.rb/):
+
+#+BEGIN_SRC ruby
+
+role :app, %w{user@server}
+role :web, %w{user@server}
+#+END_SRC
+
+After configuration you can deploy your project with one simple command:
+
+#+BEGIN_SRC shell
+bundle exec cap production deploy
+#+END_SRC
+
+This command deploys source to //var/www/website_name/, but it does not
+generate website. To execute =jekyll build= command you need to install
+Ruby using [[https://github.com/sstephenson/rbenv][rbenv]] or
+[[https://rvm.io/][RVM]] first.
+
+Next you should add Capistrano plugin for rbenv in /Gemfile/:
+
+#+BEGIN_SRC ruby
+gem 'capistrano-rbenv', '~> 2.0'
+#+END_SRC
+
+Then execute
+
+#+BEGIN_SRC ruby
+bundle exec
+#+END_SRC
+
+And add this line to /Capfile/:
+
+#+BEGIN_SRC ruby
+require 'capistrano/rbenv'
+#+END_SRC
+
+Install Jekyll gem on server and add it to rbenv binaries list in
+/config/deploy.rb/:
+
+#+BEGIN_SRC ruby
+set :rbenv_map_bins, %w{rake gem bundle ruby jekyll}
+#+END_SRC
+
+Now you can use my
+[[https://github.com/ne1ro/capistrano-jekyll][capistrano-jekyll]] gem to
+execute =jekyll build= command every time when you deploy your website's
+changes:
+
+#+BEGIN_SRC ruby
+# Gemfile
+gem 'capistrano-jekyll'
+#+END_SRC
+
+#+BEGIN_SRC shell
+$ bundle install && bundle exec cap production deploy
+#+END_SRC

@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Contracts on neiro blog</title>
+    <link>https://neiro.io/tags/contracts/</link>
+    <description>Recent content in Contracts on neiro blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-GB</language>
+    <copyright>neiro © 2012-2025</copyright>
+    <lastBuildDate>Sat, 24 Oct 2015 10:00:00 +0200</lastBuildDate>
+    <atom:link href="https://neiro.io/tags/contracts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Type checking ruby with contracts</title>
+      <link>https://neiro.io/blog/2015-10-24-type-checking-for-ruby-with-contracts/</link>
+      <pubDate>Sat, 24 Oct 2015 10:00:00 +0200</pubDate>
+      <guid>https://neiro.io/blog/2015-10-24-type-checking-for-ruby-with-contracts/</guid>
+      <description>&lt;p&gt;Ruby is dynamically and strong typed programming language. In the most&#xA;of the cases it gives you required level of type safety with minimal&#xA;code. But if you want build more secure applications or you&amp;rsquo;re like&#xA;static typing, then you need to check every variable or method for it&amp;rsquo;s&#xA;type or class:&lt;/p&gt;&#xA;&#xA;&#xA;&#xA;&#xA;&#xA;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-ruby&#34; data-lang=&#34;ruby&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;cl&#34;&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;ln&#34;&gt;2&lt;/span&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;def&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;foo&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;bar&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;ln&#34;&gt;3&lt;/span&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;nb&#34;&gt;fail&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;I supposed it`s not a bar!&amp;#39;&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;ln&#34;&gt;4&lt;/span&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;k&#34;&gt;unless&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;bar&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;is_a?&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nb&#34;&gt;String&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;p&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;Hi, bar!&amp;#39;&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;ln&#34;&gt;5&lt;/span&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;end&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;ln&#34;&gt;6&lt;/span&gt;&lt;span class=&#34;cl&#34;&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;ln&#34;&gt;7&lt;/span&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;foo&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;bar&amp;#39;&lt;/span&gt; &lt;span class=&#34;c1&#34;&gt;# Hi, bar!&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;ln&#34;&gt;8&lt;/span&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;foo&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;100_500&lt;/span&gt; &lt;span class=&#34;c1&#34;&gt;# RuntimeError: I supposed it`s not a bar!&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;But what if you&amp;rsquo;re needing more complex type checking on multiple types&#xA;or conditions? Then you need to provide more boilerplate, defensive&#xA;code. If you&amp;rsquo;re want to make your type safety code much cleaner, there&#xA;is the &lt;a href=&#34;https://github.com/egonSchiele/contracts.ruby&#34;&gt;contracts&lt;/a&gt; library.&lt;/p&gt;</description>
+      <content:encoded><![CDATA[<p>Ruby is dynamically and strong typed programming language. In the most
+of the cases it gives you required level of type safety with minimal
+code. But if you want build more secure applications or you&rsquo;re like
+static typing, then you need to check every variable or method for it&rsquo;s
+type or class:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl">
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">bar</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl">  <span class="nb">fail</span> <span class="s1">&#39;I supposed it`s not a bar!&#39;</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl">  <span class="k">unless</span> <span class="n">bar</span><span class="o">.</span><span class="n">is_a?</span><span class="p">(</span><span class="nb">String</span><span class="p">)</span> <span class="nb">p</span> <span class="s1">&#39;Hi, bar!&#39;</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl"><span class="k">end</span>
+</span></span><span class="line"><span class="ln">6</span><span class="cl">
+</span></span><span class="line"><span class="ln">7</span><span class="cl"><span class="n">foo</span> <span class="s1">&#39;bar&#39;</span> <span class="c1"># Hi, bar!</span>
+</span></span><span class="line"><span class="ln">8</span><span class="cl"><span class="n">foo</span> <span class="mi">100_500</span> <span class="c1"># RuntimeError: I supposed it`s not a bar!</span></span></span></code></pre></div><p>But what if you&rsquo;re needing more complex type checking on multiple types
+or conditions? Then you need to provide more boilerplate, defensive
+code. If you&rsquo;re want to make your type safety code much cleaner, there
+is the <a href="https://github.com/egonSchiele/contracts.ruby">contracts</a> library.</p>
+<h2 id="contracts">Contracts</h2>
+<p>What is a contract? It&rsquo;s a pattern, that comes from functional
+programming world. In most cases this is one line of code before
+function or method, that validates the arguments and validates return
+value.</p>
+<p>For example, there is a simple contract:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="nb">require</span> <span class="s1">&#39;contracts&#39;</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="k">class</span> <span class="nc">Square</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">  <span class="kp">include</span> <span class="no">Contracts</span><span class="o">::</span><span class="no">Core</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">  <span class="kp">include</span> <span class="no">Contracts</span><span class="o">::</span><span class="no">Builtin</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">  <span class="no">Contract</span> <span class="no">Num</span> <span class="o">=&gt;</span> <span class="no">Num</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">area</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="n">a</span><span class="o">**</span><span class="mi">2</span> <span class="k">end</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="k">end</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">
+</span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="no">Square</span><span class="o">.</span><span class="n">area</span> <span class="mi">10</span> <span class="c1"># 100</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="no">Square</span><span class="o">.</span><span class="n">area</span> <span class="s1">&#39;a&#39;</span> <span class="c1"># ParamContractError: Contract violation for argument 1 of 1</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl"><span class="no">Square</span><span class="o">.</span><span class="n">area</span> <span class="o">[]</span> <span class="c1"># ParamContractError: Contract violation for argument 1 of 1</span></span></span></code></pre></div><p>You can also use it on multiple arguments or returns:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="k">class</span> <span class="nc">Rectangle</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  <span class="kp">include</span> <span class="no">Contracts</span><span class="o">::</span><span class="no">Core</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">  <span class="kp">include</span> <span class="no">Contracts</span><span class="o">::</span><span class="no">Builtin</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">  <span class="no">Contract</span> <span class="no">Num</span><span class="p">,</span> <span class="no">Num</span> <span class="o">=&gt;</span> <span class="no">Num</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">area</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">    <span class="n">a</span> <span class="o">*</span> <span class="n">b</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="k">end</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">
+</span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="no">Rectangle</span><span class="o">.</span><span class="n">area</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span> <span class="c1"># 100</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="no">Rectangle</span><span class="o">.</span><span class="n">area</span> <span class="o">[]</span><span class="p">,</span> <span class="kp">false</span> <span class="c1"># ParamContractError: Contract violation for argument 1 of 2</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl"><span class="no">Rectangle</span><span class="o">.</span><span class="n">area</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span> <span class="c1"># ParamContractError: Contract violation for argument 2 of 2</span></span></span></code></pre></div><p>If you don&rsquo;t want to throw exception, you can easily override error
+callback:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="no">Contract</span><span class="o">.</span><span class="n">override_failure_callback</span> <span class="k">do</span> <span class="o">|</span><span class="n">data</span><span class="o">|</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">  <span class="nb">puts</span> <span class="s1">&#39;IT`S AN OM~ ERROR!1&#39;</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl">  <span class="nb">p</span> <span class="n">data</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl"><span class="k">end</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl">
+</span></span><span class="line"><span class="ln">6</span><span class="cl"><span class="no">Rectangle</span><span class="o">.</span><span class="n">area</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span> <span class="c1"># &#39;IT`S AN OM~ ERROR!1&#39;</span></span></span></code></pre></div><h2 id="custom-types">Custom types</h2>
+<p><em>Contracts</em> library comes with many built-in type contracts:</p>
+<ul>
+<li>Basic types: <code>Num, Pos, Neg, Nat, Bool, Any, None</code></li>
+<li>Logical: <code>Maybe, Or, Xor, And, Not</code></li>
+<li>Collections: <code>ArrayOf, SetOf, HashOf, RangeOf, Enum</code></li>
+</ul>
+<p>and others. But if your want to create your own types or check more
+complex conditions, then you have to use lambdas:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="k">class</span> <span class="nc">CharCounter</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  <span class="kp">include</span> <span class="no">Contracts</span><span class="o">::</span><span class="no">Core</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">  <span class="kp">include</span> <span class="no">Contracts</span><span class="o">::</span><span class="no">Builtin</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">  <span class="no">Char</span> <span class="o">=</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">char</span><span class="p">)</span> <span class="p">{</span> <span class="n">char</span><span class="o">.</span><span class="n">is_a?</span><span class="p">(</span><span class="nb">String</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="n">char</span><span class="o">.</span><span class="n">length</span> <span class="o">==</span> <span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="n">char</span> <span class="o">=~</span> <span class="sr">/\w/</span> <span class="p">}</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">  <span class="no">Contract</span> <span class="no">Maybe</span><span class="o">[</span><span class="nb">String</span><span class="o">]</span><span class="p">,</span> <span class="no">Char</span> <span class="o">=&gt;</span> <span class="no">Num</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">count_chars</span><span class="p">(</span><span class="n">str</span><span class="p">,</span> <span class="n">ch</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    <span class="n">str</span><span class="o">.</span><span class="n">count</span> <span class="n">ch</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">    <span class="k">end</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="k">end</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">
+</span></span><span class="line"><span class="ln">14</span><span class="cl"><span class="no">CharCounter</span><span class="o">.</span><span class="n">count_chars</span> <span class="s1">&#39;hello&#39;</span><span class="p">,</span> <span class="s1">&#39;N&#39;</span> <span class="c1"># 0</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl"><span class="no">CharCounter</span><span class="o">.</span><span class="n">count_chars</span> <span class="s1">&#39;hello&#39;</span><span class="p">,</span> <span class="s1">&#39;l&#39;</span> <span class="c1"># 2</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl"><span class="no">CharCounter</span><span class="o">.</span><span class="n">count_chars</span> <span class="s1">&#39;hello&#39;</span><span class="p">,</span> <span class="s1">&#39;*&#39;</span> <span class="c1"># ParamContractError: Contract violation for argument 2 of 2</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl"><span class="no">CharCounter</span><span class="o">.</span><span class="n">count_chars</span> <span class="s1">&#39;llo&#39;</span><span class="p">,</span> <span class="s1">&#39;llo&#39;</span> <span class="c1"># ParamContractError: Contract violation for argument 2 of 2</span></span></span></code></pre></div><h2 id="pattern-matching">Pattern matching</h2>
+<p>Pattern matching, like a contract, comes from functional programming.
+You can use your contracts to test if your method matches pattern or
+not. For example, let&rsquo;s find a factorial of number with contracts:</p>
+<p>#+begin_src ruby
+class Factorial
+include Contracts::Core
+include Contracts::Builtin</p>
+<p>Contract 0 =&gt; 1
+def self.factorial(_n)
+1
+end</p>
+<p>Contract Num =&gt; Num
+def self.factorial(n)
+n * factorial(n - 1)
+end
+end</p>
+<p>Factorial.factorial 0 # 0
+Factorial.factorial 10 # 3628800
+Factorial.factorial &lsquo;a&rsquo; # ContractError: Contract violation for argument 1 of 1 #+end_src</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>Ruby has simple and powerful type system, but if it&rsquo;s not enough or you
+want to use safety type checking and you don&rsquo;t like to write tons of a
+defensive code, then you may like <em>Contracts</em> library. Contracts allows
+you to check many types, conditions for your class methods much cleaner
+and simpler. Also you can define your own types or conditions with plain
+Ruby lambdas, and then use them for pattern-matching.</p>
+<p>If you&rsquo;re like it and want to know more,
+<a href="http://egonschiele.github.io/contracts.ruby/">there is Ruby contracts
+tutorial</a>.</p>
+]]></content:encoded>
+    </item>
+    <item>
+      <title>Type checking ruby with contracts</title>
+      <link>https://neiro.io/posts/2015-10-24-type-checking-for-ruby-with-contracts/</link>
+      <pubDate>Sat, 24 Oct 2015 10:00:00 +0200</pubDate>
+      <guid>https://neiro.io/posts/2015-10-24-type-checking-for-ruby-with-contracts/</guid>
+      <description>&lt;p&gt;Ruby is dynamically and strong typed programming language. In the most&#xA;of the cases it gives you required level of type safety with minimal&#xA;code. But if you want build more secure applications or you&amp;rsquo;re like&#xA;static typing, then you need to check every variable or method for it&amp;rsquo;s&#xA;type or class:&lt;/p&gt;&#xA;&#xA;&#xA;&#xA;&#xA;&#xA;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-ruby&#34; data-lang=&#34;ruby&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;cl&#34;&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;ln&#34;&gt;2&lt;/span&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;def&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;foo&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;bar&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;ln&#34;&gt;3&lt;/span&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;nb&#34;&gt;fail&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;I supposed it`s not a bar!&amp;#39;&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;ln&#34;&gt;4&lt;/span&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;k&#34;&gt;unless&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;bar&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;is_a?&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nb&#34;&gt;String&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;p&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;Hi, bar!&amp;#39;&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;ln&#34;&gt;5&lt;/span&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;end&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;ln&#34;&gt;6&lt;/span&gt;&lt;span class=&#34;cl&#34;&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;ln&#34;&gt;7&lt;/span&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;foo&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;bar&amp;#39;&lt;/span&gt; &lt;span class=&#34;c1&#34;&gt;# Hi, bar!&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;ln&#34;&gt;8&lt;/span&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;foo&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;100_500&lt;/span&gt; &lt;span class=&#34;c1&#34;&gt;# RuntimeError: I supposed it`s not a bar!&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;But what if you&amp;rsquo;re needing more complex type checking on multiple types&#xA;or conditions? Then you need to provide more boilerplate, defensive&#xA;code. If you&amp;rsquo;re want to make your type safety code much cleaner, there&#xA;is the &lt;a href=&#34;https://github.com/egonSchiele/contracts.ruby&#34;&gt;contracts&lt;/a&gt; library.&lt;/p&gt;</description>
+      <content:encoded><![CDATA[<p>Ruby is dynamically and strong typed programming language. In the most
+of the cases it gives you required level of type safety with minimal
+code. But if you want build more secure applications or you&rsquo;re like
+static typing, then you need to check every variable or method for it&rsquo;s
+type or class:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl">
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">bar</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl">  <span class="nb">fail</span> <span class="s1">&#39;I supposed it`s not a bar!&#39;</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl">  <span class="k">unless</span> <span class="n">bar</span><span class="o">.</span><span class="n">is_a?</span><span class="p">(</span><span class="nb">String</span><span class="p">)</span> <span class="nb">p</span> <span class="s1">&#39;Hi, bar!&#39;</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl"><span class="k">end</span>
+</span></span><span class="line"><span class="ln">6</span><span class="cl">
+</span></span><span class="line"><span class="ln">7</span><span class="cl"><span class="n">foo</span> <span class="s1">&#39;bar&#39;</span> <span class="c1"># Hi, bar!</span>
+</span></span><span class="line"><span class="ln">8</span><span class="cl"><span class="n">foo</span> <span class="mi">100_500</span> <span class="c1"># RuntimeError: I supposed it`s not a bar!</span></span></span></code></pre></div><p>But what if you&rsquo;re needing more complex type checking on multiple types
+or conditions? Then you need to provide more boilerplate, defensive
+code. If you&rsquo;re want to make your type safety code much cleaner, there
+is the <a href="https://github.com/egonSchiele/contracts.ruby">contracts</a> library.</p>
+<h2 id="contracts">Contracts</h2>
+<p>What is a contract? It&rsquo;s a pattern, that comes from functional
+programming world. In most cases this is one line of code before
+function or method, that validates the arguments and validates return
+value.</p>
+<p>For example, there is a simple contract:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="nb">require</span> <span class="s1">&#39;contracts&#39;</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="k">class</span> <span class="nc">Square</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">  <span class="kp">include</span> <span class="no">Contracts</span><span class="o">::</span><span class="no">Core</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">  <span class="kp">include</span> <span class="no">Contracts</span><span class="o">::</span><span class="no">Builtin</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">  <span class="no">Contract</span> <span class="no">Num</span> <span class="o">=&gt;</span> <span class="no">Num</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">area</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="n">a</span><span class="o">**</span><span class="mi">2</span> <span class="k">end</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="k">end</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">
+</span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="no">Square</span><span class="o">.</span><span class="n">area</span> <span class="mi">10</span> <span class="c1"># 100</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="no">Square</span><span class="o">.</span><span class="n">area</span> <span class="s1">&#39;a&#39;</span> <span class="c1"># ParamContractError: Contract violation for argument 1 of 1</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl"><span class="no">Square</span><span class="o">.</span><span class="n">area</span> <span class="o">[]</span> <span class="c1"># ParamContractError: Contract violation for argument 1 of 1</span></span></span></code></pre></div><p>You can also use it on multiple arguments or returns:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="k">class</span> <span class="nc">Rectangle</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  <span class="kp">include</span> <span class="no">Contracts</span><span class="o">::</span><span class="no">Core</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">  <span class="kp">include</span> <span class="no">Contracts</span><span class="o">::</span><span class="no">Builtin</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">  <span class="no">Contract</span> <span class="no">Num</span><span class="p">,</span> <span class="no">Num</span> <span class="o">=&gt;</span> <span class="no">Num</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">area</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">    <span class="n">a</span> <span class="o">*</span> <span class="n">b</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="k">end</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">
+</span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="no">Rectangle</span><span class="o">.</span><span class="n">area</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span> <span class="c1"># 100</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="no">Rectangle</span><span class="o">.</span><span class="n">area</span> <span class="o">[]</span><span class="p">,</span> <span class="kp">false</span> <span class="c1"># ParamContractError: Contract violation for argument 1 of 2</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl"><span class="no">Rectangle</span><span class="o">.</span><span class="n">area</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span> <span class="c1"># ParamContractError: Contract violation for argument 2 of 2</span></span></span></code></pre></div><p>If you don&rsquo;t want to throw exception, you can easily override error
+callback:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="no">Contract</span><span class="o">.</span><span class="n">override_failure_callback</span> <span class="k">do</span> <span class="o">|</span><span class="n">data</span><span class="o">|</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">  <span class="nb">puts</span> <span class="s1">&#39;IT`S AN OM~ ERROR!1&#39;</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl">  <span class="nb">p</span> <span class="n">data</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl"><span class="k">end</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl">
+</span></span><span class="line"><span class="ln">6</span><span class="cl"><span class="no">Rectangle</span><span class="o">.</span><span class="n">area</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span> <span class="c1"># &#39;IT`S AN OM~ ERROR!1&#39;</span></span></span></code></pre></div><h2 id="custom-types">Custom types</h2>
+<p><em>Contracts</em> library comes with many built-in type contracts:</p>
+<ul>
+<li>Basic types: <code>Num, Pos, Neg, Nat, Bool, Any, None</code></li>
+<li>Logical: <code>Maybe, Or, Xor, And, Not</code></li>
+<li>Collections: <code>ArrayOf, SetOf, HashOf, RangeOf, Enum</code></li>
+</ul>
+<p>and others. But if your want to create your own types or check more
+complex conditions, then you have to use lambdas:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="k">class</span> <span class="nc">CharCounter</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  <span class="kp">include</span> <span class="no">Contracts</span><span class="o">::</span><span class="no">Core</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">  <span class="kp">include</span> <span class="no">Contracts</span><span class="o">::</span><span class="no">Builtin</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">  <span class="no">Char</span> <span class="o">=</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">char</span><span class="p">)</span> <span class="p">{</span> <span class="n">char</span><span class="o">.</span><span class="n">is_a?</span><span class="p">(</span><span class="nb">String</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="n">char</span><span class="o">.</span><span class="n">length</span> <span class="o">==</span> <span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="n">char</span> <span class="o">=~</span> <span class="sr">/\w/</span> <span class="p">}</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">  <span class="no">Contract</span> <span class="no">Maybe</span><span class="o">[</span><span class="nb">String</span><span class="o">]</span><span class="p">,</span> <span class="no">Char</span> <span class="o">=&gt;</span> <span class="no">Num</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">count_chars</span><span class="p">(</span><span class="n">str</span><span class="p">,</span> <span class="n">ch</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    <span class="n">str</span><span class="o">.</span><span class="n">count</span> <span class="n">ch</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">    <span class="k">end</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="k">end</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">
+</span></span><span class="line"><span class="ln">14</span><span class="cl"><span class="no">CharCounter</span><span class="o">.</span><span class="n">count_chars</span> <span class="s1">&#39;hello&#39;</span><span class="p">,</span> <span class="s1">&#39;N&#39;</span> <span class="c1"># 0</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl"><span class="no">CharCounter</span><span class="o">.</span><span class="n">count_chars</span> <span class="s1">&#39;hello&#39;</span><span class="p">,</span> <span class="s1">&#39;l&#39;</span> <span class="c1"># 2</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl"><span class="no">CharCounter</span><span class="o">.</span><span class="n">count_chars</span> <span class="s1">&#39;hello&#39;</span><span class="p">,</span> <span class="s1">&#39;*&#39;</span> <span class="c1"># ParamContractError: Contract violation for argument 2 of 2</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl"><span class="no">CharCounter</span><span class="o">.</span><span class="n">count_chars</span> <span class="s1">&#39;llo&#39;</span><span class="p">,</span> <span class="s1">&#39;llo&#39;</span> <span class="c1"># ParamContractError: Contract violation for argument 2 of 2</span></span></span></code></pre></div><h2 id="pattern-matching">Pattern matching</h2>
+<p>Pattern matching, like a contract, comes from functional programming.
+You can use your contracts to test if your method matches pattern or
+not. For example, let&rsquo;s find a factorial of number with contracts:</p>
+<p>#+begin_src ruby
+class Factorial
+include Contracts::Core
+include Contracts::Builtin</p>
+<p>Contract 0 =&gt; 1
+def self.factorial(_n)
+1
+end</p>
+<p>Contract Num =&gt; Num
+def self.factorial(n)
+n * factorial(n - 1)
+end
+end</p>
+<p>Factorial.factorial 0 # 0
+Factorial.factorial 10 # 3628800
+Factorial.factorial &lsquo;a&rsquo; # ContractError: Contract violation for argument 1 of 1 #+end_src</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>Ruby has simple and powerful type system, but if it&rsquo;s not enough or you
+want to use safety type checking and you don&rsquo;t like to write tons of a
+defensive code, then you may like <em>Contracts</em> library. Contracts allows
+you to check many types, conditions for your class methods much cleaner
+and simpler. Also you can define your own types or conditions with plain
+Ruby lambdas, and then use them for pattern-matching.</p>
+<p>If you&rsquo;re like it and want to know more,
+<a href="http://egonschiele.github.io/contracts.ruby/">there is Ruby contracts
+tutorial</a>.</p>
+]]></content:encoded>
+    </item>
+  </channel>
+</rss>

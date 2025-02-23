@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+
+<head>
+  <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="shortcut icon" href="https://neiro.io/images/favicon.png" />
+<title>Elixir continious integration with CircleCI | neiro blog</title>
+<meta name="title" content="Elixir continious integration with CircleCI" />
+<meta name="description" content="Elixir programming language has gained popularity and now it is
+supported at many platforms, including plenty of CI services. In this
+article we will see how we can achieve seamless and (almost) dead
+simple continious integration by using CircleCI in our Elixir projects.
+CircleCI 2.0
+CircleCI is one of the most popular and
+user-friendly continious integration solutions. It supports many
+programming languages and tools, including Elixir and Erlang/OTP.
+CircleCI is entirely free when it comes to open-source GitHub
+repositories, but it also provides free 1500 minutes a month for any
+private repos." />
+<meta name="author" content="[neiro]" />
+<meta name="keywords" content="elixir,quality,ci," />
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+<meta property="og:title" content="Elixir continious integration with CircleCI" />
+<meta property="og:description" content="Elixir programming language has gained popularity and now it is
+supported at many platforms, including plenty of CI services. In this
+article we will see how we can achieve seamless and (almost) dead
+simple continious integration by using CircleCI in our Elixir projects.
+CircleCI 2.0
+CircleCI is one of the most popular and
+user-friendly continious integration solutions. It supports many
+programming languages and tools, including Elixir and Erlang/OTP.
+CircleCI is entirely free when it comes to open-source GitHub
+repositories, but it also provides free 1500 minutes a month for any
+private repos." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://neiro.io/blog/2018-06-19-elixir-continious-integration-with-circleci.md/" />
+
+<meta property="og:image" content="https://neiro.io/images/social_card_bg_hu3167015756140544128.webp"/><meta property="article:section" content="blog" />
+<meta property="article:published_time" content="2018-06-19T10:00:00+02:00" />
+<meta property="article:modified_time" content="2018-06-19T10:00:00+02:00" /><meta property="og:site_name" content="neiro" />
+
+
+
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://neiro.io/images/social_card_bg_hu3167015756140544128.webp"/>
+<meta name="twitter:title" content="Elixir continious integration with CircleCI"/>
+<meta name="twitter:description" content="Elixir programming language has gained popularity and now it is
+supported at many platforms, including plenty of CI services. In this
+article we will see how we can achieve seamless and (almost) dead
+simple continious integration by using CircleCI in our Elixir projects.
+CircleCI 2.0
+CircleCI is one of the most popular and
+user-friendly continious integration solutions. It supports many
+programming languages and tools, including Elixir and Erlang/OTP.
+CircleCI is entirely free when it comes to open-source GitHub
+repositories, but it also provides free 1500 minutes a month for any
+private repos."/>
+
+
+
+<meta itemprop="name" content="Elixir continious integration with CircleCI">
+<meta itemprop="description" content="Elixir programming language has gained popularity and now it is
+supported at many platforms, including plenty of CI services. In this
+article we will see how we can achieve seamless and (almost) dead
+simple continious integration by using CircleCI in our Elixir projects.
+CircleCI 2.0
+CircleCI is one of the most popular and
+user-friendly continious integration solutions. It supports many
+programming languages and tools, including Elixir and Erlang/OTP.
+CircleCI is entirely free when it comes to open-source GitHub
+repositories, but it also provides free 1500 minutes a month for any
+private repos."><meta itemprop="datePublished" content="2018-06-19T10:00:00+02:00" />
+<meta itemprop="dateModified" content="2018-06-19T10:00:00+02:00" />
+<meta itemprop="wordCount" content="1165">
+
+<meta itemprop="image" content="https://neiro.io/images/social_card_bg_hu3167015756140544128.webp"/>
+
+
+<meta itemprop="keywords" content="elixir,quality,ci," />
+
+<meta name="referrer" content="no-referrer-when-downgrade" />
+
+  
+  <link href="/herman.min.css" rel="stylesheet">
+
+  
+    
+    <link href="/syntax.min.css" rel="stylesheet">
+  
+
+  
+
+  
+</head>
+
+<body>
+  <header><a class="skip-link" href="#main-content">Skip to main content</a>
+
+<a href="/" class="title"><h1>neiro blog</h1></a>
+<nav>
+  <a href="/">Home</a>
+
+  <a href="/blog/">Blog</a>
+
+<a href='https://neiro.io/index.xml'>RSS</a>
+
+
+
+
+
+
+
+</nav>
+</header>
+  <main id="main-content">
+
+<h1>Elixir continious integration with CircleCI</h1>
+<p class="byline">
+  <time datetime='2018-06-19' pubdate>
+    2018-06-19
+  </time>
+  · [neiro]
+</p>
+
+<content>
+  <p>Elixir programming language has gained popularity and now it is
+supported at many platforms, including plenty of CI services. In this
+article we will see how we can achieve seamless and <em>(almost)</em> dead
+simple continious integration by using CircleCI in our Elixir projects.</p>
+<h2 id="circleci-2.0">CircleCI 2.0</h2>
+<p><a href="https://circleci.com">CircleCI</a> is one of the most popular and
+user-friendly continious integration solutions. It supports many
+programming languages and tools, including Elixir and Erlang/OTP.</p>
+<p>CircleCI is entirely free when it comes to open-source GitHub
+repositories, but it also provides free 1500 minutes a month for any
+private repos.</p>
+<p>Starting version 2.0 CircleCI can create jobs based on any images from
+<a href="https://hub.docker.com/">DockerHub</a>. This feature makes possible to
+build any programming language or platform that can be placed in Docker
+image.</p>
+<p>Imagine you have a standard Elixir Phoenix / Ecto application. You need
+to run it on the latest versions of Elixir and Erlang/OTP and run the
+tests on PostgreSQL database.</p>
+<p>Let&rsquo;s start by creating a CircleCI configuration file in
+<code>.circleci/config.yml</code>:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">  version: 2  # use CircleCI 2.0 instead of CircleCI Classic
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  jobs:  # basic units of work in a run
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">    build:  # runs not using Workflows must have a `build` job as entry point
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">      parallelism: 1  # run only one instance of this job in parallel
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">      docker:  # run the steps with Docker
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">        - image: circleci/elixir:1.6 # ...with this image as the primary container; this is where all `steps` will run
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">          environment:  # environment variables for primary container
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">            MIX_ENV: test
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">            SHELL: /bin/bash
+</span></span><span class="line"><span class="ln">10</span><span class="cl">        - image: mdillon/postgis:9.6-alpine  # database image
+</span></span><span class="line"><span class="ln">11</span><span class="cl">          environment:  # environment variables for database
+</span></span><span class="line"><span class="ln">12</span><span class="cl">            POSTGRES_DB: app_test
+</span></span><span class="line"><span class="ln">13</span><span class="cl">
+</span></span><span class="line"><span class="ln">14</span><span class="cl">      steps:  # commands that comprise the `build` job
+</span></span><span class="line"><span class="ln">15</span><span class="cl">        - checkout  # check out source code to working directory
+</span></span><span class="line"><span class="ln">16</span><span class="cl">
+</span></span><span class="line"><span class="ln">17</span><span class="cl">        - run: mix local.hex --force  # install Hex locally (without prompt)
+</span></span><span class="line"><span class="ln">18</span><span class="cl">        - run: mix local.rebar --force  # fetch a copy of rebar (without prompt)</span></span></code></pre></div><p>As you can see here, we are declaring the <code>build</code> continious integration
+job. Basically we will use the Elixir 1.6 with PostgreSQL 9.6 to run
+tests on the <code>app_test</code> database. After that we will checkout source
+code base to fetch our recent changes into the build. <code>mix local</code> tasks
+are also necessary in order to use any of <em>Mix</em> tasks later.</p>
+<h2 id="running-tests-and-code-quality">Running tests and code quality</h2>
+<p>All of us want to run all common continious integration steps such as:</p>
+<ul>
+<li>Fetch dependencies and compile application</li>
+<li>Run code quality tools and checks (<em>you can read more about it
+<a href="https://neiro.io/2018/04/28/elixir-code-quality-tools-and-checks.html">here</a>)</em></li>
+<li>Execute all tests to make sure that our build is successful and
+infallible</li>
+<li>Run heavy and bulky static analysis tools</li>
+</ul>
+<p>Also we want to make our builds as fast as possible, so we definitely
+need caching. Let&rsquo;s continue with our config and implement the steps
+above:</p>
+<p>{% raw %}</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">        - restore_cache:  # restores saved mix cache
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">            keys:  # list of cache keys, in decreasing specificity
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">              - v1-mix-cache-{{ .Branch }}-{{ checksum &#34;mix.lock&#34; }}
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">              - v1-mix-cache-{{ .Branch }}
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">              - v1-mix-cache
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">        - restore_cache:  # restores saved build cache
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">            keys:
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">              - v1-build-cache-{{ .Branch }}
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">              - v1-build-cache
+</span></span><span class="line"><span class="ln">10</span><span class="cl">        - restore_cache:  # restores saved plt cache
+</span></span><span class="line"><span class="ln">11</span><span class="cl">            keys:
+</span></span><span class="line"><span class="ln">12</span><span class="cl">              - dialyzer-cache
+</span></span><span class="line"><span class="ln">13</span><span class="cl">
+</span></span><span class="line"><span class="ln">14</span><span class="cl">        - run: mix do deps.get, compile # get updated dependencies &amp; compile them
+</span></span><span class="line"><span class="ln">15</span><span class="cl">
+</span></span><span class="line"><span class="ln">16</span><span class="cl">        - save_cache:  # generate and store cache so `restore_cache` works
+</span></span><span class="line"><span class="ln">17</span><span class="cl">            key: v1-mix-cache-{{ .Branch }}-{{ checksum &#34;mix.lock&#34; }}
+</span></span><span class="line"><span class="ln">18</span><span class="cl">            paths: &#34;deps&#34;
+</span></span><span class="line"><span class="ln">19</span><span class="cl">        - save_cache:  # make another less specific cache
+</span></span><span class="line"><span class="ln">20</span><span class="cl">            key: v1-mix-cache-{{ .Branch }}
+</span></span><span class="line"><span class="ln">21</span><span class="cl">            paths: &#34;deps&#34;
+</span></span><span class="line"><span class="ln">22</span><span class="cl">        - save_cache:  # you should really save one more cache just in case
+</span></span><span class="line"><span class="ln">23</span><span class="cl">            key: v1-mix-cache
+</span></span><span class="line"><span class="ln">24</span><span class="cl">            paths: &#34;deps&#34;
+</span></span><span class="line"><span class="ln">25</span><span class="cl">        - save_cache: # don&#39;t forget to save a *build* cache, too
+</span></span><span class="line"><span class="ln">26</span><span class="cl">            key: v1-build-cache-{{ .Branch }}
+</span></span><span class="line"><span class="ln">27</span><span class="cl">            paths: &#34;_build&#34;
+</span></span><span class="line"><span class="ln">28</span><span class="cl">        - save_cache: # and one more build cache for good measure
+</span></span><span class="line"><span class="ln">29</span><span class="cl">            key: v1-build-cache
+</span></span><span class="line"><span class="ln">30</span><span class="cl">            paths: &#34;_build&#34;
+</span></span><span class="line"><span class="ln">31</span><span class="cl">
+</span></span><span class="line"><span class="ln">32</span><span class="cl">        - run: mix do format --check-formatted, credo --strict, security
+</span></span><span class="line"><span class="ln">33</span><span class="cl">        - run: mix do xref deprecated --include-siblings, xref unreachable --include-siblings, xref graph --format stats
+</span></span><span class="line"><span class="ln">34</span><span class="cl">
+</span></span><span class="line"><span class="ln">35</span><span class="cl">        - run:  # special utility that stalls main process until DB is ready
+</span></span><span class="line"><span class="ln">36</span><span class="cl">            name: Wait for DB
+</span></span><span class="line"><span class="ln">37</span><span class="cl">            command: dockerize -wait tcp://localhost:5432 -timeout 1m
+</span></span><span class="line"><span class="ln">38</span><span class="cl">
+</span></span><span class="line"><span class="ln">39</span><span class="cl">        - run: mix do ecto.migrations, ecto.load
+</span></span><span class="line"><span class="ln">40</span><span class="cl">        - run: mix test  # run all tests in project
+</span></span><span class="line"><span class="ln">41</span><span class="cl">
+</span></span><span class="line"><span class="ln">42</span><span class="cl">        - run: mix dialyzer --halt-exit-status
+</span></span><span class="line"><span class="ln">43</span><span class="cl">        - save_cache:
+</span></span><span class="line"><span class="ln">44</span><span class="cl">            key: dialyzer-cache
+</span></span><span class="line"><span class="ln">45</span><span class="cl">            paths: &#34;_build/test/dialyxir*.plt&#34;
+</span></span><span class="line"><span class="ln">46</span><span class="cl">
+</span></span><span class="line"><span class="ln">47</span><span class="cl">        - store_test_results:  # upload test results for display in Test Summary
+</span></span><span class="line"><span class="ln">48</span><span class="cl">            path: _build/test/lib/app/results.xml</span></span></code></pre></div><p>{% endraw %}</p>
+<p>Now you can start new builds by signing up into CircleCI as it will run
+the configuration and steps from your config. Every commit in any branch
+will run the build job and you will know if something is wrong with your
+code.</p>
+<h2 id="deploying">Deploying</h2>
+<p>However, having only one build job is not enough even for the simplest
+CI process. Most often we need to make a staging/production release by
+using <a href="https://github.com/bitwalker/distillery">Distillery</a>.</p>
+<p>Let&rsquo;s continue filling up our configuration file by adding a new
+<code>deploy</code> job:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">    deploy:
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">      docker:
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">        - image: circleci/elixir:1.6
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">          environment:  # environment variables for primary container
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">            SHELL: /bin/bash
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">            MIX_ENV: staging
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">      steps:
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">        - checkout  # check out source code to working directory
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">
+</span></span><span class="line"><span class="ln">10</span><span class="cl">        - run: mix local.hex --force  # install Hex locally (without prompt)
+</span></span><span class="line"><span class="ln">11</span><span class="cl">        - run: mix local.rebar --force  # fetch a copy of rebar (without prompt)
+</span></span><span class="line"><span class="ln">12</span><span class="cl">
+</span></span><span class="line"><span class="ln">13</span><span class="cl">        - run: mix do deps.get, compile # get updated dependencies &amp; compile them
+</span></span><span class="line"><span class="ln">14</span><span class="cl">
+</span></span><span class="line"><span class="ln">15</span><span class="cl">        # set MIX_ENV to prod or staging value according to the source branch
+</span></span><span class="line"><span class="ln">16</span><span class="cl">        - run:
+</span></span><span class="line"><span class="ln">17</span><span class="cl">            name: Update MIX_ENV environment variable
+</span></span><span class="line"><span class="ln">18</span><span class="cl">            command: |
+</span></span><span class="line"><span class="ln">19</span><span class="cl">              echo &#34;export MIX_ENV=$(if [ &#39;$CIRCLE_BRANCH&#39; &#39;==&#39; &#39;master&#39; ]; then echo &#39;prod&#39;; else echo &#39;staging&#39;; fi)&#34; &gt;&gt; $BASH_ENV
+</span></span><span class="line"><span class="ln">20</span><span class="cl">              source $BASH_ENV
+</span></span><span class="line"><span class="ln">21</span><span class="cl">
+</span></span><span class="line"><span class="ln">22</span><span class="cl">        - run: cd deps/argon2_elixir &amp;&amp; make clean &amp;&amp; make &amp;&amp; cd -
+</span></span><span class="line"><span class="ln">23</span><span class="cl">        - run: MIX_ENV=staging mix release --env $MIX_ENV
+</span></span><span class="line"><span class="ln">24</span><span class="cl">
+</span></span><span class="line"><span class="ln">25</span><span class="cl">        - run: tar -zcvf $CIRCLE_SHA1.tar.gz bin appspec.yml VERSION _build/$MIX_ENV/rel/app/releases/$(cat VERSION)/app.tar.gz</span></span></code></pre></div><p>This will be enough to create a separate deploy job that will run on a
+separate Docker image. However, we will need to run it only on develop
+and master branches in order to upload staging/production releases
+accordingly. We can achieve this by using CircleCI workflow and
+providing a simple configuration at the bottom of our config file:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">  workflows:
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">    version: 2
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">    build-and-deploy:
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">      jobs:
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">        - build
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">        - deploy:
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">            requires:
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">              - build
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">            filters:
+</span></span><span class="line"><span class="ln">10</span><span class="cl">              branches:
+</span></span><span class="line"><span class="ln">11</span><span class="cl">                only:
+</span></span><span class="line"><span class="ln">12</span><span class="cl">                  - develop
+</span></span><span class="line"><span class="ln">13</span><span class="cl">                  - master</span></span></code></pre></div><p>After that you are free to upload the built release to any server or any
+platform you want. You can use Edeliver, Ansible, Chef, Docker - it&rsquo;s up
+to you.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>As you can see above, it&rsquo;s not so hard to build and deploy Elixir
+applications with CircleCI 2.0. This platform is flexible and fast
+enough to make your continious integration bright and shiny.</p>
+<p>If you want to discover even more on the topic then let&rsquo;s read
+<a href="https://circleci.com/docs/2.0/">CircleCI 2.0 documentation</a> and
+<a href="https://circleci.com/docs/2.0/language-elixir/">Elixir Language
+Guide</a>.</p>
+<p>Happy hacking, everyone!</p>
+
+</content>
+<p>
+  
+    <a class="blog-tags" href="/tags/elixir/">#elixir</a>
+  
+    <a class="blog-tags" href="/tags/quality/">#quality</a>
+  
+    <a class="blog-tags" href="/tags/ci/">#ci</a>
+  
+</p>
+
+
+
+
+  </main>
+  <footer><small>
+  neiro © 2012-2025 | Made with <a href="https://github.com/clente/hugo-bearcub">Bear Cub</a>
+</small></footer>
+
+    
+</body>
+
+</html>

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+
+<head>
+  <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="shortcut icon" href="https://neiro.io/images/favicon.png" />
+<title>Partial function application and currying in Ruby | neiro blog</title>
+<meta name="title" content="Partial function application and currying in Ruby" />
+<meta name="description" content="Currying and partial function application are common concepts of the
+functional programming. They look similar, but have differences in
+realization and using. Ruby allows you to easily operate with both of
+them.
+Partial function application
+First we need to know what is really application is: it&rsquo;s the process
+of applying function to all of it&rsquo;s arguments to return value.
+Partial function application is the process of applying function to
+some of it&rsquo;s arguments. This process creates a new function, based on
+the parent function, but with lower arity (with fewer arguments). So,
+if we have an abstract function
+
+with three arguments, then we can create a partial function
+
+with two arguments that both of this functions return the same result." />
+<meta name="author" content="[neiro]" />
+<meta name="keywords" content="ruby,functional," />
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+<meta property="og:title" content="Partial function application and currying in Ruby" />
+<meta property="og:description" content="Currying and partial function application are common concepts of the
+functional programming. They look similar, but have differences in
+realization and using. Ruby allows you to easily operate with both of
+them.
+Partial function application
+First we need to know what is really application is: it&rsquo;s the process
+of applying function to all of it&rsquo;s arguments to return value.
+Partial function application is the process of applying function to
+some of it&rsquo;s arguments. This process creates a new function, based on
+the parent function, but with lower arity (with fewer arguments). So,
+if we have an abstract function
+
+with three arguments, then we can create a partial function
+
+with two arguments that both of this functions return the same result." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://neiro.io/blog/2016-03-08-partial-function-application-and-currying-in-ruby.md/" />
+
+<meta property="og:image" content="https://neiro.io/images/social_card_bg_hu799610707485938773.webp"/><meta property="article:section" content="blog" />
+<meta property="article:published_time" content="2016-03-08T10:00:00+01:00" />
+<meta property="article:modified_time" content="2016-03-08T10:00:00+01:00" /><meta property="og:site_name" content="neiro" />
+
+
+
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://neiro.io/images/social_card_bg_hu799610707485938773.webp"/>
+<meta name="twitter:title" content="Partial function application and currying in Ruby"/>
+<meta name="twitter:description" content="Currying and partial function application are common concepts of the
+functional programming. They look similar, but have differences in
+realization and using. Ruby allows you to easily operate with both of
+them.
+Partial function application
+First we need to know what is really application is: it&rsquo;s the process
+of applying function to all of it&rsquo;s arguments to return value.
+Partial function application is the process of applying function to
+some of it&rsquo;s arguments. This process creates a new function, based on
+the parent function, but with lower arity (with fewer arguments). So,
+if we have an abstract function
+
+with three arguments, then we can create a partial function
+
+with two arguments that both of this functions return the same result."/>
+
+
+
+<meta itemprop="name" content="Partial function application and currying in Ruby">
+<meta itemprop="description" content="Currying and partial function application are common concepts of the
+functional programming. They look similar, but have differences in
+realization and using. Ruby allows you to easily operate with both of
+them.
+Partial function application
+First we need to know what is really application is: it&rsquo;s the process
+of applying function to all of it&rsquo;s arguments to return value.
+Partial function application is the process of applying function to
+some of it&rsquo;s arguments. This process creates a new function, based on
+the parent function, but with lower arity (with fewer arguments). So,
+if we have an abstract function
+
+with three arguments, then we can create a partial function
+
+with two arguments that both of this functions return the same result."><meta itemprop="datePublished" content="2016-03-08T10:00:00+01:00" />
+<meta itemprop="dateModified" content="2016-03-08T10:00:00+01:00" />
+<meta itemprop="wordCount" content="437">
+
+<meta itemprop="image" content="https://neiro.io/images/social_card_bg_hu799610707485938773.webp"/>
+
+
+<meta itemprop="keywords" content="ruby,functional," />
+
+<meta name="referrer" content="no-referrer-when-downgrade" />
+
+  
+  <link href="/herman.min.css" rel="stylesheet">
+
+  
+    
+    <link href="/syntax.min.css" rel="stylesheet">
+  
+
+  
+
+  
+</head>
+
+<body>
+  <header><a class="skip-link" href="#main-content">Skip to main content</a>
+
+<a href="/" class="title"><h1>neiro blog</h1></a>
+<nav>
+  <a href="/">Home</a>
+
+  <a href="/blog/">Blog</a>
+
+<a href='https://neiro.io/index.xml'>RSS</a>
+
+
+
+
+
+
+
+</nav>
+</header>
+  <main id="main-content">
+
+<h1>Partial function application and currying in Ruby</h1>
+<p class="byline">
+  <time datetime='2016-03-08' pubdate>
+    2016-03-08
+  </time>
+  · [neiro]
+</p>
+
+<content>
+  <p>Currying and partial function application are common concepts of the
+functional programming. They look similar, but have differences in
+realization and using. Ruby allows you to easily operate with both of
+them.</p>
+<h2 id="partial-function-application">Partial function application</h2>
+<p>First we need to know what is really <em>application</em> is: it&rsquo;s the process
+of applying function to <strong>all of it&rsquo;s arguments</strong> to return value.<br />
+<em>Partial function application</em> is the process of applying function to
+<strong>some of it&rsquo;s arguments</strong>. This process creates a new function, based on
+the parent function, but with lower arity (<em>with fewer arguments</em>). So,
+if we have an abstract function
+<img src="https://upload.wikimedia.org/math/4/3/a/43a45f58c8f35707c396444463e2ef24.png" alt="">
+with three arguments, then we can create a partial function
+<img src="https://upload.wikimedia.org/math/1/d/5/1d54867424707e76c6f46bf426fc193e.png" alt="">
+with two arguments that both of this functions return the same result.</p>
+<p>For example, we have a simple multiply function that multiplies two
+arguments:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"> <span class="n">multiply</span> <span class="o">=</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="p">{</span> <span class="n">x</span> <span class="o">*</span> <span class="n">y</span> <span class="p">}</span> <span class="n">multiply</span><span class="o">.</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="c1"># 4</span></span></span></code></pre></div><p>But what if we want just double numbers ? Should we pass the <em>2</em>
+argument each time? Not really. We can use partial function application
+to create a new <em>double</em> function that takes just one argument:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">double</span> <span class="o">=</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="p">{</span> <span class="n">multiply</span><span class="o">.</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="p">}</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="n">double</span><span class="o">.</span><span class="n">arity</span> <span class="c1"># 1</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="n">double</span><span class="o">.</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="c1"># 4</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl"><span class="n">double</span><span class="o">.</span><span class="p">(</span><span class="mi">1984</span><span class="p">)</span> <span class="c1"># 3968</span></span></span></code></pre></div><p>Ruby has <em>Proc#curry</em> method that allows you to use partial function
+application even more simpler:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">double</span> <span class="o">=</span> <span class="n">multiply</span><span class="o">.</span><span class="n">curry</span><span class="o">.</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="n">double</span><span class="o">.</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="c1"># 4</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="n">double</span><span class="o">.</span><span class="p">(</span><span class="mi">300</span><span class="p">)</span> <span class="c1"># 600</span></span></span></code></pre></div><h2 id="currying">Currying</h2>
+<p>Currying is similar to partial function application concept.</p>
+<p><strong>Currying</strong> is the process of translating the evaluating of <em>function
+with many arguments</em> into evaluating a sequence of functions, each with
+<em>exactly one parameter</em>. So, if we have a function with two arguments:
+<img src="https://upload.wikimedia.org/math/4/3/b/43ba302d099d623ae50cce466eb1f34d.png" alt="">
+then we can translate it with
+<img src="https://upload.wikimedia.org/math/0/1/3/0138ee5c8706ca68729e27f0e01e56ee.png" alt="">
+transformation to return a new function with one parameter:
+<img src="https://upload.wikimedia.org/math/7/b/5/7b547dc91687bfb09ee27d4c22f815eb.png" alt="">.</p>
+<p>For example, look back at previous <em>multiply</em> function. What if we want
+to multiply more than two arguments?</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">multiply</span><span class="o">.</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="c1"># ArgumentError: wrong number of arguments (given 3, expected 2)</span></span></span></code></pre></div><p>To prevent this, we can change multiply function and use <em>Proc#curry</em>
+method:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">multiply</span> <span class="o">=</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">head</span><span class="p">,</span> <span class="sr">/tail) { head /</span> <span class="n">tail</span><span class="o">.</span><span class="n">inject</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">&amp;</span><span class="ss">:*</span><span class="p">)</span> <span class="p">}</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="n">multiply</span><span class="o">.</span><span class="n">curry</span><span class="o">.</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="c1"># 8</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="n">multiply</span><span class="o">.</span><span class="n">curry</span><span class="o">.</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span> <span class="c1"># 42</span></span></span></code></pre></div><p>If we want to restrict arguments count, we can use <em>arity</em> optional
+argument in <em>Proc#curry</em> function:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">multiply</span><span class="o">.</span><span class="n">curry</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">[</span><span class="mi">1</span><span class="o">][</span><span class="mi">2</span><span class="o">][</span><span class="mi">3</span><span class="o">]</span> <span class="c1"># 6</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="n">multiply</span><span class="o">.</span><span class="n">curry</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">[</span><span class="mi">1</span><span class="o">][</span><span class="mi">2</span><span class="o">][</span><span class="mi">3</span><span class="o">][</span><span class="mi">4</span><span class="o">]</span> <span class="c1"># 0 because of the last argument is nil</span></span></span></code></pre></div><p>You can also use <em>curry</em> method on plain methods, not only procs with
+Ruby 2.2:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="k">def</span> <span class="nf">sum</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">  <span class="n">args</span><span class="o">.</span><span class="n">inject</span><span class="p">(</span><span class="ss">:+</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="k">end</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl">
+</span></span><span class="line"><span class="ln">5</span><span class="cl"><span class="n">plus_two</span> <span class="o">=</span> <span class="nb">method</span><span class="p">(</span><span class="ss">:sum</span><span class="p">)</span><span class="o">.</span><span class="n">curry</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">6</span><span class="cl"><span class="n">plus_two</span><span class="o">.</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="c1"># 5</span></span></span></code></pre></div><h2 id="conclusion">Conclusion</h2>
+<p>Partial function application and currying are both great features of
+functional programming that allows you to write clean, simple and
+flexible functions based on anothers. You can use Ruby&rsquo;s <em>#curry</em> method
+with procs or methods to write eloquent and powerful code.</p>
+
+</content>
+<p>
+  
+    <a class="blog-tags" href="/tags/ruby/">#ruby</a>
+  
+    <a class="blog-tags" href="/tags/functional/">#functional</a>
+  
+</p>
+
+
+
+
+  </main>
+  <footer><small>
+  neiro © 2012-2025 | Made with <a href="https://github.com/clente/hugo-bearcub">Bear Cub</a>
+</small></footer>
+
+    
+</body>
+
+</html>

@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Emacs on neiro blog</title>
+    <link>https://neiro.io/tags/emacs/</link>
+    <description>Recent content in Emacs on neiro blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-GB</language>
+    <copyright>neiro © 2012-2025</copyright>
+    <lastBuildDate>Wed, 30 Dec 2020 13:20:00 +0100</lastBuildDate>
+    <atom:link href="https://neiro.io/tags/emacs/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Migrating from Jekyll to org-static-blog</title>
+      <link>https://neiro.io/blog/2020-12-30-migrating-from-jekyll-to-org-static-blog/</link>
+      <pubDate>Wed, 30 Dec 2020 13:20:00 +0100</pubDate>
+      <guid>https://neiro.io/blog/2020-12-30-migrating-from-jekyll-to-org-static-blog/</guid>
+      <description>&lt;p&gt;One of the biggest (and positive) discoveries this year for me was definitely an Emacs.&#xA;I&amp;rsquo;ve decided to switch to this editor after using Vim for almost 8 years as I&amp;rsquo;ve started embracing&#xA;Lisps (especially Clojure) and wanted an editor where I can have a first-class integration with these programming languages.&lt;/p&gt;&#xA;&lt;p&gt;Besides the nice integration I&amp;rsquo;ve found out a lot of very interesting related things,&#xA;e.g. REPL-driven development, Org-mode, org-roam, and plenty of others.&#xA;For sure, one of the biggest benefits is the &lt;strong&gt;org-mode&lt;/strong&gt; - which is a most powerful, elegant&#xA;and nicely integrated in Emacs ecosystem markdown language and extensions, in my opinion.&lt;/p&gt;</description>
+      <content:encoded><![CDATA[<p>One of the biggest (and positive) discoveries this year for me was definitely an Emacs.
+I&rsquo;ve decided to switch to this editor after using Vim for almost 8 years as I&rsquo;ve started embracing
+Lisps (especially Clojure) and wanted an editor where I can have a first-class integration with these programming languages.</p>
+<p>Besides the nice integration I&rsquo;ve found out a lot of very interesting related things,
+e.g. REPL-driven development, Org-mode, org-roam, and plenty of others.
+For sure, one of the biggest benefits is the <strong>org-mode</strong> - which is a most powerful, elegant
+and nicely integrated in Emacs ecosystem markdown language and extensions, in my opinion.</p>
+<p>After some time I&rsquo;ve started to thinking about improving my blogging experience.
+The ergonomics of typing, ease of use are quite important to me, so the ideal solution
+would be to embrace the power of the org-mode, evil mode (to keep vim bindings in place) and
+apply it for my personal blog. However, this was not as simple as I&rsquo;ve expected - and there were
+a lot of options.</p>
+<h2 id="org-mode-support-in-existing-blog-engines">Org-mode support in existing blog engines</h2>
+<h3 id="jekyll">Jekyll</h3>
+<p>Jekyll has <a href="https://github.com/eggcaker/jekyll-org">a support for org mode</a> , however, it&rsquo;s based on an outdated
+<strong>org-ruby</strong> gem which might not have a full support of all `org-mode` features.</p>
+<h3 id="gatsby">Gatsby</h3>
+<p>Gatsby.js seems to be a relatively popular choice for building static websites - and it has all
+modern and shiny technologies on the front side, like React, server-side rendering, GraphQL, etc.
+Gatsby also has an <a href="https://www.gatsbyjs.com/plugins/gatsby-transformer-orga/">org-mode plugin</a>, and it looks more or less fully-featured.</p>
+<h3 id="emacs-itself">Emacs itself</h3>
+<p>Emacs has a variety of solutions to have some static website or a small blog built from org-mode.
+So far I&rsquo;ve liked <a href="https://github.com/bastibe/org-static-blog">an org-static-blog</a> solution which can be installed right to an emacs and could be
+an extension to the org-mode.</p>
+<h2 id="migration-from-jekyll">Migration from Jekyll</h2>
+<p>I&rsquo;ve had a lot of issues with outdated Jekyll version and my attempts to update it with assets have failed.
+As for the Gatsby, I&rsquo;ve gave it a try, but it looked like that it focuses more on Markdown and it took a lot of
+efforts to make something tangible with org-mode.
+I&rsquo;ve wanted to re-organise the current assets structure to make it way more minimalistic, so I&rsquo;ve decided to switch
+to the <strong>org-static-blog</strong>.</p>
+<h3 id="installation-of-the-org-static-blog">Installation of the org-static-blog</h3>
+<p>It&rsquo;s quite simple - you just need to run from your Emacs</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-emacs" data-lang="emacs"><span class="line"><span class="ln">1</span><span class="cl"><span class="nv">package-install</span></span></span></code></pre></div><p>and choose</p>
+
+
+
+
+
+<pre tabindex="0"><code class="language-nil" data-lang="nil">org-static-blog</code></pre><h3 id="configuration">Configuration</h3>
+<p>org-static blog has a lot of configuration options, so it&rsquo;s better to refer the <a href="https://github.com/bastibe/org-static-blog#examples">examples and documentation on the website</a>.</p>
+<h3 id="convert-markdown-to-org">Convert markdown to org</h3>
+<p>This is required step which can be quickly done by simple script, assuming that you have pandoc installed:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="ln">1</span><span class="cl"><span class="k">for</span> f in <span class="sb">`</span>ls *.md<span class="sb">`</span><span class="p">;</span> <span class="k">do</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    pandoc -f markdown -t org -o <span class="si">${</span><span class="nv">f</span><span class="si">}</span>.org <span class="si">${</span><span class="nv">f</span><span class="si">}</span><span class="p">;</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="k">done</span></span></span></code></pre></div><h3 id="writing-a-new-post">Writing a new post</h3>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-emacs" data-lang="emacs"><span class="line"><span class="ln">1</span><span class="cl"><span class="nv">org-static-blog-mode</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="nv">org-static-blog-create-new-post</span></span></span></code></pre></div><p>These commands will create a new post with some default template. Run <span class="underline">org-static-blog-publish</span> once you have your post ready.
+This will build a new HTML page in the <strong>/blog</strong> directory.</p>
+<h3 id="ci-cd">CI/CD</h3>
+<p>So far the simplest solution I&rsquo;ve found is just to keep built HTML version of the website in the repo and deploy it on
+each change. <a href="https://gitlab.com/_zngguvnf/org-static-blog-example">There&rsquo;s an example</a> of how the CI/CD can be improved.</p>
+<h2 id="issues-that-are-still-not-solved-by-migration">Issues that are still not solved by migration</h2>
+<p>The migration was not ideal, and there are still some pain points and issues not solved:</p>
+<h3 id="better-code-highlighting">Better code highlighting</h3>
+<p>Some programming languages are highlighted poorly.</p>
+<h3 id="better-ci-cd-experience">Better CI/CD experience</h3>
+<p>There is a way to build the website right from CI, e.g. by executing Emacs Lisp code from the container,
+though it may require some setup &amp; efforts spent before.</p>
+<h3 id="assets-management">Assets management</h3>
+<p>Probably I&rsquo;ll still need to configure Webpack, stylesheets, javascripts to make the website looking more neat
+and more fully featured.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>Switching from Jekyll to <strong>org-static-mode</strong> definitely improved the blogging experience, and now it&rsquo;s a way more
+simpler, faster and enjoyable process. There are still some painful issues which were resolved in other mainstream
+blog engines, but the benefits of having everything typed in <strong>org-mode</strong> and managed by the Emacs are more significant for me.</p>
+<p>Happy new year and keep hacking!</p>
+]]></content:encoded>
+    </item>
+    <item>
+      <title>Migrating from Jekyll to org-static-blog</title>
+      <link>https://neiro.io/posts/2020-12-30-migrating-from-jekyll-to-org-static-blog/</link>
+      <pubDate>Wed, 30 Dec 2020 13:20:00 +0100</pubDate>
+      <guid>https://neiro.io/posts/2020-12-30-migrating-from-jekyll-to-org-static-blog/</guid>
+      <description>&lt;p&gt;One of the biggest (and positive) discoveries this year for me was definitely an Emacs.&#xA;I&amp;rsquo;ve decided to switch to this editor after using Vim for almost 8 years as I&amp;rsquo;ve started embracing&#xA;Lisps (especially Clojure) and wanted an editor where I can have a first-class integration with these programming languages.&lt;/p&gt;&#xA;&lt;p&gt;Besides the nice integration I&amp;rsquo;ve found out a lot of very interesting related things,&#xA;e.g. REPL-driven development, Org-mode, org-roam, and plenty of others.&#xA;For sure, one of the biggest benefits is the &lt;strong&gt;org-mode&lt;/strong&gt; - which is a most powerful, elegant&#xA;and nicely integrated in Emacs ecosystem markdown language and extensions, in my opinion.&lt;/p&gt;</description>
+      <content:encoded><![CDATA[<p>One of the biggest (and positive) discoveries this year for me was definitely an Emacs.
+I&rsquo;ve decided to switch to this editor after using Vim for almost 8 years as I&rsquo;ve started embracing
+Lisps (especially Clojure) and wanted an editor where I can have a first-class integration with these programming languages.</p>
+<p>Besides the nice integration I&rsquo;ve found out a lot of very interesting related things,
+e.g. REPL-driven development, Org-mode, org-roam, and plenty of others.
+For sure, one of the biggest benefits is the <strong>org-mode</strong> - which is a most powerful, elegant
+and nicely integrated in Emacs ecosystem markdown language and extensions, in my opinion.</p>
+<p>After some time I&rsquo;ve started to thinking about improving my blogging experience.
+The ergonomics of typing, ease of use are quite important to me, so the ideal solution
+would be to embrace the power of the org-mode, evil mode (to keep vim bindings in place) and
+apply it for my personal blog. However, this was not as simple as I&rsquo;ve expected - and there were
+a lot of options.</p>
+<h2 id="org-mode-support-in-existing-blog-engines">Org-mode support in existing blog engines</h2>
+<h3 id="jekyll">Jekyll</h3>
+<p>Jekyll has <a href="https://github.com/eggcaker/jekyll-org">a support for org mode</a> , however, it&rsquo;s based on an outdated
+<strong>org-ruby</strong> gem which might not have a full support of all `org-mode` features.</p>
+<h3 id="gatsby">Gatsby</h3>
+<p>Gatsby.js seems to be a relatively popular choice for building static websites - and it has all
+modern and shiny technologies on the front side, like React, server-side rendering, GraphQL, etc.
+Gatsby also has an <a href="https://www.gatsbyjs.com/plugins/gatsby-transformer-orga/">org-mode plugin</a>, and it looks more or less fully-featured.</p>
+<h3 id="emacs-itself">Emacs itself</h3>
+<p>Emacs has a variety of solutions to have some static website or a small blog built from org-mode.
+So far I&rsquo;ve liked <a href="https://github.com/bastibe/org-static-blog">an org-static-blog</a> solution which can be installed right to an emacs and could be
+an extension to the org-mode.</p>
+<h2 id="migration-from-jekyll">Migration from Jekyll</h2>
+<p>I&rsquo;ve had a lot of issues with outdated Jekyll version and my attempts to update it with assets have failed.
+As for the Gatsby, I&rsquo;ve gave it a try, but it looked like that it focuses more on Markdown and it took a lot of
+efforts to make something tangible with org-mode.
+I&rsquo;ve wanted to re-organise the current assets structure to make it way more minimalistic, so I&rsquo;ve decided to switch
+to the <strong>org-static-blog</strong>.</p>
+<h3 id="installation-of-the-org-static-blog">Installation of the org-static-blog</h3>
+<p>It&rsquo;s quite simple - you just need to run from your Emacs</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-emacs" data-lang="emacs"><span class="line"><span class="ln">1</span><span class="cl"><span class="nv">package-install</span></span></span></code></pre></div><p>and choose</p>
+
+
+
+
+
+<pre tabindex="0"><code class="language-nil" data-lang="nil">org-static-blog</code></pre><h3 id="configuration">Configuration</h3>
+<p>org-static blog has a lot of configuration options, so it&rsquo;s better to refer the <a href="https://github.com/bastibe/org-static-blog#examples">examples and documentation on the website</a>.</p>
+<h3 id="convert-markdown-to-org">Convert markdown to org</h3>
+<p>This is required step which can be quickly done by simple script, assuming that you have pandoc installed:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="ln">1</span><span class="cl"><span class="k">for</span> f in <span class="sb">`</span>ls *.md<span class="sb">`</span><span class="p">;</span> <span class="k">do</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    pandoc -f markdown -t org -o <span class="si">${</span><span class="nv">f</span><span class="si">}</span>.org <span class="si">${</span><span class="nv">f</span><span class="si">}</span><span class="p">;</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="k">done</span></span></span></code></pre></div><h3 id="writing-a-new-post">Writing a new post</h3>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-emacs" data-lang="emacs"><span class="line"><span class="ln">1</span><span class="cl"><span class="nv">org-static-blog-mode</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="nv">org-static-blog-create-new-post</span></span></span></code></pre></div><p>These commands will create a new post with some default template. Run <span class="underline">org-static-blog-publish</span> once you have your post ready.
+This will build a new HTML page in the <strong>/blog</strong> directory.</p>
+<h3 id="ci-cd">CI/CD</h3>
+<p>So far the simplest solution I&rsquo;ve found is just to keep built HTML version of the website in the repo and deploy it on
+each change. <a href="https://gitlab.com/_zngguvnf/org-static-blog-example">There&rsquo;s an example</a> of how the CI/CD can be improved.</p>
+<h2 id="issues-that-are-still-not-solved-by-migration">Issues that are still not solved by migration</h2>
+<p>The migration was not ideal, and there are still some pain points and issues not solved:</p>
+<h3 id="better-code-highlighting">Better code highlighting</h3>
+<p>Some programming languages are highlighted poorly.</p>
+<h3 id="better-ci-cd-experience">Better CI/CD experience</h3>
+<p>There is a way to build the website right from CI, e.g. by executing Emacs Lisp code from the container,
+though it may require some setup &amp; efforts spent before.</p>
+<h3 id="assets-management">Assets management</h3>
+<p>Probably I&rsquo;ll still need to configure Webpack, stylesheets, javascripts to make the website looking more neat
+and more fully featured.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>Switching from Jekyll to <strong>org-static-mode</strong> definitely improved the blogging experience, and now it&rsquo;s a way more
+simpler, faster and enjoyable process. There are still some painful issues which were resolved in other mainstream
+blog engines, but the benefits of having everything typed in <strong>org-mode</strong> and managed by the Emacs are more significant for me.</p>
+<p>Happy new year and keep hacking!</p>
+]]></content:encoded>
+    </item>
+  </channel>
+</rss>

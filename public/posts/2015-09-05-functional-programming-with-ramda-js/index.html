@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+
+<head>
+  <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="shortcut icon" href="https://neiro.io/images/favicon.png" />
+<title>Functional programming with Ramda.js | neiro blog</title>
+<meta name="title" content="Functional programming with Ramda.js" />
+<meta name="description" content="JavaScript is one of the most dynamic, flexible programming
+languages. It supports multiple programming paradigms - imperative,
+object (prototype) oriented, scripting, and functional.
+Let&rsquo; see what JavaScript has common with functional programming
+languages:
+
+First-class functions - functions are objects themselves
+Anonymous functions - functions can be unnamed and nested
+Closures - functions that refer to independent variables, that were
+created in other scope
+Recursion - function can call itself
+
+By the way, there are some significant differences:" />
+<meta name="author" content="[neiro]" />
+<meta name="keywords" content="javascript,ramda,functional," />
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+<meta property="og:title" content="Functional programming with Ramda.js" />
+<meta property="og:description" content="JavaScript is one of the most dynamic, flexible programming
+languages. It supports multiple programming paradigms - imperative,
+object (prototype) oriented, scripting, and functional.
+Let&rsquo; see what JavaScript has common with functional programming
+languages:
+
+First-class functions - functions are objects themselves
+Anonymous functions - functions can be unnamed and nested
+Closures - functions that refer to independent variables, that were
+created in other scope
+Recursion - function can call itself
+
+By the way, there are some significant differences:" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://neiro.io/posts/2015-09-05-functional-programming-with-ramda-js/" />
+
+<meta property="og:image" content="https://neiro.io/images/social_card_bg_hu8003397646790837321.webp"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2015-09-05T10:00:00+02:00" />
+<meta property="article:modified_time" content="2015-09-05T10:00:00+02:00" /><meta property="og:site_name" content="neiro" />
+
+
+
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://neiro.io/images/social_card_bg_hu8003397646790837321.webp"/>
+<meta name="twitter:title" content="Functional programming with Ramda.js"/>
+<meta name="twitter:description" content="JavaScript is one of the most dynamic, flexible programming
+languages. It supports multiple programming paradigms - imperative,
+object (prototype) oriented, scripting, and functional.
+Let&rsquo; see what JavaScript has common with functional programming
+languages:
+
+First-class functions - functions are objects themselves
+Anonymous functions - functions can be unnamed and nested
+Closures - functions that refer to independent variables, that were
+created in other scope
+Recursion - function can call itself
+
+By the way, there are some significant differences:"/>
+
+
+
+<meta itemprop="name" content="Functional programming with Ramda.js">
+<meta itemprop="description" content="JavaScript is one of the most dynamic, flexible programming
+languages. It supports multiple programming paradigms - imperative,
+object (prototype) oriented, scripting, and functional.
+Let&rsquo; see what JavaScript has common with functional programming
+languages:
+
+First-class functions - functions are objects themselves
+Anonymous functions - functions can be unnamed and nested
+Closures - functions that refer to independent variables, that were
+created in other scope
+Recursion - function can call itself
+
+By the way, there are some significant differences:"><meta itemprop="datePublished" content="2015-09-05T10:00:00+02:00" />
+<meta itemprop="dateModified" content="2015-09-05T10:00:00+02:00" />
+<meta itemprop="wordCount" content="719">
+
+<meta itemprop="image" content="https://neiro.io/images/social_card_bg_hu8003397646790837321.webp"/>
+
+
+<meta itemprop="keywords" content="javascript,ramda,functional," />
+
+<meta name="referrer" content="no-referrer-when-downgrade" />
+
+  
+  <link href="/herman.min.css" rel="stylesheet">
+
+  
+    
+    <link href="/syntax.min.css" rel="stylesheet">
+  
+
+  
+
+  
+</head>
+
+<body>
+  <header><a class="skip-link" href="#main-content">Skip to main content</a>
+
+<a href="/" class="title"><h1>neiro blog</h1></a>
+<nav>
+  <a href="/">Home</a>
+
+  <a href="/blog/">Blog</a>
+
+<a href='https://neiro.io/index.xml'>RSS</a>
+
+
+
+
+
+
+
+</nav>
+</header>
+  <main id="main-content">
+
+<h1>Functional programming with Ramda.js</h1>
+<p class="byline">
+  <time datetime='2015-09-05' pubdate>
+    2015-09-05
+  </time>
+  · [neiro]
+</p>
+
+<content>
+  <p>JavaScript is one of the most dynamic, flexible programming
+languages. It supports multiple programming paradigms - imperative,
+object (prototype) oriented, scripting, and functional.<br />
+Let&rsquo; see what JavaScript has common with functional programming
+languages:</p>
+<ul>
+<li>First-class functions - functions are objects themselves</li>
+<li>Anonymous functions - functions can be unnamed and nested</li>
+<li>Closures - functions that refer to independent variables, that were
+created in other scope</li>
+<li>Recursion - function can call itself</li>
+</ul>
+<p>By the way, there are some significant differences:</p>
+<ul>
+<li>Immutability - objects, functions in JavaScript can be modified after
+creation</li>
+<li>Pure functions - JavaScript functions often depends on outside scope,
+and it&rsquo;s hard to create function that always returns the same result
+with given same parameters</li>
+<li>Strong (and static) typing - JavaScript allows use a value of one type
+as if it were a value of another type, and has not static typing
+system</li>
+</ul>
+<p>JavaScript ecosystem has great tools for advanced use of functional
+programming features, such as <em>Underscore</em> and <em>Lodash</em> - most popular
+toolkit libraries. But if you want use library, that was specifically
+designed for functional programming, you may have to look at
+<a href="http://ramdajs.com/0.17/index.html">Ramda.js</a> .</p>
+<p>Ramda.js has some distinguishing features:</p>
+<ul>
+<li>It&rsquo;s designed in pure functional style, with immutability and
+side-effects free functions, that helps you to write simple and
+effective code.</li>
+<li>Parameters in functions have the same order, with key params at first
+and data at last</li>
+<li>Ramda.js functions are automatically curried, that allows you to
+easily build new functions from old ones</li>
+</ul>
+<p>To show examples of Ramda.js using, i will use io.js 3.2 and Babel, so
+let&rsquo;s create new <em>.js</em> file:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="ln">1</span><span class="cl"><span class="ch">#!/usr/bin/env babel-node
+</span></span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="ch"></span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="kr">import</span> <span class="nx">R</span> <span class="nx">from</span> <span class="s1">&#39;ramda&#39;</span><span class="p">;</span></span></span></code></pre></div><p>Ramda.js API has some general use functions:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="ln"> 1</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="c1">// Typing let str = &#39;test&#39;;
+</span></span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="c1"></span><span class="nx">R</span><span class="p">.</span><span class="nx">is</span><span class="p">(</span><span class="nb">String</span><span class="p">,</span> <span class="nx">str</span><span class="p">);</span> <span class="c1">//=&gt; true // The same with currying
+</span></span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="c1"></span><span class="nx">R</span><span class="p">.</span><span class="nx">is</span><span class="p">(</span><span class="nb">String</span><span class="p">)(</span><span class="nx">str</span><span class="p">);</span> <span class="c1">//=&gt; true
+</span></span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="c1"></span><span class="kd">let</span> <span class="nx">isString</span> <span class="o">=</span> <span class="nx">R</span><span class="p">.</span><span class="nx">is</span><span class="p">(</span><span class="nb">String</span><span class="p">);</span> <span class="nx">isString</span><span class="p">(</span><span class="s1">&#39;string&#39;</span><span class="p">);</span> <span class="c1">//=&gt; true
+</span></span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="c1"></span><span class="nx">R</span><span class="p">.</span><span class="nx">type</span><span class="p">(</span><span class="nx">isString</span><span class="p">);</span> <span class="c1">//=&gt; String
+</span></span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="c1">// Math
+</span></span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="c1"></span><span class="nx">R</span><span class="p">.</span><span class="nx">add</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">500</span><span class="p">);</span> <span class="c1">//=&gt; 600
+</span></span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="c1"></span><span class="nx">R</span><span class="p">.</span><span class="nx">add</span><span class="p">(</span><span class="mi">100</span><span class="p">)(</span><span class="mi">500</span><span class="p">);</span> <span class="c1">//=&gt; 600
+</span></span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="c1"></span><span class="nx">R</span><span class="p">.</span><span class="nx">mean</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">7</span><span class="p">]);</span> <span class="c1">//=&gt; 4 R.sum(R.range(1, 5)); //=&gt; 10
+</span></span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl"><span class="c1">// Logic
+</span></span></span><span class="line"><span class="ln">14</span><span class="cl"><span class="c1"></span><span class="nx">R</span><span class="p">.</span><span class="nx">and</span><span class="p">(</span><span class="kc">true</span><span class="p">,</span> <span class="kc">false</span><span class="p">);</span> <span class="c1">//=&gt; false
+</span></span></span><span class="line"><span class="ln">15</span><span class="cl"><span class="c1"></span><span class="nx">R</span><span class="p">.</span><span class="nx">and</span><span class="p">([])(</span><span class="mi">0</span><span class="p">);</span> <span class="c1">//=&gt; 0
+</span></span></span><span class="line"><span class="ln">16</span><span class="cl"><span class="c1"></span><span class="nx">R</span><span class="p">.</span><span class="nx">not</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span><span class="c1">//=&gt; false
+</span></span></span><span class="line"><span class="ln">17</span><span class="cl"><span class="c1"></span><span class="nx">R</span><span class="p">.</span><span class="nx">both</span><span class="p">(</span><span class="nx">isString</span><span class="p">,</span> <span class="nx">R</span><span class="p">.</span><span class="nx">is</span><span class="p">(</span><span class="nb">String</span><span class="p">))(</span><span class="nx">str</span><span class="p">);</span> <span class="c1">// =&gt; true
+</span></span></span></code></pre></div><p>Like the <em>Underscore</em> and <em>Lodash</em>, Ramda has collection helper
+functions:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="ln"> 1</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="c1">// Lists
+</span></span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="c1"></span><span class="kd">let</span> <span class="nx">animals</span> <span class="o">=</span> <span class="p">[</span> <span class="p">{</span> <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;goose&#39;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="nx">type</span><span class="o">:</span> <span class="s1">&#39;bird&#39;</span><span class="p">,</span> <span class="nx">color</span><span class="o">:</span> <span class="s1">&#39;white&#39;</span> <span class="p">},</span> <span class="p">{</span> <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;parrot&#39;</span><span class="p">,</span> <span class="nx">type</span><span class="o">:</span> <span class="s1">&#39;bird&#39;</span><span class="p">,</span> <span class="nx">color</span><span class="o">:</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="s1">&#39;yellow&#39;</span> <span class="p">},</span> <span class="p">{</span> <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;cat&#39;</span><span class="p">,</span> <span class="nx">type</span><span class="o">:</span> <span class="s1">&#39;mammal&#39;</span><span class="p">,</span> <span class="nx">color</span><span class="o">:</span> <span class="s1">&#39;grey&#39;</span> <span class="p">}];</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="nx">R</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">animal</span> <span class="p">=&gt;</span> <span class="nx">animal</span><span class="p">.</span><span class="nx">color</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="nx">animal</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span> <span class="nx">animals</span><span class="p">);</span> <span class="c1">//=&gt; [
+</span></span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="c1"></span><span class="s1">&#39;white goose&#39;</span><span class="p">,</span> <span class="s1">&#39;yellow parrot&#39;</span><span class="p">,</span> <span class="s1">&#39;grey cat&#39;</span> <span class="p">]</span> <span class="nx">R</span><span class="p">.</span><span class="nx">head</span><span class="p">(</span><span class="nx">animals</span><span class="p">).</span><span class="nx">name</span><span class="p">;</span> <span class="c1">//=&gt;
+</span></span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="c1"></span><span class="nx">goose</span> <span class="nx">R</span><span class="p">.</span><span class="nx">last</span><span class="p">(</span><span class="nx">animals</span><span class="p">).</span><span class="nx">name</span><span class="p">;</span> <span class="c1">//=&gt; cat
+</span></span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="c1"></span><span class="nx">R</span><span class="p">.</span><span class="nx">uniq</span><span class="p">(</span><span class="nx">R</span><span class="p">.</span><span class="nx">pluck</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="nx">animals</span><span class="p">));</span> <span class="c1">//=&gt; [ &#39;bird&#39;, &#39;mammal&#39; ]
+</span></span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="c1"></span><span class="nx">R</span><span class="p">.</span><span class="nx">length</span><span class="p">(</span><span class="nx">R</span><span class="p">.</span><span class="nx">filter</span><span class="p">(</span><span class="nx">animal</span> <span class="p">=&gt;</span> <span class="nx">animal</span><span class="p">.</span><span class="nx">type</span> <span class="o">===</span> <span class="s1">&#39;bird&#39;</span><span class="p">,</span> <span class="nx">animals</span><span class="p">));</span> <span class="c1">//=&gt; 2
+</span></span></span></code></pre></div><p>And object helpers too:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="ln"> 1</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="c1">// Objects let cat = { type: &#39;animal&#39;,
+</span></span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="c1"></span><span class="nx">subclass</span><span class="o">:</span> <span class="s1">&#39;mammal&#39;</span><span class="p">,</span> <span class="nx">binomialName</span><span class="o">:</span> <span class="s1">&#39;Felis catus&#39;</span> <span class="p">};</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="nx">R</span><span class="p">.</span><span class="nx">assoc</span><span class="p">(</span><span class="s1">&#39;status&#39;</span><span class="p">,</span> <span class="s1">&#39;domesticated&#39;</span><span class="p">,</span> <span class="nx">cat</span><span class="p">).</span><span class="nx">status</span><span class="p">;</span> <span class="c1">//=&gt; domesticated
+</span></span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="c1"></span><span class="nx">R</span><span class="p">.</span><span class="nx">dissoc</span><span class="p">(</span><span class="s1">&#39;binomialName&#39;</span><span class="p">,</span> <span class="nx">cat</span><span class="p">).</span><span class="nx">binomialName</span><span class="p">;</span> <span class="c1">//=&gt; undefined
+</span></span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="c1"></span><span class="nx">R</span><span class="p">.</span><span class="nx">keys</span><span class="p">(</span><span class="nx">cat</span><span class="p">);</span> <span class="c1">//=&gt; [ &#39;type&#39;, &#39;subclass&#39;, &#39;binomialName&#39; ]
+</span></span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="c1"></span><span class="nx">R</span><span class="p">.</span><span class="nx">has</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="nx">cat</span><span class="p">);</span> <span class="c1">//=&gt; true
+</span></span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="c1"></span><span class="nx">R</span><span class="p">.</span><span class="nx">prop</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="nx">cat</span><span class="p">);</span> <span class="c1">//=&gt; animal
+</span></span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="c1"></span><span class="nx">R</span><span class="p">.</span><span class="nx">values</span><span class="p">(</span><span class="nx">cat</span><span class="p">);</span> <span class="c1">//=&gt; [ &#39;animal&#39;, &#39;mammal&#39;, &#39;felis catus&#39; ]
+</span></span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="c1">// Object transformation
+</span></span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="c1"></span><span class="kd">let</span> <span class="nx">transformations</span> <span class="o">=</span> <span class="p">{</span> <span class="nx">type</span><span class="o">:</span> <span class="nx">R</span><span class="p">.</span><span class="nx">toUpper</span><span class="p">,</span> <span class="nx">binomialName</span><span class="o">:</span> <span class="nx">R</span><span class="p">.</span><span class="nx">toLower</span> <span class="p">}</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl"><span class="nx">R</span><span class="p">.</span><span class="nx">evolve</span><span class="p">(</span><span class="nx">transformations</span><span class="p">,</span> <span class="nx">cat</span><span class="p">).</span><span class="nx">type</span><span class="p">;</span> <span class="c1">// =&gt; ANIMAL
+</span></span></span></code></pre></div><p>But key point of Ramda.js is functions. Ramda allows you to easily
+compose multiple functions in different orders:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="ln">1</span><span class="cl"><span class="c1">// Compose and pipe R.join(&#39; and &#39;,
+</span></span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="c1"></span><span class="nx">R</span><span class="p">.</span><span class="nx">uniq</span><span class="p">(</span><span class="nx">R</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">R</span><span class="p">.</span><span class="nx">toUpper</span><span class="p">)(</span><span class="nx">R</span><span class="p">.</span><span class="nx">pluck</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="nx">animals</span><span class="p">))));</span> <span class="c1">//=&gt; BIRD and MAMMAL
+</span></span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="c1">// Performs right-to-left function composition
+</span></span></span><span class="line"><span class="ln">4</span><span class="cl"><span class="c1"></span><span class="nx">R</span><span class="p">.</span><span class="nx">compose</span><span class="p">(</span><span class="nx">R</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="s1">&#39; and &#39;</span><span class="p">),</span> <span class="nx">R</span><span class="p">.</span><span class="nx">uniq</span><span class="p">,</span> <span class="nx">R</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">R</span><span class="p">.</span><span class="nx">toUpper</span><span class="p">),</span> <span class="nx">R</span><span class="p">.</span><span class="nx">pluck</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">)</span> <span class="p">)(</span><span class="nx">animals</span><span class="p">);</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl"><span class="c1">//=&gt; BIRD and MAMMAL
+</span></span></span><span class="line"><span class="ln">6</span><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="ln">7</span><span class="cl"><span class="c1">// Performs left-to-right function composition
+</span></span></span><span class="line"><span class="ln">8</span><span class="cl"><span class="c1"></span><span class="nx">R</span><span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">R</span><span class="p">.</span><span class="nx">pluck</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">)</span> <span class="nx">R</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">R</span><span class="p">.</span><span class="nx">toUpper</span><span class="p">),</span> <span class="nx">R</span><span class="p">.</span><span class="nx">uniq</span><span class="p">,</span> <span class="nx">R</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="s1">&#39; and &#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">9</span><span class="cl"><span class="p">)(</span><span class="nx">animals</span><span class="p">);</span> <span class="c1">//=&gt; BIRD and MAMMAL
+</span></span></span></code></pre></div><p>Another power of Ramda is currying. Currying is the process of
+translating evaluation of function that takes multiple parameters in
+evaluating a sequence of functions, each with one argument.</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="ln">1</span><span class="cl"><span class="kd">let</span> <span class="nx">tripleMultiply</span> <span class="o">=</span> <span class="p">(</span><span class="nx">a</span><span class="p">,</span> <span class="nx">b</span><span class="p">,</span> <span class="nx">c</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="nx">a</span> <span class="o">*</span> <span class="nx">b</span> <span class="o">*</span> <span class="nx">c</span><span class="p">;</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="nx">tripleMultiply</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">2</span><span class="p">);</span> <span class="c1">//=&gt; 54
+</span></span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="c1"></span><span class="nx">tripleMultiply</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">9</span><span class="p">)(</span><span class="mi">2</span><span class="p">);</span> <span class="c1">//=&gt; TypeError: tripleMultiply(..) is not a function
+</span></span></span><span class="line"><span class="ln">4</span><span class="cl"><span class="c1"></span><span class="kd">let</span> <span class="nx">curriedMultiply</span> <span class="o">=</span> <span class="nx">R</span><span class="p">.</span><span class="nx">curry</span><span class="p">(</span><span class="nx">tripleMultiply</span><span class="p">);</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl"><span class="nx">curriedMultiply</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">9</span><span class="p">)(</span><span class="mi">2</span><span class="p">);</span> <span class="c1">//=&gt; 54
+</span></span></span><span class="line"><span class="ln">6</span><span class="cl"><span class="c1"></span><span class="nx">curriedMultiply</span><span class="p">(</span><span class="mi">3</span><span class="p">)(</span><span class="mi">9</span><span class="p">)(</span><span class="mi">2</span><span class="p">);</span> <span class="c1">//=&gt; 54
+</span></span></span></code></pre></div><p>Pattern matching is also available through <em>R.cond</em>. That allows you to
+check sequence of conditions to match different patterns:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="ln">1</span><span class="cl"><span class="kd">let</span> <span class="nx">checkNumber</span> <span class="o">=</span> <span class="nx">R</span><span class="p">.</span><span class="nx">cond</span><span class="p">([</span> <span class="p">[</span><span class="nx">R</span><span class="p">.</span><span class="nx">is</span><span class="p">(</span><span class="nb">Number</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="nx">R</span><span class="p">.</span><span class="nx">identity</span><span class="p">],</span> <span class="p">[</span><span class="nx">R</span><span class="p">.</span><span class="nx">is</span><span class="p">(</span><span class="nb">String</span><span class="p">),</span> <span class="nb">parseInt</span><span class="p">],</span> <span class="p">[</span><span class="nx">R</span><span class="p">.</span><span class="nx">is</span><span class="p">(</span><span class="nb">Boolean</span><span class="p">),</span> <span class="nb">Number</span><span class="p">],</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="p">[</span><span class="nx">R</span><span class="p">.</span><span class="nx">isEmpty</span><span class="p">,</span> <span class="nx">R</span><span class="p">.</span><span class="nx">always</span><span class="p">(</span><span class="mi">0</span><span class="p">)],</span> <span class="p">[</span><span class="nx">R</span><span class="p">.</span><span class="nx">T</span><span class="p">,</span> <span class="nx">R</span><span class="p">.</span><span class="nx">always</span><span class="p">(</span><span class="kc">NaN</span><span class="p">)]]);</span> <span class="nx">checkNumber</span><span class="p">(</span><span class="mi">100500</span><span class="p">);</span> <span class="c1">//=&gt; 100500
+</span></span></span><span class="line"><span class="ln">4</span><span class="cl"><span class="c1"></span><span class="nx">checkNumber</span><span class="p">(</span><span class="s1">&#39;146%&#39;</span><span class="p">);</span> <span class="c1">//=&gt; 146
+</span></span></span><span class="line"><span class="ln">5</span><span class="cl"><span class="c1"></span><span class="nx">checkNumber</span><span class="p">(</span><span class="s1">&#39;Hodor&#39;</span><span class="p">);</span> <span class="c1">//=&gt; NaN
+</span></span></span><span class="line"><span class="ln">6</span><span class="cl"><span class="c1"></span><span class="nx">checkNumber</span><span class="p">(</span><span class="kc">true</span><span class="p">);</span> <span class="c1">//=&gt; 1
+</span></span></span><span class="line"><span class="ln">7</span><span class="cl"><span class="c1"></span><span class="nx">checkNumber</span><span class="p">(</span><span class="kc">false</span><span class="p">);</span> <span class="c1">//=&gt; 0
+</span></span></span><span class="line"><span class="ln">8</span><span class="cl"><span class="c1"></span><span class="nx">checkNumber</span><span class="p">([]);</span> <span class="c1">//=&gt; 0
+</span></span></span><span class="line"><span class="ln">9</span><span class="cl"><span class="c1"></span><span class="nx">checkNumber</span><span class="p">([</span><span class="s1">&#39;test&#39;</span><span class="p">]);</span> <span class="c1">//=&gt; NaN
+</span></span></span></code></pre></div><p>Ramda.js is one of the best functional programming libraries that exists
+in JavaScript ecosystem. It can completely replace <em>Underscore</em>,
+<em>Lodash</em> in your project with own object, lists and others helpers.
+Immutability, currying and composing allows you to write both efficient
+and simple code in pure functional style.</p>
+
+</content>
+<p>
+  
+    <a class="blog-tags" href="/tags/javascript/">#javascript</a>
+  
+    <a class="blog-tags" href="/tags/ramda/">#ramda</a>
+  
+    <a class="blog-tags" href="/tags/functional/">#functional</a>
+  
+</p>
+
+
+
+
+  </main>
+  <footer><small>
+  neiro © 2012-2025 | Made with <a href="https://github.com/clente/hugo-bearcub">Bear Cub</a>
+</small></footer>
+
+    
+</body>
+
+</html>

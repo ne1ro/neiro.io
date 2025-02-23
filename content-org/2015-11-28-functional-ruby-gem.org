@@ -1,0 +1,140 @@
+#+TITLE: Functional Ruby gem
+#+date: <2015-11-28 10:00>
+#+filetags: :ruby:functional:
+
+Ruby is a great example of multi-paradigm programming language: it
+allows you to write code in object-oriented, imperative or functional
+styles. Ruby have much in common with functional programming languages:
+/high-order functions, closures, anonymous functions, continuations,
+statements all values/. If you want to use more functional programming
+patterns and tools, you might want to take a look on
+[[https://github.com/jdantonio/functional-ruby][Functional Ruby]] gem.
+
+** Features
+   :PROPERTIES:
+   :CUSTOM_ID: features
+   :END:
+
+- Thread-safe, immutable data structures
+- Protocol specifications
+- Functions overloading
+- =Either, Option= classes
+- Immutable variation of Ruby's =OpenStruct= class
+- Memoization
+- Lazy execution
+- Tuples
+- Pattern matching
+
+** Installing
+   :PROPERTIES:
+   :CUSTOM_ID: installing
+   :END:
+
+Install this gem with or without bundler:
+
+#+BEGIN_SRC shell
+gem install functional-ruby
+#  gem 'functional-ruby'
+#+end_src
+
+And then require it in your project:
+
+#+begin_src ruby require 'functional' #+end_src
+
+** Immutable data structures
+   :PROPERTIES:
+   :CUSTOM_ID: immutable-data-structures
+   :END:
+
+#+begin_src ruby
+Address = Functional::Record.new(:city, :country, :street, :house) do
+    mandatory :country, :city
+    default :city, 'Moscow'
+    default :country, 'Russia'
+end # <record Address :city=>"Moscow", :country=>"Russia", :street=>nil, :house=>nil> #+end_src
+
+** Immutable OpenStruct
+   :PROPERTIES:
+   :CUSTOM_ID: immutable-openstruct
+   :END:
+
+Immutable, thread-safe, write-once and read-only object variation of
+=OpenStruct=:
+
+#+begin_src ruby
+name = Functional::ValueStruct.new firstname: 'Hodor', lastname: 'Hodor'
+name.get :firstname # Hodor
+name.lastname # Hodor
+name.firstname? # true #+end_src
+
+** Tuples
+   :PROPERTIES:
+   :CUSTOM_ID: tuples
+   :END:
+
+Tuple is a data structure that is similar to array, but is immutable and
+has a fixed length.
+
+#+begin_src ruby
+tuple = Functional::Tuple.new %w(one two three)
+tuple.at 0 # one
+tuple.last 0 # three
+tuple.fetch 4, 'four' # four
+tuple.tail.to_a # ['two', 'three']
+tuple.repeat(2).to_a.join ',' # one, two, three, one, two, three #+end_src
+
+** Protocols
+   :PROPERTIES:
+   :CUSTOM_ID: protocols
+   :END:
+
+Protocols are specifications to provide polymorphism and method-dispatch
+mechanism with strong typing, inspired by [[http://clojure.org/protocols][Clojure protocols]]:
+
+#+begin_src ruby
+Functional::SpecifyProtocol(:Address) do
+    attr_accessor :city
+    attr_accessor :country
+    attr_accessor :street
+    attr_accessor :house
+end #+end_src
+
+** Pattern matching
+   :PROPERTIES:
+   :CUSTOM_ID: pattern-matching
+   :END:
+
+#+begin_src ruby
+# Pattern matching with type and protocol checking
+class AddressChecker
+  include Functional::PatternMatching
+  include Functional::Protocol
+  include Functional::TypeCheck
+
+  def msg 'You live in Moscow, Russia' end
+
+  defn(:msg, _) do |addr|
+    "You live in #{addr}"
+  end
+
+  defn(:msg, _) { |addr| "You live in #{addr.house}, #{addr.street},
+    #{addr.city}, #{addr.country}" }
+    .when { |addr| Satisfy?(addr, :Address) }
+
+  defn(:msg, :name, _) do |addr|
+    "Somebody live in #{addr}"
+  end
+
+  defn(:msg, _) { |zip| "Your zip is #{zip}" }.when { |addr| Type?(addr, Fixnum) }
+end #+end_src
+
+** Conclusion
+   :PROPERTIES:
+   :CUSTOM_ID: conclusion
+   :END:
+
+If you like functional programming, and want to use it's patterns and
+tools with Ruby, then you can use
+[[https://github.com/jdantonio/functional-ruby][Functional Ruby]] gem to
+write code in more functional style. You can find more information in
+[[http://jerrydantonio.com/functional-ruby/][API documentation]].

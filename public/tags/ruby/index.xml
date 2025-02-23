@@ -1,0 +1,1523 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Ruby on neiro blog</title>
+    <link>https://neiro.io/tags/ruby/</link>
+    <description>Recent content in Ruby on neiro blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-GB</language>
+    <copyright>neiro © 2012-2025</copyright>
+    <lastBuildDate>Wed, 05 Oct 2016 10:00:00 +0200</lastBuildDate>
+    <atom:link href="https://neiro.io/tags/ruby/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Query objects in Ruby on Rails</title>
+      <link>https://neiro.io/blog/2016-10-05-query-objects-in-ruby-on-rails.md/</link>
+      <pubDate>Wed, 05 Oct 2016 10:00:00 +0200</pubDate>
+      <guid>https://neiro.io/blog/2016-10-05-query-objects-in-ruby-on-rails.md/</guid>
+      <description>&lt;p&gt;Database queries are common when you develop web applications. &lt;em&gt;Ruby on&#xA;Rails&lt;/em&gt; and it&amp;rsquo;s &lt;em&gt;ActiveRecord&lt;/em&gt; liberates you from writing tons of&#xA;boilerplate SQL code and results in creation of elegant, eloquent&#xA;queries in plain Ruby.&lt;/p&gt;&#xA;&lt;figure&gt;&lt;img src=&#34;https://cdn-images-1.medium.com/max/1600/1*-oIlwIWlt0BDN4b5a9rRCQ.png&#34;&gt;&#xA;&lt;/figure&gt;&#xA;&#xA;&lt;p&gt;But plenty of immense possibilities that Ruby and ActiveRecord provide,&#xA;unfortunately, remain unused. I bet that often you see a lot of enormous&#xA;scopes in Ruby on Rails models, endless chains of queries in controllers&#xA;and even bulky chunks of raw SQL.&lt;/p&gt;</description>
+      <content:encoded><![CDATA[<p>Database queries are common when you develop web applications. <em>Ruby on
+Rails</em> and it&rsquo;s <em>ActiveRecord</em> liberates you from writing tons of
+boilerplate SQL code and results in creation of elegant, eloquent
+queries in plain Ruby.</p>
+<figure><img src="https://cdn-images-1.medium.com/max/1600/1*-oIlwIWlt0BDN4b5a9rRCQ.png">
+</figure>
+
+<p>But plenty of immense possibilities that Ruby and ActiveRecord provide,
+unfortunately, remain unused. I bet that often you see a lot of enormous
+scopes in Ruby on Rails models, endless chains of queries in controllers
+and even bulky chunks of raw SQL.</p>
+<p>#+begin_src ruby
+@articles = Article.includes(:user)
+.order(&ldquo;created_at DESC&rdquo;)
+.where(&ldquo;text IS NOT NULL&rdquo;)
+.page(page)</p>
+<p>@articles = Articles.connection
+.select_all(%Q{SELECT articles.* FROM
+articles WHERE (text IS NOT NULL) ORDER BY created_at DESC LIMIT 5
+OFFSET 0})
+#+end_src <em>Bad cases of using ActiveRecord queries</em></p>
+<p>These poor practices may create obstacles and become a reason of
+developer&rsquo;s headaches in the real-world web applications.</p>
+<h2 id="typical-db-queries-application-problems">Typical DB queries application problems:</h2>
+<ul>
+<li>Big pieces of queries code in controllers/models/services mess up your
+code</li>
+<li>It is hard to understand complex database requests</li>
+<li>Inserts of raw SQL are non-consistent and often mix with ActiveRecord
+queries</li>
+<li>Testing one separate query in isolation is very problematic</li>
+<li>It is difficult to compose, extend or inherit queries</li>
+<li>Often Single Responsibility Principle gets violated</li>
+</ul>
+<h2 id="solution">Solution:</h2>
+<p>These problems can be solved by using <em>Query Object</em> pattern &mdash; a
+common technique that isolates your complex queries.</p>
+<p><em>Query Object</em> in ideal case is a separate class that contains one
+specific query that implements just one business logic rule.</p>
+<h2 id="implementation">Implementation:</h2>
+<p>For most of the cases <em>Query Object</em> is PORO that accepts relation in
+constructor and defines queries named like an <em>ActiveRecord</em> common
+methods:</p>
+<p>#+begin_src ruby</p>
+<p>class Article &lt; ActiveRecord::Base
+scope :by_title, -&gt;(direction) { order title: direction }
+scope :by_date, -&gt;(direction) { order created_at: direction }
+scope :by_author, -&gt;(direction) { order &ldquo;users.full_name #{direction}&rdquo; }</p>
+<p>SORT_OPTIONS = %w(by_date by_title by_author).freeze</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">  def initialize(params = {}, relation = Article.includes(:user))
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">    @relation = relation
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">    @params = params
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">  end
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">  def all
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">    @relation.public_send(sort_by, direction)
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">  end
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">
+</span></span><span class="line"><span class="ln">10</span><span class="cl">  private
+</span></span><span class="line"><span class="ln">11</span><span class="cl">
+</span></span><span class="line"><span class="ln">12</span><span class="cl">  def sort_by
+</span></span><span class="line"><span class="ln">13</span><span class="cl">    @params[:sort].presence_in(SORT_OPTIONS) || :by_date
+</span></span><span class="line"><span class="ln">14</span><span class="cl">  end
+</span></span><span class="line"><span class="ln">15</span><span class="cl">
+</span></span><span class="line"><span class="ln">16</span><span class="cl">  def direction
+</span></span><span class="line"><span class="ln">17</span><span class="cl">    @params[:direction] == &#34;asc&#34; ? :asc : :desc
+</span></span><span class="line"><span class="ln">18</span><span class="cl">  end</span></span></code></pre></div><p>end</p>
+<p>index @articles = OrderedArticlesQuery.new(sort_query_params).all.page(params[:page])
+end</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">  private
+</span></span><span class="line"><span class="ln">2</span><span class="cl">
+</span></span><span class="line"><span class="ln">3</span><span class="cl">  def sort_query_params
+</span></span><span class="line"><span class="ln">4</span><span class="cl">    params.slice(:sort_by, :direction)
+</span></span><span class="line"><span class="ln">5</span><span class="cl">  end</span></span></code></pre></div><p>end
+#+end_src <em>Query Object implementation and usage in
+controller</em></p>
+<h3 id="heredoc-syntax-for-raw-sql">HEREDOC syntax for raw SQL:</h3>
+<p>For the cases where you desperately need to use raw SQL code try to
+isolate it using Ruby&rsquo;s <em>HEREDOC syntax:</em></p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"> <span class="k">class</span> <span class="nc">PopularArticlesQuery</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  <span class="no">POPULAR_TRESHOLD</span> <span class="o">=</span> <span class="mi">5</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">subscriptions</span> <span class="o">=</span> <span class="no">Subscription</span><span class="o">.</span><span class="n">all</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">    <span class="vi">@subscriptions</span> <span class="o">=</span> <span class="n">subscriptions</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">  <span class="k">def</span> <span class="nf">all</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">    <span class="vi">@subscriptions</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">
+</span></span><span class="line"><span class="ln">12</span><span class="cl">  <span class="kp">private</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">
+</span></span><span class="line"><span class="ln">14</span><span class="cl">  <span class="k">def</span> <span class="nf">query</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">    <span class="s">&lt;&lt;-SQL
+</span></span></span><span class="line"><span class="ln">16</span><span class="cl"><span class="s"></span>      <span class="n">articles</span><span class="o">.</span><span class="n">comments_count</span> <span class="o">&gt;=</span> <span class="c1">#{POPULAR_TRESHOLD}</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">      <span class="no">AND</span> <span class="n">articles</span><span class="o">.</span><span class="n">content</span> <span class="no">IS</span> <span class="no">NOT</span> <span class="no">NULL</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl">      <span class="no">AND</span> <span class="n">articles</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="c1">#{Article::STATUSES[:published]}</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">      <span class="no">ORDER</span> <span class="no">BY</span> <span class="n">articles</span><span class="o">.</span><span class="n">comments_count</span> <span class="no">DESC</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl">    <span class="no">SQL</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">22</span><span class="cl"><span class="k">end</span></span></span></code></pre></div><p><em>HEREDOC syntax example for raw SQL inserts</em></p>
+<h3 id="extending-scope">Extending scope:</h3>
+<p>If your scope relates to existing <em>QueryObject</em>, you can easily extend
+its relation instead of cluttering up your models.
+<a href="http://apidock.com/rails/ActiveRecord/QueryMethods/extending">ActiveRecord::QueryMethods.extending</a>
+method will help you:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="k">class</span> <span class="nc">OrderedArticlesQuery</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  <span class="no">SORT_OPTIONS</span> <span class="o">=</span> <span class="sx">%w(by_date by_title by_author)</span><span class="o">.</span><span class="n">freeze</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">params</span> <span class="o">=</span> <span class="p">{},</span> <span class="n">relation</span> <span class="o">=</span> <span class="no">Article</span><span class="o">.</span><span class="n">includes</span><span class="p">(</span><span class="ss">:user</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">    <span class="vi">@relation</span> <span class="o">=</span> <span class="n">relation</span><span class="o">.</span><span class="n">extending</span><span class="p">(</span><span class="no">Scopes</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">    <span class="vi">@params</span> <span class="o">=</span> <span class="n">params</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">
+</span></span><span class="line"><span class="ln">10</span><span class="cl">  <span class="k">def</span> <span class="nf">all</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">    <span class="vi">@relation</span><span class="o">.</span><span class="n">public_send</span><span class="p">(</span><span class="n">sort_by</span><span class="p">,</span> <span class="n">direction</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">
+</span></span><span class="line"><span class="ln">14</span><span class="cl">  <span class="kp">private</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">
+</span></span><span class="line"><span class="ln">16</span><span class="cl">  <span class="k">def</span> <span class="nf">sort_by</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">    <span class="vi">@params</span><span class="o">[</span><span class="ss">:sort</span><span class="o">].</span><span class="n">presence_in</span><span class="p">(</span><span class="no">SORT_OPTIONS</span><span class="p">)</span> <span class="o">||</span> <span class="ss">:by_date</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">
+</span></span><span class="line"><span class="ln">20</span><span class="cl">  <span class="k">def</span> <span class="nf">direction</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl">    <span class="vi">@params</span><span class="o">[</span><span class="ss">:direction</span><span class="o">]</span> <span class="o">==</span> <span class="s2">&#34;asc&#34;</span> <span class="p">?</span> <span class="ss">:asc</span> <span class="p">:</span> <span class="ss">:desc</span>
+</span></span><span class="line"><span class="ln">22</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">23</span><span class="cl">
+</span></span><span class="line"><span class="ln">24</span><span class="cl">  <span class="c1"># Group additional scope methods in module in order to extend relation</span>
+</span></span><span class="line"><span class="ln">25</span><span class="cl">  <span class="k">module</span> <span class="nn">Scopes</span>
+</span></span><span class="line"><span class="ln">26</span><span class="cl">    <span class="k">def</span> <span class="nf">by_title</span><span class="p">(</span><span class="n">direction</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">27</span><span class="cl">      <span class="n">order</span><span class="p">(</span><span class="ss">title</span><span class="p">:</span> <span class="n">direction</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">28</span><span class="cl">    <span class="k">end</span>
+</span></span><span class="line"><span class="ln">29</span><span class="cl">
+</span></span><span class="line"><span class="ln">30</span><span class="cl">    <span class="k">def</span> <span class="nf">by_date</span><span class="p">(</span><span class="n">direction</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">31</span><span class="cl">      <span class="n">order</span><span class="p">(</span><span class="ss">created_at</span><span class="p">:</span> <span class="n">direction</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">32</span><span class="cl">    <span class="k">end</span>
+</span></span><span class="line"><span class="ln">33</span><span class="cl">
+</span></span><span class="line"><span class="ln">34</span><span class="cl">    <span class="k">def</span> <span class="nf">by_author</span>
+</span></span><span class="line"><span class="ln">35</span><span class="cl">      <span class="n">order</span><span class="p">(</span><span class="s2">&#34;users.full_name </span><span class="si">#{</span><span class="n">direction</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">36</span><span class="cl">    <span class="k">end</span>
+</span></span><span class="line"><span class="ln">37</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">38</span><span class="cl"><span class="k">end</span></span></span></code></pre></div><p><em>Extending scope for Query Objects relations</em></p>
+<h2 id="composing-query-objects">Composing Query Objects:</h2>
+<p><em>Query Objects</em> should be devised to support composition with other
+<em>Query Objects</em> and other ActiveRecord relations. In the example below
+two composed Query Objects represent one SQL query:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="k">class</span> <span class="nc">FeaturedQuery</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">relation</span> <span class="o">=</span> <span class="no">Article</span><span class="o">.</span><span class="n">all</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">    <span class="vi">@relation</span> <span class="o">=</span> <span class="n">relation</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">  <span class="k">def</span> <span class="nf">all</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">    <span class="vi">@relation</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="ss">featured</span><span class="p">:</span> <span class="kp">true</span><span class="p">)</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="s2">&#34;views_count &gt; ?&#34;</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="k">end</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">
+</span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="k">class</span> <span class="nc">ArticlesController</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">  <span class="k">def</span> <span class="nf">index</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">    <span class="vi">@articles</span> <span class="o">=</span> <span class="no">FeaturedArticlesQuery</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">sorted_articles</span><span class="p">)</span><span class="o">.</span><span class="n">all</span> <span class="c1"># SELECT &#34;articles&#34;.* FROM &#34;articles&#34; WHERE &#34;articles&#34;.&#34;featured&#34; = $1 # AND (views_count &gt;100) ORDER BY &#34;articles&#34;.&#34;created_at&#34; DESC LIMIT 10 OFFSET 0</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">
+</span></span><span class="line"><span class="ln">16</span><span class="cl">  <span class="kp">private</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">
+</span></span><span class="line"><span class="ln">18</span><span class="cl">  <span class="k">def</span> <span class="nf">sorted_articles</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">    <span class="no">SortedArticlesQuery</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">sort_query_params</span><span class="p">)</span><span class="o">.</span><span class="n">all</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl">
+</span></span><span class="line"><span class="ln">22</span><span class="cl">  <span class="k">def</span> <span class="nf">sort_query_params</span>
+</span></span><span class="line"><span class="ln">23</span><span class="cl">    <span class="p">{</span> <span class="ss">sort</span><span class="p">:</span> <span class="ss">:by_title</span><span class="p">,</span> <span class="ss">direction</span><span class="p">:</span> <span class="ss">:desc</span> <span class="p">}</span>
+</span></span><span class="line"><span class="ln">24</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">25</span><span class="cl"><span class="k">end</span></span></span></code></pre></div><p><em>Composing two Query Objects</em></p>
+<h2 id="inheritance-of-query-objects">Inheritance of Query Objects:</h2>
+<p>If you have similar queries you may want them to be inherited to reduce
+repetition and follow DRY principle:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="k">class</span> <span class="nc">ArticlesQuery</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  <span class="no">TEXT_LENGTH</span> <span class="o">=</span> <span class="mi">3</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="c1">#+BEGIN_EXAMPLE</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">comments</span> <span class="o">=</span> <span class="no">Comment</span><span class="o">.</span><span class="n">all</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">    <span class="vi">@comments</span> <span class="o">=</span> <span class="n">comments</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">  <span class="k">def</span> <span class="nf">all</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    <span class="n">comments</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">      <span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="s2">&#34;user_id IS NOT NULL&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">      <span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="s2">&#34;LENGTH(content) </span><span class="si">#{</span><span class="n">condition</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">
+</span></span><span class="line"><span class="ln">15</span><span class="cl">  <span class="k">def</span> <span class="nf">condition</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl">    <span class="s2">&#34;&gt; </span><span class="si">#{</span><span class="no">TEXT_LENGTH</span><span class="si">}</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl"><span class="k">end</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">
+</span></span><span class="line"><span class="ln">20</span><span class="cl"><span class="k">class</span> <span class="nc">LongArticlesQuery</span> <span class="o">&lt;</span> <span class="no">ArticlesQuery</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl">  <span class="no">TEXT_LENGTH</span> <span class="o">=</span> <span class="mi">5</span>
+</span></span><span class="line"><span class="ln">22</span><span class="cl">
+</span></span><span class="line"><span class="ln">23</span><span class="cl">  <span class="c1">#+BEGIN_EXAMPLE</span>
+</span></span><span class="line"><span class="ln">24</span><span class="cl">  <span class="k">def</span> <span class="nf">condition</span>
+</span></span><span class="line"><span class="ln">25</span><span class="cl">    <span class="s2">&#34;&gt;= </span><span class="si">#{</span><span class="no">TEXT_LENGTH</span><span class="si">}</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="ln">26</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">27</span><span class="cl"><span class="k">end</span></span></span></code></pre></div><p><em>Inheritance of Query Objects</em></p>
+<h2 id="testing-query-objects">Testing Query Objects:</h2>
+<p>Query Objects should be designed to be pleasant for testing. In most
+cases you just need to test core methods defined in query for their
+results:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="nb">require</span> <span class="s2">&#34;rails_helper&#34;</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="n">describe</span> <span class="no">LongArticlesQuery</span> <span class="k">do</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">  <span class="n">describe</span> <span class="s2">&#34;#all&#34;</span> <span class="k">do</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">    <span class="n">subject</span><span class="p">(</span><span class="ss">:all</span><span class="p">)</span> <span class="p">{</span> <span class="n">described_class</span><span class="o">.</span><span class="n">new</span><span class="o">.</span><span class="n">all</span> <span class="p">}</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">    <span class="n">before</span> <span class="k">do</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">      <span class="n">create</span> <span class="ss">:article</span><span class="p">,</span> <span class="ss">text</span><span class="p">:</span> <span class="s2">&#34;abc&#34;</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">      <span class="n">create</span> <span class="ss">:article</span><span class="p">,</span> <span class="ss">text</span><span class="p">:</span> <span class="s2">&#34;this is long article&#34;</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    <span class="k">end</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">
+</span></span><span class="line"><span class="ln">12</span><span class="cl">    <span class="n">it</span> <span class="s2">&#34;returns one short comment&#34;</span> <span class="k">do</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">      <span class="n">expect</span><span class="p">(</span><span class="n">all</span><span class="o">.</span><span class="n">size</span><span class="p">)</span><span class="o">.</span><span class="n">to</span> <span class="n">eq</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">    <span class="k">end</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl"><span class="k">end</span></span></span></code></pre></div><p><em>Testing Query Objects</em></p>
+<h2 id="summary">Summary:</h2>
+<h3 id="good-query-object">Good Query Object:</h3>
+<ul>
+<li>Follows <em>Single Responsibility Principle</em></li>
+<li>Can be easily tested in isolation</li>
+<li>Can be combined/extended with another Query Object</li>
+<li>Can be effortlessly reused in any other parts of an application</li>
+<li>Returns <em>ActiveRecord::Relation</em>, not <em>Array</em></li>
+<li>Represents only database query, not business logic or action</li>
+<li>Methods of Query Object are named like <em>ActiveRecord</em> methods (<em>all,
+last, count, etc</em>)</li>
+</ul>
+<h3 id="use-query-objects-when">Use Query Objects when:</h3>
+<ul>
+<li>You need to reuse one query in multiple places of application</li>
+<li>You need to extend, compose or inherit queries and their relations</li>
+<li>You need to write a lot of raw SQL, but don&rsquo;t want to mess up your
+code</li>
+<li>Your query is too complex / vast for just one method or scope</li>
+<li>Your query causes <em>feature envy</em></li>
+</ul>
+<h3 id="dont-use-query-objects-when">Don&rsquo;t use Query Objects when:</h3>
+<ul>
+<li>Your query is simple enough for just one method or scope</li>
+<li>You don&rsquo;t need to extend, compose or inherit your query</li>
+<li>Your query is unique and you don&rsquo;t want to make it reusable</li>
+</ul>
+<p>I hope this article will help you to build awesome queries in your
+applications. Good luck and happy coding!</p>
+]]></content:encoded>
+    </item>
+    <item>
+      <title>Query objects in Ruby on Rails</title>
+      <link>https://neiro.io/posts/2016-10-05-query-objects-in-ruby-on-rails.md/</link>
+      <pubDate>Wed, 05 Oct 2016 10:00:00 +0200</pubDate>
+      <guid>https://neiro.io/posts/2016-10-05-query-objects-in-ruby-on-rails.md/</guid>
+      <description>&lt;p&gt;Database queries are common when you develop web applications. &lt;em&gt;Ruby on&#xA;Rails&lt;/em&gt; and it&amp;rsquo;s &lt;em&gt;ActiveRecord&lt;/em&gt; liberates you from writing tons of&#xA;boilerplate SQL code and results in creation of elegant, eloquent&#xA;queries in plain Ruby.&lt;/p&gt;&#xA;&lt;figure&gt;&lt;img src=&#34;https://cdn-images-1.medium.com/max/1600/1*-oIlwIWlt0BDN4b5a9rRCQ.png&#34;&gt;&#xA;&lt;/figure&gt;&#xA;&#xA;&lt;p&gt;But plenty of immense possibilities that Ruby and ActiveRecord provide,&#xA;unfortunately, remain unused. I bet that often you see a lot of enormous&#xA;scopes in Ruby on Rails models, endless chains of queries in controllers&#xA;and even bulky chunks of raw SQL.&lt;/p&gt;</description>
+      <content:encoded><![CDATA[<p>Database queries are common when you develop web applications. <em>Ruby on
+Rails</em> and it&rsquo;s <em>ActiveRecord</em> liberates you from writing tons of
+boilerplate SQL code and results in creation of elegant, eloquent
+queries in plain Ruby.</p>
+<figure><img src="https://cdn-images-1.medium.com/max/1600/1*-oIlwIWlt0BDN4b5a9rRCQ.png">
+</figure>
+
+<p>But plenty of immense possibilities that Ruby and ActiveRecord provide,
+unfortunately, remain unused. I bet that often you see a lot of enormous
+scopes in Ruby on Rails models, endless chains of queries in controllers
+and even bulky chunks of raw SQL.</p>
+<p>#+begin_src ruby
+@articles = Article.includes(:user)
+.order(&ldquo;created_at DESC&rdquo;)
+.where(&ldquo;text IS NOT NULL&rdquo;)
+.page(page)</p>
+<p>@articles = Articles.connection
+.select_all(%Q{SELECT articles.* FROM
+articles WHERE (text IS NOT NULL) ORDER BY created_at DESC LIMIT 5
+OFFSET 0})
+#+end_src <em>Bad cases of using ActiveRecord queries</em></p>
+<p>These poor practices may create obstacles and become a reason of
+developer&rsquo;s headaches in the real-world web applications.</p>
+<h2 id="typical-db-queries-application-problems">Typical DB queries application problems:</h2>
+<ul>
+<li>Big pieces of queries code in controllers/models/services mess up your
+code</li>
+<li>It is hard to understand complex database requests</li>
+<li>Inserts of raw SQL are non-consistent and often mix with ActiveRecord
+queries</li>
+<li>Testing one separate query in isolation is very problematic</li>
+<li>It is difficult to compose, extend or inherit queries</li>
+<li>Often Single Responsibility Principle gets violated</li>
+</ul>
+<h2 id="solution">Solution:</h2>
+<p>These problems can be solved by using <em>Query Object</em> pattern &mdash; a
+common technique that isolates your complex queries.</p>
+<p><em>Query Object</em> in ideal case is a separate class that contains one
+specific query that implements just one business logic rule.</p>
+<h2 id="implementation">Implementation:</h2>
+<p>For most of the cases <em>Query Object</em> is PORO that accepts relation in
+constructor and defines queries named like an <em>ActiveRecord</em> common
+methods:</p>
+<p>#+begin_src ruby</p>
+<p>class Article &lt; ActiveRecord::Base
+scope :by_title, -&gt;(direction) { order title: direction }
+scope :by_date, -&gt;(direction) { order created_at: direction }
+scope :by_author, -&gt;(direction) { order &ldquo;users.full_name #{direction}&rdquo; }</p>
+<p>SORT_OPTIONS = %w(by_date by_title by_author).freeze</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">  def initialize(params = {}, relation = Article.includes(:user))
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">    @relation = relation
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">    @params = params
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">  end
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">  def all
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">    @relation.public_send(sort_by, direction)
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">  end
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">
+</span></span><span class="line"><span class="ln">10</span><span class="cl">  private
+</span></span><span class="line"><span class="ln">11</span><span class="cl">
+</span></span><span class="line"><span class="ln">12</span><span class="cl">  def sort_by
+</span></span><span class="line"><span class="ln">13</span><span class="cl">    @params[:sort].presence_in(SORT_OPTIONS) || :by_date
+</span></span><span class="line"><span class="ln">14</span><span class="cl">  end
+</span></span><span class="line"><span class="ln">15</span><span class="cl">
+</span></span><span class="line"><span class="ln">16</span><span class="cl">  def direction
+</span></span><span class="line"><span class="ln">17</span><span class="cl">    @params[:direction] == &#34;asc&#34; ? :asc : :desc
+</span></span><span class="line"><span class="ln">18</span><span class="cl">  end</span></span></code></pre></div><p>end</p>
+<p>index @articles = OrderedArticlesQuery.new(sort_query_params).all.page(params[:page])
+end</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">  private
+</span></span><span class="line"><span class="ln">2</span><span class="cl">
+</span></span><span class="line"><span class="ln">3</span><span class="cl">  def sort_query_params
+</span></span><span class="line"><span class="ln">4</span><span class="cl">    params.slice(:sort_by, :direction)
+</span></span><span class="line"><span class="ln">5</span><span class="cl">  end</span></span></code></pre></div><p>end
+#+end_src <em>Query Object implementation and usage in
+controller</em></p>
+<h3 id="heredoc-syntax-for-raw-sql">HEREDOC syntax for raw SQL:</h3>
+<p>For the cases where you desperately need to use raw SQL code try to
+isolate it using Ruby&rsquo;s <em>HEREDOC syntax:</em></p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"> <span class="k">class</span> <span class="nc">PopularArticlesQuery</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  <span class="no">POPULAR_TRESHOLD</span> <span class="o">=</span> <span class="mi">5</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">subscriptions</span> <span class="o">=</span> <span class="no">Subscription</span><span class="o">.</span><span class="n">all</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">    <span class="vi">@subscriptions</span> <span class="o">=</span> <span class="n">subscriptions</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">  <span class="k">def</span> <span class="nf">all</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">    <span class="vi">@subscriptions</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">
+</span></span><span class="line"><span class="ln">12</span><span class="cl">  <span class="kp">private</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">
+</span></span><span class="line"><span class="ln">14</span><span class="cl">  <span class="k">def</span> <span class="nf">query</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">    <span class="s">&lt;&lt;-SQL
+</span></span></span><span class="line"><span class="ln">16</span><span class="cl"><span class="s"></span>      <span class="n">articles</span><span class="o">.</span><span class="n">comments_count</span> <span class="o">&gt;=</span> <span class="c1">#{POPULAR_TRESHOLD}</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">      <span class="no">AND</span> <span class="n">articles</span><span class="o">.</span><span class="n">content</span> <span class="no">IS</span> <span class="no">NOT</span> <span class="no">NULL</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl">      <span class="no">AND</span> <span class="n">articles</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="c1">#{Article::STATUSES[:published]}</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">      <span class="no">ORDER</span> <span class="no">BY</span> <span class="n">articles</span><span class="o">.</span><span class="n">comments_count</span> <span class="no">DESC</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl">    <span class="no">SQL</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">22</span><span class="cl"><span class="k">end</span></span></span></code></pre></div><p><em>HEREDOC syntax example for raw SQL inserts</em></p>
+<h3 id="extending-scope">Extending scope:</h3>
+<p>If your scope relates to existing <em>QueryObject</em>, you can easily extend
+its relation instead of cluttering up your models.
+<a href="http://apidock.com/rails/ActiveRecord/QueryMethods/extending">ActiveRecord::QueryMethods.extending</a>
+method will help you:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="k">class</span> <span class="nc">OrderedArticlesQuery</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  <span class="no">SORT_OPTIONS</span> <span class="o">=</span> <span class="sx">%w(by_date by_title by_author)</span><span class="o">.</span><span class="n">freeze</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">params</span> <span class="o">=</span> <span class="p">{},</span> <span class="n">relation</span> <span class="o">=</span> <span class="no">Article</span><span class="o">.</span><span class="n">includes</span><span class="p">(</span><span class="ss">:user</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">    <span class="vi">@relation</span> <span class="o">=</span> <span class="n">relation</span><span class="o">.</span><span class="n">extending</span><span class="p">(</span><span class="no">Scopes</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">    <span class="vi">@params</span> <span class="o">=</span> <span class="n">params</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">
+</span></span><span class="line"><span class="ln">10</span><span class="cl">  <span class="k">def</span> <span class="nf">all</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">    <span class="vi">@relation</span><span class="o">.</span><span class="n">public_send</span><span class="p">(</span><span class="n">sort_by</span><span class="p">,</span> <span class="n">direction</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">
+</span></span><span class="line"><span class="ln">14</span><span class="cl">  <span class="kp">private</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">
+</span></span><span class="line"><span class="ln">16</span><span class="cl">  <span class="k">def</span> <span class="nf">sort_by</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">    <span class="vi">@params</span><span class="o">[</span><span class="ss">:sort</span><span class="o">].</span><span class="n">presence_in</span><span class="p">(</span><span class="no">SORT_OPTIONS</span><span class="p">)</span> <span class="o">||</span> <span class="ss">:by_date</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">
+</span></span><span class="line"><span class="ln">20</span><span class="cl">  <span class="k">def</span> <span class="nf">direction</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl">    <span class="vi">@params</span><span class="o">[</span><span class="ss">:direction</span><span class="o">]</span> <span class="o">==</span> <span class="s2">&#34;asc&#34;</span> <span class="p">?</span> <span class="ss">:asc</span> <span class="p">:</span> <span class="ss">:desc</span>
+</span></span><span class="line"><span class="ln">22</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">23</span><span class="cl">
+</span></span><span class="line"><span class="ln">24</span><span class="cl">  <span class="c1"># Group additional scope methods in module in order to extend relation</span>
+</span></span><span class="line"><span class="ln">25</span><span class="cl">  <span class="k">module</span> <span class="nn">Scopes</span>
+</span></span><span class="line"><span class="ln">26</span><span class="cl">    <span class="k">def</span> <span class="nf">by_title</span><span class="p">(</span><span class="n">direction</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">27</span><span class="cl">      <span class="n">order</span><span class="p">(</span><span class="ss">title</span><span class="p">:</span> <span class="n">direction</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">28</span><span class="cl">    <span class="k">end</span>
+</span></span><span class="line"><span class="ln">29</span><span class="cl">
+</span></span><span class="line"><span class="ln">30</span><span class="cl">    <span class="k">def</span> <span class="nf">by_date</span><span class="p">(</span><span class="n">direction</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">31</span><span class="cl">      <span class="n">order</span><span class="p">(</span><span class="ss">created_at</span><span class="p">:</span> <span class="n">direction</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">32</span><span class="cl">    <span class="k">end</span>
+</span></span><span class="line"><span class="ln">33</span><span class="cl">
+</span></span><span class="line"><span class="ln">34</span><span class="cl">    <span class="k">def</span> <span class="nf">by_author</span>
+</span></span><span class="line"><span class="ln">35</span><span class="cl">      <span class="n">order</span><span class="p">(</span><span class="s2">&#34;users.full_name </span><span class="si">#{</span><span class="n">direction</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">36</span><span class="cl">    <span class="k">end</span>
+</span></span><span class="line"><span class="ln">37</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">38</span><span class="cl"><span class="k">end</span></span></span></code></pre></div><p><em>Extending scope for Query Objects relations</em></p>
+<h2 id="composing-query-objects">Composing Query Objects:</h2>
+<p><em>Query Objects</em> should be devised to support composition with other
+<em>Query Objects</em> and other ActiveRecord relations. In the example below
+two composed Query Objects represent one SQL query:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="k">class</span> <span class="nc">FeaturedQuery</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">relation</span> <span class="o">=</span> <span class="no">Article</span><span class="o">.</span><span class="n">all</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">    <span class="vi">@relation</span> <span class="o">=</span> <span class="n">relation</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">  <span class="k">def</span> <span class="nf">all</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">    <span class="vi">@relation</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="ss">featured</span><span class="p">:</span> <span class="kp">true</span><span class="p">)</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="s2">&#34;views_count &gt; ?&#34;</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="k">end</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">
+</span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="k">class</span> <span class="nc">ArticlesController</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">  <span class="k">def</span> <span class="nf">index</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">    <span class="vi">@articles</span> <span class="o">=</span> <span class="no">FeaturedArticlesQuery</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">sorted_articles</span><span class="p">)</span><span class="o">.</span><span class="n">all</span> <span class="c1"># SELECT &#34;articles&#34;.* FROM &#34;articles&#34; WHERE &#34;articles&#34;.&#34;featured&#34; = $1 # AND (views_count &gt;100) ORDER BY &#34;articles&#34;.&#34;created_at&#34; DESC LIMIT 10 OFFSET 0</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">
+</span></span><span class="line"><span class="ln">16</span><span class="cl">  <span class="kp">private</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">
+</span></span><span class="line"><span class="ln">18</span><span class="cl">  <span class="k">def</span> <span class="nf">sorted_articles</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">    <span class="no">SortedArticlesQuery</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">sort_query_params</span><span class="p">)</span><span class="o">.</span><span class="n">all</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl">
+</span></span><span class="line"><span class="ln">22</span><span class="cl">  <span class="k">def</span> <span class="nf">sort_query_params</span>
+</span></span><span class="line"><span class="ln">23</span><span class="cl">    <span class="p">{</span> <span class="ss">sort</span><span class="p">:</span> <span class="ss">:by_title</span><span class="p">,</span> <span class="ss">direction</span><span class="p">:</span> <span class="ss">:desc</span> <span class="p">}</span>
+</span></span><span class="line"><span class="ln">24</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">25</span><span class="cl"><span class="k">end</span></span></span></code></pre></div><p><em>Composing two Query Objects</em></p>
+<h2 id="inheritance-of-query-objects">Inheritance of Query Objects:</h2>
+<p>If you have similar queries you may want them to be inherited to reduce
+repetition and follow DRY principle:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="k">class</span> <span class="nc">ArticlesQuery</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  <span class="no">TEXT_LENGTH</span> <span class="o">=</span> <span class="mi">3</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="c1">#+BEGIN_EXAMPLE</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">comments</span> <span class="o">=</span> <span class="no">Comment</span><span class="o">.</span><span class="n">all</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">    <span class="vi">@comments</span> <span class="o">=</span> <span class="n">comments</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">  <span class="k">def</span> <span class="nf">all</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    <span class="n">comments</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">      <span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="s2">&#34;user_id IS NOT NULL&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">      <span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="s2">&#34;LENGTH(content) </span><span class="si">#{</span><span class="n">condition</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">
+</span></span><span class="line"><span class="ln">15</span><span class="cl">  <span class="k">def</span> <span class="nf">condition</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl">    <span class="s2">&#34;&gt; </span><span class="si">#{</span><span class="no">TEXT_LENGTH</span><span class="si">}</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl"><span class="k">end</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">
+</span></span><span class="line"><span class="ln">20</span><span class="cl"><span class="k">class</span> <span class="nc">LongArticlesQuery</span> <span class="o">&lt;</span> <span class="no">ArticlesQuery</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl">  <span class="no">TEXT_LENGTH</span> <span class="o">=</span> <span class="mi">5</span>
+</span></span><span class="line"><span class="ln">22</span><span class="cl">
+</span></span><span class="line"><span class="ln">23</span><span class="cl">  <span class="c1">#+BEGIN_EXAMPLE</span>
+</span></span><span class="line"><span class="ln">24</span><span class="cl">  <span class="k">def</span> <span class="nf">condition</span>
+</span></span><span class="line"><span class="ln">25</span><span class="cl">    <span class="s2">&#34;&gt;= </span><span class="si">#{</span><span class="no">TEXT_LENGTH</span><span class="si">}</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="ln">26</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">27</span><span class="cl"><span class="k">end</span></span></span></code></pre></div><p><em>Inheritance of Query Objects</em></p>
+<h2 id="testing-query-objects">Testing Query Objects:</h2>
+<p>Query Objects should be designed to be pleasant for testing. In most
+cases you just need to test core methods defined in query for their
+results:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="nb">require</span> <span class="s2">&#34;rails_helper&#34;</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="n">describe</span> <span class="no">LongArticlesQuery</span> <span class="k">do</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">  <span class="n">describe</span> <span class="s2">&#34;#all&#34;</span> <span class="k">do</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">    <span class="n">subject</span><span class="p">(</span><span class="ss">:all</span><span class="p">)</span> <span class="p">{</span> <span class="n">described_class</span><span class="o">.</span><span class="n">new</span><span class="o">.</span><span class="n">all</span> <span class="p">}</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">    <span class="n">before</span> <span class="k">do</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">      <span class="n">create</span> <span class="ss">:article</span><span class="p">,</span> <span class="ss">text</span><span class="p">:</span> <span class="s2">&#34;abc&#34;</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">      <span class="n">create</span> <span class="ss">:article</span><span class="p">,</span> <span class="ss">text</span><span class="p">:</span> <span class="s2">&#34;this is long article&#34;</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    <span class="k">end</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">
+</span></span><span class="line"><span class="ln">12</span><span class="cl">    <span class="n">it</span> <span class="s2">&#34;returns one short comment&#34;</span> <span class="k">do</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">      <span class="n">expect</span><span class="p">(</span><span class="n">all</span><span class="o">.</span><span class="n">size</span><span class="p">)</span><span class="o">.</span><span class="n">to</span> <span class="n">eq</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">    <span class="k">end</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl"><span class="k">end</span></span></span></code></pre></div><p><em>Testing Query Objects</em></p>
+<h2 id="summary">Summary:</h2>
+<h3 id="good-query-object">Good Query Object:</h3>
+<ul>
+<li>Follows <em>Single Responsibility Principle</em></li>
+<li>Can be easily tested in isolation</li>
+<li>Can be combined/extended with another Query Object</li>
+<li>Can be effortlessly reused in any other parts of an application</li>
+<li>Returns <em>ActiveRecord::Relation</em>, not <em>Array</em></li>
+<li>Represents only database query, not business logic or action</li>
+<li>Methods of Query Object are named like <em>ActiveRecord</em> methods (<em>all,
+last, count, etc</em>)</li>
+</ul>
+<h3 id="use-query-objects-when">Use Query Objects when:</h3>
+<ul>
+<li>You need to reuse one query in multiple places of application</li>
+<li>You need to extend, compose or inherit queries and their relations</li>
+<li>You need to write a lot of raw SQL, but don&rsquo;t want to mess up your
+code</li>
+<li>Your query is too complex / vast for just one method or scope</li>
+<li>Your query causes <em>feature envy</em></li>
+</ul>
+<h3 id="dont-use-query-objects-when">Don&rsquo;t use Query Objects when:</h3>
+<ul>
+<li>Your query is simple enough for just one method or scope</li>
+<li>You don&rsquo;t need to extend, compose or inherit your query</li>
+<li>Your query is unique and you don&rsquo;t want to make it reusable</li>
+</ul>
+<p>I hope this article will help you to build awesome queries in your
+applications. Good luck and happy coding!</p>
+]]></content:encoded>
+    </item>
+    <item>
+      <title>Partial function application and currying in Ruby</title>
+      <link>https://neiro.io/blog/2016-03-08-partial-function-application-and-currying-in-ruby.md/</link>
+      <pubDate>Tue, 08 Mar 2016 10:00:00 +0100</pubDate>
+      <guid>https://neiro.io/blog/2016-03-08-partial-function-application-and-currying-in-ruby.md/</guid>
+      <description>&lt;p&gt;Currying and partial function application are common concepts of the&#xA;functional programming. They look similar, but have differences in&#xA;realization and using. Ruby allows you to easily operate with both of&#xA;them.&lt;/p&gt;&#xA;&lt;h2 id=&#34;partial-function-application&#34;&gt;Partial function application&lt;/h2&gt;&#xA;&lt;p&gt;First we need to know what is really &lt;em&gt;application&lt;/em&gt; is: it&amp;rsquo;s the process&#xA;of applying function to &lt;strong&gt;all of it&amp;rsquo;s arguments&lt;/strong&gt; to return value.&lt;br /&gt;&#xA;&lt;em&gt;Partial function application&lt;/em&gt; is the process of applying function to&#xA;&lt;strong&gt;some of it&amp;rsquo;s arguments&lt;/strong&gt;. This process creates a new function, based on&#xA;the parent function, but with lower arity (&lt;em&gt;with fewer arguments&lt;/em&gt;). So,&#xA;if we have an abstract function&#xA;&lt;img src=&#34;https://upload.wikimedia.org/math/4/3/a/43a45f58c8f35707c396444463e2ef24.png&#34; alt=&#34;&#34;&gt;&#xA;with three arguments, then we can create a partial function&#xA;&lt;img src=&#34;https://upload.wikimedia.org/math/1/d/5/1d54867424707e76c6f46bf426fc193e.png&#34; alt=&#34;&#34;&gt;&#xA;with two arguments that both of this functions return the same result.&lt;/p&gt;</description>
+      <content:encoded><![CDATA[<p>Currying and partial function application are common concepts of the
+functional programming. They look similar, but have differences in
+realization and using. Ruby allows you to easily operate with both of
+them.</p>
+<h2 id="partial-function-application">Partial function application</h2>
+<p>First we need to know what is really <em>application</em> is: it&rsquo;s the process
+of applying function to <strong>all of it&rsquo;s arguments</strong> to return value.<br />
+<em>Partial function application</em> is the process of applying function to
+<strong>some of it&rsquo;s arguments</strong>. This process creates a new function, based on
+the parent function, but with lower arity (<em>with fewer arguments</em>). So,
+if we have an abstract function
+<img src="https://upload.wikimedia.org/math/4/3/a/43a45f58c8f35707c396444463e2ef24.png" alt="">
+with three arguments, then we can create a partial function
+<img src="https://upload.wikimedia.org/math/1/d/5/1d54867424707e76c6f46bf426fc193e.png" alt="">
+with two arguments that both of this functions return the same result.</p>
+<p>For example, we have a simple multiply function that multiplies two
+arguments:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"> <span class="n">multiply</span> <span class="o">=</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="p">{</span> <span class="n">x</span> <span class="o">*</span> <span class="n">y</span> <span class="p">}</span> <span class="n">multiply</span><span class="o">.</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="c1"># 4</span></span></span></code></pre></div><p>But what if we want just double numbers ? Should we pass the <em>2</em>
+argument each time? Not really. We can use partial function application
+to create a new <em>double</em> function that takes just one argument:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">double</span> <span class="o">=</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="p">{</span> <span class="n">multiply</span><span class="o">.</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="p">}</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="n">double</span><span class="o">.</span><span class="n">arity</span> <span class="c1"># 1</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="n">double</span><span class="o">.</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="c1"># 4</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl"><span class="n">double</span><span class="o">.</span><span class="p">(</span><span class="mi">1984</span><span class="p">)</span> <span class="c1"># 3968</span></span></span></code></pre></div><p>Ruby has <em>Proc#curry</em> method that allows you to use partial function
+application even more simpler:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">double</span> <span class="o">=</span> <span class="n">multiply</span><span class="o">.</span><span class="n">curry</span><span class="o">.</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="n">double</span><span class="o">.</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="c1"># 4</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="n">double</span><span class="o">.</span><span class="p">(</span><span class="mi">300</span><span class="p">)</span> <span class="c1"># 600</span></span></span></code></pre></div><h2 id="currying">Currying</h2>
+<p>Currying is similar to partial function application concept.</p>
+<p><strong>Currying</strong> is the process of translating the evaluating of <em>function
+with many arguments</em> into evaluating a sequence of functions, each with
+<em>exactly one parameter</em>. So, if we have a function with two arguments:
+<img src="https://upload.wikimedia.org/math/4/3/b/43ba302d099d623ae50cce466eb1f34d.png" alt="">
+then we can translate it with
+<img src="https://upload.wikimedia.org/math/0/1/3/0138ee5c8706ca68729e27f0e01e56ee.png" alt="">
+transformation to return a new function with one parameter:
+<img src="https://upload.wikimedia.org/math/7/b/5/7b547dc91687bfb09ee27d4c22f815eb.png" alt="">.</p>
+<p>For example, look back at previous <em>multiply</em> function. What if we want
+to multiply more than two arguments?</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">multiply</span><span class="o">.</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="c1"># ArgumentError: wrong number of arguments (given 3, expected 2)</span></span></span></code></pre></div><p>To prevent this, we can change multiply function and use <em>Proc#curry</em>
+method:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">multiply</span> <span class="o">=</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">head</span><span class="p">,</span> <span class="sr">/tail) { head /</span> <span class="n">tail</span><span class="o">.</span><span class="n">inject</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">&amp;</span><span class="ss">:*</span><span class="p">)</span> <span class="p">}</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="n">multiply</span><span class="o">.</span><span class="n">curry</span><span class="o">.</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="c1"># 8</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="n">multiply</span><span class="o">.</span><span class="n">curry</span><span class="o">.</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span> <span class="c1"># 42</span></span></span></code></pre></div><p>If we want to restrict arguments count, we can use <em>arity</em> optional
+argument in <em>Proc#curry</em> function:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">multiply</span><span class="o">.</span><span class="n">curry</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">[</span><span class="mi">1</span><span class="o">][</span><span class="mi">2</span><span class="o">][</span><span class="mi">3</span><span class="o">]</span> <span class="c1"># 6</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="n">multiply</span><span class="o">.</span><span class="n">curry</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">[</span><span class="mi">1</span><span class="o">][</span><span class="mi">2</span><span class="o">][</span><span class="mi">3</span><span class="o">][</span><span class="mi">4</span><span class="o">]</span> <span class="c1"># 0 because of the last argument is nil</span></span></span></code></pre></div><p>You can also use <em>curry</em> method on plain methods, not only procs with
+Ruby 2.2:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="k">def</span> <span class="nf">sum</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">  <span class="n">args</span><span class="o">.</span><span class="n">inject</span><span class="p">(</span><span class="ss">:+</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="k">end</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl">
+</span></span><span class="line"><span class="ln">5</span><span class="cl"><span class="n">plus_two</span> <span class="o">=</span> <span class="nb">method</span><span class="p">(</span><span class="ss">:sum</span><span class="p">)</span><span class="o">.</span><span class="n">curry</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">6</span><span class="cl"><span class="n">plus_two</span><span class="o">.</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="c1"># 5</span></span></span></code></pre></div><h2 id="conclusion">Conclusion</h2>
+<p>Partial function application and currying are both great features of
+functional programming that allows you to write clean, simple and
+flexible functions based on anothers. You can use Ruby&rsquo;s <em>#curry</em> method
+with procs or methods to write eloquent and powerful code.</p>
+]]></content:encoded>
+    </item>
+    <item>
+      <title>Partial function application and currying in Ruby</title>
+      <link>https://neiro.io/posts/2016-03-08-partial-function-application-and-currying-in-ruby.md/</link>
+      <pubDate>Tue, 08 Mar 2016 10:00:00 +0100</pubDate>
+      <guid>https://neiro.io/posts/2016-03-08-partial-function-application-and-currying-in-ruby.md/</guid>
+      <description>&lt;p&gt;Currying and partial function application are common concepts of the&#xA;functional programming. They look similar, but have differences in&#xA;realization and using. Ruby allows you to easily operate with both of&#xA;them.&lt;/p&gt;&#xA;&lt;h2 id=&#34;partial-function-application&#34;&gt;Partial function application&lt;/h2&gt;&#xA;&lt;p&gt;First we need to know what is really &lt;em&gt;application&lt;/em&gt; is: it&amp;rsquo;s the process&#xA;of applying function to &lt;strong&gt;all of it&amp;rsquo;s arguments&lt;/strong&gt; to return value.&lt;br /&gt;&#xA;&lt;em&gt;Partial function application&lt;/em&gt; is the process of applying function to&#xA;&lt;strong&gt;some of it&amp;rsquo;s arguments&lt;/strong&gt;. This process creates a new function, based on&#xA;the parent function, but with lower arity (&lt;em&gt;with fewer arguments&lt;/em&gt;). So,&#xA;if we have an abstract function&#xA;&lt;img src=&#34;https://upload.wikimedia.org/math/4/3/a/43a45f58c8f35707c396444463e2ef24.png&#34; alt=&#34;&#34;&gt;&#xA;with three arguments, then we can create a partial function&#xA;&lt;img src=&#34;https://upload.wikimedia.org/math/1/d/5/1d54867424707e76c6f46bf426fc193e.png&#34; alt=&#34;&#34;&gt;&#xA;with two arguments that both of this functions return the same result.&lt;/p&gt;</description>
+      <content:encoded><![CDATA[<p>Currying and partial function application are common concepts of the
+functional programming. They look similar, but have differences in
+realization and using. Ruby allows you to easily operate with both of
+them.</p>
+<h2 id="partial-function-application">Partial function application</h2>
+<p>First we need to know what is really <em>application</em> is: it&rsquo;s the process
+of applying function to <strong>all of it&rsquo;s arguments</strong> to return value.<br />
+<em>Partial function application</em> is the process of applying function to
+<strong>some of it&rsquo;s arguments</strong>. This process creates a new function, based on
+the parent function, but with lower arity (<em>with fewer arguments</em>). So,
+if we have an abstract function
+<img src="https://upload.wikimedia.org/math/4/3/a/43a45f58c8f35707c396444463e2ef24.png" alt="">
+with three arguments, then we can create a partial function
+<img src="https://upload.wikimedia.org/math/1/d/5/1d54867424707e76c6f46bf426fc193e.png" alt="">
+with two arguments that both of this functions return the same result.</p>
+<p>For example, we have a simple multiply function that multiplies two
+arguments:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"> <span class="n">multiply</span> <span class="o">=</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="p">{</span> <span class="n">x</span> <span class="o">*</span> <span class="n">y</span> <span class="p">}</span> <span class="n">multiply</span><span class="o">.</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="c1"># 4</span></span></span></code></pre></div><p>But what if we want just double numbers ? Should we pass the <em>2</em>
+argument each time? Not really. We can use partial function application
+to create a new <em>double</em> function that takes just one argument:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">double</span> <span class="o">=</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="p">{</span> <span class="n">multiply</span><span class="o">.</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="p">}</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="n">double</span><span class="o">.</span><span class="n">arity</span> <span class="c1"># 1</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="n">double</span><span class="o">.</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="c1"># 4</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl"><span class="n">double</span><span class="o">.</span><span class="p">(</span><span class="mi">1984</span><span class="p">)</span> <span class="c1"># 3968</span></span></span></code></pre></div><p>Ruby has <em>Proc#curry</em> method that allows you to use partial function
+application even more simpler:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">double</span> <span class="o">=</span> <span class="n">multiply</span><span class="o">.</span><span class="n">curry</span><span class="o">.</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="n">double</span><span class="o">.</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="c1"># 4</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="n">double</span><span class="o">.</span><span class="p">(</span><span class="mi">300</span><span class="p">)</span> <span class="c1"># 600</span></span></span></code></pre></div><h2 id="currying">Currying</h2>
+<p>Currying is similar to partial function application concept.</p>
+<p><strong>Currying</strong> is the process of translating the evaluating of <em>function
+with many arguments</em> into evaluating a sequence of functions, each with
+<em>exactly one parameter</em>. So, if we have a function with two arguments:
+<img src="https://upload.wikimedia.org/math/4/3/b/43ba302d099d623ae50cce466eb1f34d.png" alt="">
+then we can translate it with
+<img src="https://upload.wikimedia.org/math/0/1/3/0138ee5c8706ca68729e27f0e01e56ee.png" alt="">
+transformation to return a new function with one parameter:
+<img src="https://upload.wikimedia.org/math/7/b/5/7b547dc91687bfb09ee27d4c22f815eb.png" alt="">.</p>
+<p>For example, look back at previous <em>multiply</em> function. What if we want
+to multiply more than two arguments?</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">multiply</span><span class="o">.</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="c1"># ArgumentError: wrong number of arguments (given 3, expected 2)</span></span></span></code></pre></div><p>To prevent this, we can change multiply function and use <em>Proc#curry</em>
+method:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">multiply</span> <span class="o">=</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">head</span><span class="p">,</span> <span class="sr">/tail) { head /</span> <span class="n">tail</span><span class="o">.</span><span class="n">inject</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">&amp;</span><span class="ss">:*</span><span class="p">)</span> <span class="p">}</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="n">multiply</span><span class="o">.</span><span class="n">curry</span><span class="o">.</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="c1"># 8</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="n">multiply</span><span class="o">.</span><span class="n">curry</span><span class="o">.</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span> <span class="c1"># 42</span></span></span></code></pre></div><p>If we want to restrict arguments count, we can use <em>arity</em> optional
+argument in <em>Proc#curry</em> function:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">multiply</span><span class="o">.</span><span class="n">curry</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">[</span><span class="mi">1</span><span class="o">][</span><span class="mi">2</span><span class="o">][</span><span class="mi">3</span><span class="o">]</span> <span class="c1"># 6</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="n">multiply</span><span class="o">.</span><span class="n">curry</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">[</span><span class="mi">1</span><span class="o">][</span><span class="mi">2</span><span class="o">][</span><span class="mi">3</span><span class="o">][</span><span class="mi">4</span><span class="o">]</span> <span class="c1"># 0 because of the last argument is nil</span></span></span></code></pre></div><p>You can also use <em>curry</em> method on plain methods, not only procs with
+Ruby 2.2:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="k">def</span> <span class="nf">sum</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">  <span class="n">args</span><span class="o">.</span><span class="n">inject</span><span class="p">(</span><span class="ss">:+</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="k">end</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl">
+</span></span><span class="line"><span class="ln">5</span><span class="cl"><span class="n">plus_two</span> <span class="o">=</span> <span class="nb">method</span><span class="p">(</span><span class="ss">:sum</span><span class="p">)</span><span class="o">.</span><span class="n">curry</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">6</span><span class="cl"><span class="n">plus_two</span><span class="o">.</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="c1"># 5</span></span></span></code></pre></div><h2 id="conclusion">Conclusion</h2>
+<p>Partial function application and currying are both great features of
+functional programming that allows you to write clean, simple and
+flexible functions based on anothers. You can use Ruby&rsquo;s <em>#curry</em> method
+with procs or methods to write eloquent and powerful code.</p>
+]]></content:encoded>
+    </item>
+    <item>
+      <title>Immutable collections in Ruby with Hamster</title>
+      <link>https://neiro.io/blog/2016-02-14-immutable-collections-in-ruby-with-hamster/</link>
+      <pubDate>Sun, 14 Feb 2016 10:00:00 +0100</pubDate>
+      <guid>https://neiro.io/blog/2016-02-14-immutable-collections-in-ruby-with-hamster/</guid>
+      <description>&lt;p&gt;Ruby has much in common with functional programming languages. For&#xA;example, Ruby supports high-order functions, lambdas, currying and&#xA;recursion, but not the immutability - Ruby&amp;rsquo;s types and data structures&#xA;are mutable and can be changed at any time.&lt;/p&gt;&#xA;&lt;p&gt;Why immutability is important? The&amp;rsquo;re many arguments for that:&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;reliability&lt;/li&gt;&#xA;&lt;li&gt;thread-safety&lt;/li&gt;&#xA;&lt;li&gt;simpler debugging&lt;/li&gt;&#xA;&lt;li&gt;purity - immutable data allows you to write side-effects free code&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;p&gt;If you want to make Ruby hash immutable, you can use freeze it:&lt;/p&gt;</description>
+      <content:encoded><![CDATA[<p>Ruby has much in common with functional programming languages. For
+example, Ruby supports high-order functions, lambdas, currying and
+recursion, but not the immutability - Ruby&rsquo;s types and data structures
+are mutable and can be changed at any time.</p>
+<p>Why immutability is important? The&rsquo;re many arguments for that:</p>
+<ul>
+<li>reliability</li>
+<li>thread-safety</li>
+<li>simpler debugging</li>
+<li>purity - immutable data allows you to write side-effects free code</li>
+</ul>
+<p>If you want to make Ruby hash immutable, you can use freeze it:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">immutable</span> <span class="o">=</span> <span class="p">{</span> <span class="ss">foo</span><span class="p">:</span> <span class="s1">&#39;bar&#39;</span> <span class="p">}</span> <span class="n">immutable</span><span class="o">.</span><span class="n">freeze</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="n">immutable</span><span class="o">[</span><span class="ss">:foo</span><span class="o">]</span> <span class="o">=</span> <span class="s1">&#39;tball&#39;</span><span class="c1"># RuntimeError: can&#39;t modify frozen Hash</span></span></span></code></pre></div><p>But if you want to use already immutable collections, sets and other
+data structures, you can try
+<a href="https://github.com/hamstergem/hamster">Hamster</a> library.</p>
+<h2 id="hamster">Hamster</h2>
+<p>Hamster provides efficient, immutable and thread-safe collection classes
+for Ruby, such as <em>Hash</em>, <em>Vector</em>, <em>Set</em>, <em>SortedSet</em> and <em>List</em>.
+Hamster collections offers Ruby`s <em>Hash</em>, <em>Array</em>, <em>Enumberable</em>
+compatibility where it possible. You can require all of Hamster
+collection classes:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">gem</span> <span class="n">i</span> <span class="n">hamster</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="nb">require</span> <span class="s1">&#39;hamster&#39;</span></span></span></code></pre></div><p>or only certain types:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="nb">require</span> <span class="s1">&#39;hamster/hash&#39;</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="nb">require</span> <span class="s1">&#39;hamster/vector&#39;</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="nb">require</span> <span class="s1">&#39;hamster/set&#39;</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl"><span class="nb">require</span> <span class="s1">&#39;hamster/sorted_set&#39;</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl"><span class="nb">require</span> <span class="s1">&#39;hamster/list&#39;</span>
+</span></span><span class="line"><span class="ln">6</span><span class="cl"><span class="nb">require</span> <span class="s1">&#39;hamster/deque&#39;</span></span></span></code></pre></div><h2 id="hash">Hash</h2>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="c1"># Create new Hamster Hash</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="n">parrot</span> <span class="o">=</span> <span class="no">Hamster</span><span class="o">::</span><span class="no">Hash</span><span class="o">[</span><span class="ss">type</span><span class="p">:</span> <span class="s1">&#39;bird&#39;</span><span class="p">,</span> <span class="ss">class</span><span class="p">:</span> <span class="s1">&#39;parrot&#39;</span><span class="p">,</span> <span class="ss">color</span><span class="p">:</span> <span class="s1">&#39;yellow&#39;</span><span class="o">]</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="n">parrot</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="ss">:color</span><span class="p">)</span> <span class="c1"># yellow</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="n">parrot</span><span class="o">[</span><span class="ss">:type</span><span class="o">]</span> <span class="c1"># bird</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="c1"># You can not change hash because of immutability</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="n">parrot</span><span class="o">[</span><span class="ss">:subclass</span><span class="o">]</span> <span class="o">=</span> <span class="s1">&#39;budgie&#39;</span> <span class="c1"># NoMethodError: undefined method `[]=&#39;</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="c1"># But you can create a new</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">
+</span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="n">budgie</span> <span class="o">=</span> <span class="n">parrot</span><span class="o">.</span><span class="n">put</span> <span class="ss">:subclass</span><span class="p">,</span> <span class="s1">&#39;budgie&#39;</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="n">budgie</span> <span class="o">==</span> <span class="n">parrot</span> <span class="c1"># false</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl"><span class="n">budgie</span><span class="o">[</span><span class="ss">:subclass</span><span class="o">]</span> <span class="c1"># budgie</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl"><span class="n">parrot</span><span class="o">[</span><span class="ss">:subclass</span><span class="o">]</span> <span class="c1"># nil</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">
+</span></span><span class="line"><span class="ln">16</span><span class="cl"><span class="n">budgie</span><span class="o">.</span><span class="n">to_hash</span><span class="o">.</span><span class="n">class</span> <span class="c1"># Plain Ruby Hash</span></span></span></code></pre></div><h2 id="list">List</h2>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">list</span> <span class="o">=</span> <span class="no">Hamster</span><span class="o">::</span><span class="no">List</span><span class="o">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="o">]</span> <span class="n">list</span><span class="o">.</span><span class="n">tail</span> <span class="c1"># Hamster::List[1, 2]</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="n">list</span><span class="o">.</span><span class="n">head</span> <span class="c1"># 0</span></span></span></code></pre></div><h2 id="set">Set</h2>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="c1"># Hamster&#39;s set is an unordered collection with no duplicates</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="n">colors</span> <span class="o">=</span> <span class="no">Hamster</span><span class="o">::</span><span class="no">Set</span><span class="o">[</span><span class="ss">:green</span><span class="p">,</span> <span class="ss">:white</span><span class="o">]</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="n">colors</span><span class="o">.</span><span class="n">include?</span><span class="p">(</span><span class="ss">:green</span><span class="p">)</span> <span class="c1"># true</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="n">palette</span> <span class="o">=</span> <span class="n">colors</span><span class="o">.</span><span class="n">add</span> <span class="ss">:yellow</span> <span class="c1"># Hamster::Set[:green, :yellow, :white]</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="n">colors</span><span class="o">.</span><span class="n">include?</span><span class="p">(</span><span class="ss">:yellow</span><span class="p">)</span> <span class="c1"># false palette.superset?(colors) # true</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="n">palette</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">colors</span><span class="p">)</span> <span class="c1"># Hamster::Set[:green, :white]</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="n">palette</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">colors</span><span class="p">)</span><span class="o">.</span><span class="n">first</span> <span class="c1"># :yellow</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">
+</span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="n">palette</span><span class="o">.</span><span class="n">to_a</span> <span class="c1"># Plain Ruby array: [:green, :white, :yellow]</span></span></span></code></pre></div><h2 id="vector">Vector</h2>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"> <span class="c1"># Vector is an integer-indexed immutable array</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="n">vector</span> <span class="o">=</span> <span class="no">Hamster</span><span class="o">::</span><span class="no">Vector</span><span class="o">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="o">]</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="n">vector</span><span class="o">[</span><span class="mi">2</span><span class="o">]</span> <span class="c1"># 2</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="n">vector</span><span class="o">[-</span><span class="mi">1</span><span class="o">]</span> <span class="c1"># 2</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="n">vector</span><span class="o">[-</span><span class="mi">4</span><span class="o">]</span> <span class="c1"># nil</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="n">vector</span><span class="o">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="o">]</span> <span class="c1"># Hamster::Vector[1, 2]</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="n">vector</span><span class="o">[</span><span class="mi">0</span><span class="o">..</span><span class="mi">2</span><span class="o">]</span> <span class="c1"># Hamster::Vector[0, 1, 2]</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="n">binary_vector</span> <span class="o">=</span> <span class="n">vector</span><span class="o">.</span><span class="n">delete_at</span> <span class="mi">0</span> <span class="c1"># Hamster::Vector[1, 2]</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="n">vector</span><span class="o">.</span><span class="n">size</span> <span class="c1"># 3</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="n">binary_vector</span><span class="o">.</span><span class="n">size</span> <span class="c1"># 2</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="n">vector</span> <span class="o">==</span> <span class="n">binary_vector</span> <span class="c1"># false</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">
+</span></span><span class="line"><span class="ln">14</span><span class="cl"><span class="p">(</span><span class="n">binary_vector</span> <span class="o">+</span> <span class="n">vector</span><span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="o">.</span><span class="n">uniq</span> <span class="c1"># Hamster::Vector[0, 1, 2]</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl"><span class="p">(</span><span class="n">binary_vector</span> <span class="o">+</span> <span class="n">vector</span><span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="o">.</span><span class="n">uniq</span> <span class="o">==</span> <span class="n">vector</span> <span class="c1"># true</span></span></span></code></pre></div><h2 id="conclusion">Conclusion</h2>
+<p>If you want to use immutable data structures in Ruby to write more
+reliable, efficient and at the same time thread-safe code, you can take
+a look at Hamster. You can find more in Hamster&rsquo;s
+<a href="http://www.rubydoc.info/github/hamstergem/hamster/master">API
+documentation</a>.</p>
+]]></content:encoded>
+    </item>
+    <item>
+      <title>Immutable collections in Ruby with Hamster</title>
+      <link>https://neiro.io/posts/2016-02-14-immutable-collections-in-ruby-with-hamster/</link>
+      <pubDate>Sun, 14 Feb 2016 10:00:00 +0100</pubDate>
+      <guid>https://neiro.io/posts/2016-02-14-immutable-collections-in-ruby-with-hamster/</guid>
+      <description>&lt;p&gt;Ruby has much in common with functional programming languages. For&#xA;example, Ruby supports high-order functions, lambdas, currying and&#xA;recursion, but not the immutability - Ruby&amp;rsquo;s types and data structures&#xA;are mutable and can be changed at any time.&lt;/p&gt;&#xA;&lt;p&gt;Why immutability is important? The&amp;rsquo;re many arguments for that:&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;reliability&lt;/li&gt;&#xA;&lt;li&gt;thread-safety&lt;/li&gt;&#xA;&lt;li&gt;simpler debugging&lt;/li&gt;&#xA;&lt;li&gt;purity - immutable data allows you to write side-effects free code&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;p&gt;If you want to make Ruby hash immutable, you can use freeze it:&lt;/p&gt;</description>
+      <content:encoded><![CDATA[<p>Ruby has much in common with functional programming languages. For
+example, Ruby supports high-order functions, lambdas, currying and
+recursion, but not the immutability - Ruby&rsquo;s types and data structures
+are mutable and can be changed at any time.</p>
+<p>Why immutability is important? The&rsquo;re many arguments for that:</p>
+<ul>
+<li>reliability</li>
+<li>thread-safety</li>
+<li>simpler debugging</li>
+<li>purity - immutable data allows you to write side-effects free code</li>
+</ul>
+<p>If you want to make Ruby hash immutable, you can use freeze it:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">immutable</span> <span class="o">=</span> <span class="p">{</span> <span class="ss">foo</span><span class="p">:</span> <span class="s1">&#39;bar&#39;</span> <span class="p">}</span> <span class="n">immutable</span><span class="o">.</span><span class="n">freeze</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="n">immutable</span><span class="o">[</span><span class="ss">:foo</span><span class="o">]</span> <span class="o">=</span> <span class="s1">&#39;tball&#39;</span><span class="c1"># RuntimeError: can&#39;t modify frozen Hash</span></span></span></code></pre></div><p>But if you want to use already immutable collections, sets and other
+data structures, you can try
+<a href="https://github.com/hamstergem/hamster">Hamster</a> library.</p>
+<h2 id="hamster">Hamster</h2>
+<p>Hamster provides efficient, immutable and thread-safe collection classes
+for Ruby, such as <em>Hash</em>, <em>Vector</em>, <em>Set</em>, <em>SortedSet</em> and <em>List</em>.
+Hamster collections offers Ruby`s <em>Hash</em>, <em>Array</em>, <em>Enumberable</em>
+compatibility where it possible. You can require all of Hamster
+collection classes:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">gem</span> <span class="n">i</span> <span class="n">hamster</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="nb">require</span> <span class="s1">&#39;hamster&#39;</span></span></span></code></pre></div><p>or only certain types:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="nb">require</span> <span class="s1">&#39;hamster/hash&#39;</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="nb">require</span> <span class="s1">&#39;hamster/vector&#39;</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="nb">require</span> <span class="s1">&#39;hamster/set&#39;</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl"><span class="nb">require</span> <span class="s1">&#39;hamster/sorted_set&#39;</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl"><span class="nb">require</span> <span class="s1">&#39;hamster/list&#39;</span>
+</span></span><span class="line"><span class="ln">6</span><span class="cl"><span class="nb">require</span> <span class="s1">&#39;hamster/deque&#39;</span></span></span></code></pre></div><h2 id="hash">Hash</h2>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="c1"># Create new Hamster Hash</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="n">parrot</span> <span class="o">=</span> <span class="no">Hamster</span><span class="o">::</span><span class="no">Hash</span><span class="o">[</span><span class="ss">type</span><span class="p">:</span> <span class="s1">&#39;bird&#39;</span><span class="p">,</span> <span class="ss">class</span><span class="p">:</span> <span class="s1">&#39;parrot&#39;</span><span class="p">,</span> <span class="ss">color</span><span class="p">:</span> <span class="s1">&#39;yellow&#39;</span><span class="o">]</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="n">parrot</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="ss">:color</span><span class="p">)</span> <span class="c1"># yellow</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="n">parrot</span><span class="o">[</span><span class="ss">:type</span><span class="o">]</span> <span class="c1"># bird</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="c1"># You can not change hash because of immutability</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="n">parrot</span><span class="o">[</span><span class="ss">:subclass</span><span class="o">]</span> <span class="o">=</span> <span class="s1">&#39;budgie&#39;</span> <span class="c1"># NoMethodError: undefined method `[]=&#39;</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="c1"># But you can create a new</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">
+</span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="n">budgie</span> <span class="o">=</span> <span class="n">parrot</span><span class="o">.</span><span class="n">put</span> <span class="ss">:subclass</span><span class="p">,</span> <span class="s1">&#39;budgie&#39;</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="n">budgie</span> <span class="o">==</span> <span class="n">parrot</span> <span class="c1"># false</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl"><span class="n">budgie</span><span class="o">[</span><span class="ss">:subclass</span><span class="o">]</span> <span class="c1"># budgie</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl"><span class="n">parrot</span><span class="o">[</span><span class="ss">:subclass</span><span class="o">]</span> <span class="c1"># nil</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">
+</span></span><span class="line"><span class="ln">16</span><span class="cl"><span class="n">budgie</span><span class="o">.</span><span class="n">to_hash</span><span class="o">.</span><span class="n">class</span> <span class="c1"># Plain Ruby Hash</span></span></span></code></pre></div><h2 id="list">List</h2>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">list</span> <span class="o">=</span> <span class="no">Hamster</span><span class="o">::</span><span class="no">List</span><span class="o">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="o">]</span> <span class="n">list</span><span class="o">.</span><span class="n">tail</span> <span class="c1"># Hamster::List[1, 2]</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="n">list</span><span class="o">.</span><span class="n">head</span> <span class="c1"># 0</span></span></span></code></pre></div><h2 id="set">Set</h2>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="c1"># Hamster&#39;s set is an unordered collection with no duplicates</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="n">colors</span> <span class="o">=</span> <span class="no">Hamster</span><span class="o">::</span><span class="no">Set</span><span class="o">[</span><span class="ss">:green</span><span class="p">,</span> <span class="ss">:white</span><span class="o">]</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="n">colors</span><span class="o">.</span><span class="n">include?</span><span class="p">(</span><span class="ss">:green</span><span class="p">)</span> <span class="c1"># true</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="n">palette</span> <span class="o">=</span> <span class="n">colors</span><span class="o">.</span><span class="n">add</span> <span class="ss">:yellow</span> <span class="c1"># Hamster::Set[:green, :yellow, :white]</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="n">colors</span><span class="o">.</span><span class="n">include?</span><span class="p">(</span><span class="ss">:yellow</span><span class="p">)</span> <span class="c1"># false palette.superset?(colors) # true</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="n">palette</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">colors</span><span class="p">)</span> <span class="c1"># Hamster::Set[:green, :white]</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="n">palette</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">colors</span><span class="p">)</span><span class="o">.</span><span class="n">first</span> <span class="c1"># :yellow</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">
+</span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="n">palette</span><span class="o">.</span><span class="n">to_a</span> <span class="c1"># Plain Ruby array: [:green, :white, :yellow]</span></span></span></code></pre></div><h2 id="vector">Vector</h2>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"> <span class="c1"># Vector is an integer-indexed immutable array</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="n">vector</span> <span class="o">=</span> <span class="no">Hamster</span><span class="o">::</span><span class="no">Vector</span><span class="o">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="o">]</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="n">vector</span><span class="o">[</span><span class="mi">2</span><span class="o">]</span> <span class="c1"># 2</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="n">vector</span><span class="o">[-</span><span class="mi">1</span><span class="o">]</span> <span class="c1"># 2</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="n">vector</span><span class="o">[-</span><span class="mi">4</span><span class="o">]</span> <span class="c1"># nil</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="n">vector</span><span class="o">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="o">]</span> <span class="c1"># Hamster::Vector[1, 2]</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="n">vector</span><span class="o">[</span><span class="mi">0</span><span class="o">..</span><span class="mi">2</span><span class="o">]</span> <span class="c1"># Hamster::Vector[0, 1, 2]</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="n">binary_vector</span> <span class="o">=</span> <span class="n">vector</span><span class="o">.</span><span class="n">delete_at</span> <span class="mi">0</span> <span class="c1"># Hamster::Vector[1, 2]</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="n">vector</span><span class="o">.</span><span class="n">size</span> <span class="c1"># 3</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="n">binary_vector</span><span class="o">.</span><span class="n">size</span> <span class="c1"># 2</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="n">vector</span> <span class="o">==</span> <span class="n">binary_vector</span> <span class="c1"># false</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">
+</span></span><span class="line"><span class="ln">14</span><span class="cl"><span class="p">(</span><span class="n">binary_vector</span> <span class="o">+</span> <span class="n">vector</span><span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="o">.</span><span class="n">uniq</span> <span class="c1"># Hamster::Vector[0, 1, 2]</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl"><span class="p">(</span><span class="n">binary_vector</span> <span class="o">+</span> <span class="n">vector</span><span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="o">.</span><span class="n">uniq</span> <span class="o">==</span> <span class="n">vector</span> <span class="c1"># true</span></span></span></code></pre></div><h2 id="conclusion">Conclusion</h2>
+<p>If you want to use immutable data structures in Ruby to write more
+reliable, efficient and at the same time thread-safe code, you can take
+a look at Hamster. You can find more in Hamster&rsquo;s
+<a href="http://www.rubydoc.info/github/hamstergem/hamster/master">API
+documentation</a>.</p>
+]]></content:encoded>
+    </item>
+    <item>
+      <title>Functional Ruby gem</title>
+      <link>https://neiro.io/blog/2015-11-28-functional-ruby-gem/</link>
+      <pubDate>Sat, 28 Nov 2015 10:00:00 +0100</pubDate>
+      <guid>https://neiro.io/blog/2015-11-28-functional-ruby-gem/</guid>
+      <description>&lt;p&gt;Ruby is a great example of multi-paradigm programming language: it&#xA;allows you to write code in object-oriented, imperative or functional&#xA;styles. Ruby have much in common with functional programming languages:&#xA;&lt;em&gt;high-order functions, closures, anonymous functions, continuations,&#xA;statements all values&lt;/em&gt;. If you want to use more functional programming&#xA;patterns and tools, you might want to take a look on&#xA;&lt;a href=&#34;https://github.com/jdantonio/functional-ruby&#34;&gt;Functional Ruby&lt;/a&gt; gem.&lt;/p&gt;&#xA;&lt;h2 id=&#34;features&#34;&gt;Features&lt;/h2&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Thread-safe, immutable data structures&lt;/li&gt;&#xA;&lt;li&gt;Protocol specifications&lt;/li&gt;&#xA;&lt;li&gt;Functions overloading&lt;/li&gt;&#xA;&lt;li&gt;&lt;code&gt;Either, Option&lt;/code&gt; classes&lt;/li&gt;&#xA;&lt;li&gt;Immutable variation of Ruby&amp;rsquo;s &lt;code&gt;OpenStruct&lt;/code&gt; class&lt;/li&gt;&#xA;&lt;li&gt;Memoization&lt;/li&gt;&#xA;&lt;li&gt;Lazy execution&lt;/li&gt;&#xA;&lt;li&gt;Tuples&lt;/li&gt;&#xA;&lt;li&gt;Pattern matching&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;installing&#34;&gt;Installing&lt;/h2&gt;&#xA;&lt;p&gt;Install this gem with or without bundler:&lt;/p&gt;</description>
+      <content:encoded><![CDATA[<p>Ruby is a great example of multi-paradigm programming language: it
+allows you to write code in object-oriented, imperative or functional
+styles. Ruby have much in common with functional programming languages:
+<em>high-order functions, closures, anonymous functions, continuations,
+statements all values</em>. If you want to use more functional programming
+patterns and tools, you might want to take a look on
+<a href="https://github.com/jdantonio/functional-ruby">Functional Ruby</a> gem.</p>
+<h2 id="features">Features</h2>
+<ul>
+<li>Thread-safe, immutable data structures</li>
+<li>Protocol specifications</li>
+<li>Functions overloading</li>
+<li><code>Either, Option</code> classes</li>
+<li>Immutable variation of Ruby&rsquo;s <code>OpenStruct</code> class</li>
+<li>Memoization</li>
+<li>Lazy execution</li>
+<li>Tuples</li>
+<li>Pattern matching</li>
+</ul>
+<h2 id="installing">Installing</h2>
+<p>Install this gem with or without bundler:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="ln">1</span><span class="cl">gem install functional-ruby
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="c1">#  gem &#39;functional-ruby&#39;</span></span></span></code></pre></div><p>And then require it in your project:</p>
+<p>#+begin_src ruby require &lsquo;functional&rsquo; #+end_src</p>
+<h2 id="immutable-data-structures">Immutable data structures</h2>
+<p>#+begin_src ruby
+Address = Functional::Record.new(:city, :country, :street, :house) do
+mandatory :country, :city
+default :city, &lsquo;Moscow&rsquo;
+default :country, &lsquo;Russia&rsquo;
+end # &lt;record Address :city=&gt;&ldquo;Moscow&rdquo;, :country=&gt;&ldquo;Russia&rdquo;, :street=&gt;nil, :house=&gt;nil&gt; #+end_src</p>
+<h2 id="immutable-openstruct">Immutable OpenStruct</h2>
+<p>Immutable, thread-safe, write-once and read-only object variation of
+<code>OpenStruct</code>:</p>
+<p>#+begin_src ruby
+name = Functional::ValueStruct.new firstname: &lsquo;Hodor&rsquo;, lastname: &lsquo;Hodor&rsquo;
+name.get :firstname # Hodor
+name.lastname # Hodor
+name.firstname? # true #+end_src</p>
+<h2 id="tuples">Tuples</h2>
+<p>Tuple is a data structure that is similar to array, but is immutable and
+has a fixed length.</p>
+<p>#+begin_src ruby
+tuple = Functional::Tuple.new %w(one two three)
+tuple.at 0 # one
+tuple.last 0 # three
+tuple.fetch 4, &lsquo;four&rsquo; # four
+tuple.tail.to_a # [&rsquo;two&rsquo;, &rsquo;three&rsquo;]
+tuple.repeat(2).to_a.join &lsquo;,&rsquo; # one, two, three, one, two, three #+end_src</p>
+<h2 id="protocols">Protocols</h2>
+<p>Protocols are specifications to provide polymorphism and method-dispatch
+mechanism with strong typing, inspired by <a href="http://clojure.org/protocols">Clojure protocols</a>:</p>
+<p>#+begin_src ruby
+Functional::SpecifyProtocol(:Address) do
+attr_accessor :city
+attr_accessor :country
+attr_accessor :street
+attr_accessor :house
+end #+end_src</p>
+<h2 id="pattern-matching">Pattern matching</h2>
+<p>#+begin_src ruby</p>
+<p>class AddressChecker
+include Functional::PatternMatching
+include Functional::Protocol
+include Functional::TypeCheck</p>
+<p>def msg &lsquo;You live in Moscow, Russia&rsquo; end</p>
+<p>defn(:msg, _) do |addr|
+&ldquo;You live in #{addr}&rdquo;
+end</p>
+<p>defn(:msg, _) { |addr| &ldquo;You live in #{addr.house}, #{addr.street},
+#{addr.city}, #{addr.country}&rdquo; }
+.when { |addr| Satisfy?(addr, :Address) }</p>
+<p>defn(:msg, :name, _) do |addr|
+&ldquo;Somebody live in #{addr}&rdquo;
+end</p>
+<p>defn(:msg, _) { |zip| &ldquo;Your zip is #{zip}&rdquo; }.when { |addr| Type?(addr, Fixnum) }
+end #+end_src</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>If you like functional programming, and want to use it&rsquo;s patterns and
+tools with Ruby, then you can use
+<a href="https://github.com/jdantonio/functional-ruby">Functional Ruby</a> gem to
+write code in more functional style. You can find more information in
+<a href="http://jerrydantonio.com/functional-ruby/">API documentation</a>.</p>
+]]></content:encoded>
+    </item>
+    <item>
+      <title>Functional Ruby gem</title>
+      <link>https://neiro.io/posts/2015-11-28-functional-ruby-gem/</link>
+      <pubDate>Sat, 28 Nov 2015 10:00:00 +0100</pubDate>
+      <guid>https://neiro.io/posts/2015-11-28-functional-ruby-gem/</guid>
+      <description>&lt;p&gt;Ruby is a great example of multi-paradigm programming language: it&#xA;allows you to write code in object-oriented, imperative or functional&#xA;styles. Ruby have much in common with functional programming languages:&#xA;&lt;em&gt;high-order functions, closures, anonymous functions, continuations,&#xA;statements all values&lt;/em&gt;. If you want to use more functional programming&#xA;patterns and tools, you might want to take a look on&#xA;&lt;a href=&#34;https://github.com/jdantonio/functional-ruby&#34;&gt;Functional Ruby&lt;/a&gt; gem.&lt;/p&gt;&#xA;&lt;h2 id=&#34;features&#34;&gt;Features&lt;/h2&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Thread-safe, immutable data structures&lt;/li&gt;&#xA;&lt;li&gt;Protocol specifications&lt;/li&gt;&#xA;&lt;li&gt;Functions overloading&lt;/li&gt;&#xA;&lt;li&gt;&lt;code&gt;Either, Option&lt;/code&gt; classes&lt;/li&gt;&#xA;&lt;li&gt;Immutable variation of Ruby&amp;rsquo;s &lt;code&gt;OpenStruct&lt;/code&gt; class&lt;/li&gt;&#xA;&lt;li&gt;Memoization&lt;/li&gt;&#xA;&lt;li&gt;Lazy execution&lt;/li&gt;&#xA;&lt;li&gt;Tuples&lt;/li&gt;&#xA;&lt;li&gt;Pattern matching&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;installing&#34;&gt;Installing&lt;/h2&gt;&#xA;&lt;p&gt;Install this gem with or without bundler:&lt;/p&gt;</description>
+      <content:encoded><![CDATA[<p>Ruby is a great example of multi-paradigm programming language: it
+allows you to write code in object-oriented, imperative or functional
+styles. Ruby have much in common with functional programming languages:
+<em>high-order functions, closures, anonymous functions, continuations,
+statements all values</em>. If you want to use more functional programming
+patterns and tools, you might want to take a look on
+<a href="https://github.com/jdantonio/functional-ruby">Functional Ruby</a> gem.</p>
+<h2 id="features">Features</h2>
+<ul>
+<li>Thread-safe, immutable data structures</li>
+<li>Protocol specifications</li>
+<li>Functions overloading</li>
+<li><code>Either, Option</code> classes</li>
+<li>Immutable variation of Ruby&rsquo;s <code>OpenStruct</code> class</li>
+<li>Memoization</li>
+<li>Lazy execution</li>
+<li>Tuples</li>
+<li>Pattern matching</li>
+</ul>
+<h2 id="installing">Installing</h2>
+<p>Install this gem with or without bundler:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="ln">1</span><span class="cl">gem install functional-ruby
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="c1">#  gem &#39;functional-ruby&#39;</span></span></span></code></pre></div><p>And then require it in your project:</p>
+<p>#+begin_src ruby require &lsquo;functional&rsquo; #+end_src</p>
+<h2 id="immutable-data-structures">Immutable data structures</h2>
+<p>#+begin_src ruby
+Address = Functional::Record.new(:city, :country, :street, :house) do
+mandatory :country, :city
+default :city, &lsquo;Moscow&rsquo;
+default :country, &lsquo;Russia&rsquo;
+end # &lt;record Address :city=&gt;&ldquo;Moscow&rdquo;, :country=&gt;&ldquo;Russia&rdquo;, :street=&gt;nil, :house=&gt;nil&gt; #+end_src</p>
+<h2 id="immutable-openstruct">Immutable OpenStruct</h2>
+<p>Immutable, thread-safe, write-once and read-only object variation of
+<code>OpenStruct</code>:</p>
+<p>#+begin_src ruby
+name = Functional::ValueStruct.new firstname: &lsquo;Hodor&rsquo;, lastname: &lsquo;Hodor&rsquo;
+name.get :firstname # Hodor
+name.lastname # Hodor
+name.firstname? # true #+end_src</p>
+<h2 id="tuples">Tuples</h2>
+<p>Tuple is a data structure that is similar to array, but is immutable and
+has a fixed length.</p>
+<p>#+begin_src ruby
+tuple = Functional::Tuple.new %w(one two three)
+tuple.at 0 # one
+tuple.last 0 # three
+tuple.fetch 4, &lsquo;four&rsquo; # four
+tuple.tail.to_a # [&rsquo;two&rsquo;, &rsquo;three&rsquo;]
+tuple.repeat(2).to_a.join &lsquo;,&rsquo; # one, two, three, one, two, three #+end_src</p>
+<h2 id="protocols">Protocols</h2>
+<p>Protocols are specifications to provide polymorphism and method-dispatch
+mechanism with strong typing, inspired by <a href="http://clojure.org/protocols">Clojure protocols</a>:</p>
+<p>#+begin_src ruby
+Functional::SpecifyProtocol(:Address) do
+attr_accessor :city
+attr_accessor :country
+attr_accessor :street
+attr_accessor :house
+end #+end_src</p>
+<h2 id="pattern-matching">Pattern matching</h2>
+<p>#+begin_src ruby</p>
+<p>class AddressChecker
+include Functional::PatternMatching
+include Functional::Protocol
+include Functional::TypeCheck</p>
+<p>def msg &lsquo;You live in Moscow, Russia&rsquo; end</p>
+<p>defn(:msg, _) do |addr|
+&ldquo;You live in #{addr}&rdquo;
+end</p>
+<p>defn(:msg, _) { |addr| &ldquo;You live in #{addr.house}, #{addr.street},
+#{addr.city}, #{addr.country}&rdquo; }
+.when { |addr| Satisfy?(addr, :Address) }</p>
+<p>defn(:msg, :name, _) do |addr|
+&ldquo;Somebody live in #{addr}&rdquo;
+end</p>
+<p>defn(:msg, _) { |zip| &ldquo;Your zip is #{zip}&rdquo; }.when { |addr| Type?(addr, Fixnum) }
+end #+end_src</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>If you like functional programming, and want to use it&rsquo;s patterns and
+tools with Ruby, then you can use
+<a href="https://github.com/jdantonio/functional-ruby">Functional Ruby</a> gem to
+write code in more functional style. You can find more information in
+<a href="http://jerrydantonio.com/functional-ruby/">API documentation</a>.</p>
+]]></content:encoded>
+    </item>
+    <item>
+      <title>Type checking ruby with contracts</title>
+      <link>https://neiro.io/blog/2015-10-24-type-checking-for-ruby-with-contracts/</link>
+      <pubDate>Sat, 24 Oct 2015 10:00:00 +0200</pubDate>
+      <guid>https://neiro.io/blog/2015-10-24-type-checking-for-ruby-with-contracts/</guid>
+      <description>&lt;p&gt;Ruby is dynamically and strong typed programming language. In the most&#xA;of the cases it gives you required level of type safety with minimal&#xA;code. But if you want build more secure applications or you&amp;rsquo;re like&#xA;static typing, then you need to check every variable or method for it&amp;rsquo;s&#xA;type or class:&lt;/p&gt;&#xA;&#xA;&#xA;&#xA;&#xA;&#xA;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-ruby&#34; data-lang=&#34;ruby&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;cl&#34;&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;ln&#34;&gt;2&lt;/span&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;def&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;foo&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;bar&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;ln&#34;&gt;3&lt;/span&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;nb&#34;&gt;fail&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;I supposed it`s not a bar!&amp;#39;&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;ln&#34;&gt;4&lt;/span&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;k&#34;&gt;unless&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;bar&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;is_a?&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nb&#34;&gt;String&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;p&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;Hi, bar!&amp;#39;&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;ln&#34;&gt;5&lt;/span&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;end&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;ln&#34;&gt;6&lt;/span&gt;&lt;span class=&#34;cl&#34;&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;ln&#34;&gt;7&lt;/span&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;foo&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;bar&amp;#39;&lt;/span&gt; &lt;span class=&#34;c1&#34;&gt;# Hi, bar!&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;ln&#34;&gt;8&lt;/span&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;foo&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;100_500&lt;/span&gt; &lt;span class=&#34;c1&#34;&gt;# RuntimeError: I supposed it`s not a bar!&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;But what if you&amp;rsquo;re needing more complex type checking on multiple types&#xA;or conditions? Then you need to provide more boilerplate, defensive&#xA;code. If you&amp;rsquo;re want to make your type safety code much cleaner, there&#xA;is the &lt;a href=&#34;https://github.com/egonSchiele/contracts.ruby&#34;&gt;contracts&lt;/a&gt; library.&lt;/p&gt;</description>
+      <content:encoded><![CDATA[<p>Ruby is dynamically and strong typed programming language. In the most
+of the cases it gives you required level of type safety with minimal
+code. But if you want build more secure applications or you&rsquo;re like
+static typing, then you need to check every variable or method for it&rsquo;s
+type or class:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl">
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">bar</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl">  <span class="nb">fail</span> <span class="s1">&#39;I supposed it`s not a bar!&#39;</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl">  <span class="k">unless</span> <span class="n">bar</span><span class="o">.</span><span class="n">is_a?</span><span class="p">(</span><span class="nb">String</span><span class="p">)</span> <span class="nb">p</span> <span class="s1">&#39;Hi, bar!&#39;</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl"><span class="k">end</span>
+</span></span><span class="line"><span class="ln">6</span><span class="cl">
+</span></span><span class="line"><span class="ln">7</span><span class="cl"><span class="n">foo</span> <span class="s1">&#39;bar&#39;</span> <span class="c1"># Hi, bar!</span>
+</span></span><span class="line"><span class="ln">8</span><span class="cl"><span class="n">foo</span> <span class="mi">100_500</span> <span class="c1"># RuntimeError: I supposed it`s not a bar!</span></span></span></code></pre></div><p>But what if you&rsquo;re needing more complex type checking on multiple types
+or conditions? Then you need to provide more boilerplate, defensive
+code. If you&rsquo;re want to make your type safety code much cleaner, there
+is the <a href="https://github.com/egonSchiele/contracts.ruby">contracts</a> library.</p>
+<h2 id="contracts">Contracts</h2>
+<p>What is a contract? It&rsquo;s a pattern, that comes from functional
+programming world. In most cases this is one line of code before
+function or method, that validates the arguments and validates return
+value.</p>
+<p>For example, there is a simple contract:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="nb">require</span> <span class="s1">&#39;contracts&#39;</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="k">class</span> <span class="nc">Square</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">  <span class="kp">include</span> <span class="no">Contracts</span><span class="o">::</span><span class="no">Core</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">  <span class="kp">include</span> <span class="no">Contracts</span><span class="o">::</span><span class="no">Builtin</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">  <span class="no">Contract</span> <span class="no">Num</span> <span class="o">=&gt;</span> <span class="no">Num</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">area</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="n">a</span><span class="o">**</span><span class="mi">2</span> <span class="k">end</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="k">end</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">
+</span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="no">Square</span><span class="o">.</span><span class="n">area</span> <span class="mi">10</span> <span class="c1"># 100</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="no">Square</span><span class="o">.</span><span class="n">area</span> <span class="s1">&#39;a&#39;</span> <span class="c1"># ParamContractError: Contract violation for argument 1 of 1</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl"><span class="no">Square</span><span class="o">.</span><span class="n">area</span> <span class="o">[]</span> <span class="c1"># ParamContractError: Contract violation for argument 1 of 1</span></span></span></code></pre></div><p>You can also use it on multiple arguments or returns:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="k">class</span> <span class="nc">Rectangle</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  <span class="kp">include</span> <span class="no">Contracts</span><span class="o">::</span><span class="no">Core</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">  <span class="kp">include</span> <span class="no">Contracts</span><span class="o">::</span><span class="no">Builtin</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">  <span class="no">Contract</span> <span class="no">Num</span><span class="p">,</span> <span class="no">Num</span> <span class="o">=&gt;</span> <span class="no">Num</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">area</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">    <span class="n">a</span> <span class="o">*</span> <span class="n">b</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="k">end</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">
+</span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="no">Rectangle</span><span class="o">.</span><span class="n">area</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span> <span class="c1"># 100</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="no">Rectangle</span><span class="o">.</span><span class="n">area</span> <span class="o">[]</span><span class="p">,</span> <span class="kp">false</span> <span class="c1"># ParamContractError: Contract violation for argument 1 of 2</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl"><span class="no">Rectangle</span><span class="o">.</span><span class="n">area</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span> <span class="c1"># ParamContractError: Contract violation for argument 2 of 2</span></span></span></code></pre></div><p>If you don&rsquo;t want to throw exception, you can easily override error
+callback:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="no">Contract</span><span class="o">.</span><span class="n">override_failure_callback</span> <span class="k">do</span> <span class="o">|</span><span class="n">data</span><span class="o">|</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">  <span class="nb">puts</span> <span class="s1">&#39;IT`S AN OM~ ERROR!1&#39;</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl">  <span class="nb">p</span> <span class="n">data</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl"><span class="k">end</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl">
+</span></span><span class="line"><span class="ln">6</span><span class="cl"><span class="no">Rectangle</span><span class="o">.</span><span class="n">area</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span> <span class="c1"># &#39;IT`S AN OM~ ERROR!1&#39;</span></span></span></code></pre></div><h2 id="custom-types">Custom types</h2>
+<p><em>Contracts</em> library comes with many built-in type contracts:</p>
+<ul>
+<li>Basic types: <code>Num, Pos, Neg, Nat, Bool, Any, None</code></li>
+<li>Logical: <code>Maybe, Or, Xor, And, Not</code></li>
+<li>Collections: <code>ArrayOf, SetOf, HashOf, RangeOf, Enum</code></li>
+</ul>
+<p>and others. But if your want to create your own types or check more
+complex conditions, then you have to use lambdas:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="k">class</span> <span class="nc">CharCounter</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  <span class="kp">include</span> <span class="no">Contracts</span><span class="o">::</span><span class="no">Core</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">  <span class="kp">include</span> <span class="no">Contracts</span><span class="o">::</span><span class="no">Builtin</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">  <span class="no">Char</span> <span class="o">=</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">char</span><span class="p">)</span> <span class="p">{</span> <span class="n">char</span><span class="o">.</span><span class="n">is_a?</span><span class="p">(</span><span class="nb">String</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="n">char</span><span class="o">.</span><span class="n">length</span> <span class="o">==</span> <span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="n">char</span> <span class="o">=~</span> <span class="sr">/\w/</span> <span class="p">}</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">  <span class="no">Contract</span> <span class="no">Maybe</span><span class="o">[</span><span class="nb">String</span><span class="o">]</span><span class="p">,</span> <span class="no">Char</span> <span class="o">=&gt;</span> <span class="no">Num</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">count_chars</span><span class="p">(</span><span class="n">str</span><span class="p">,</span> <span class="n">ch</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    <span class="n">str</span><span class="o">.</span><span class="n">count</span> <span class="n">ch</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">    <span class="k">end</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="k">end</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">
+</span></span><span class="line"><span class="ln">14</span><span class="cl"><span class="no">CharCounter</span><span class="o">.</span><span class="n">count_chars</span> <span class="s1">&#39;hello&#39;</span><span class="p">,</span> <span class="s1">&#39;N&#39;</span> <span class="c1"># 0</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl"><span class="no">CharCounter</span><span class="o">.</span><span class="n">count_chars</span> <span class="s1">&#39;hello&#39;</span><span class="p">,</span> <span class="s1">&#39;l&#39;</span> <span class="c1"># 2</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl"><span class="no">CharCounter</span><span class="o">.</span><span class="n">count_chars</span> <span class="s1">&#39;hello&#39;</span><span class="p">,</span> <span class="s1">&#39;*&#39;</span> <span class="c1"># ParamContractError: Contract violation for argument 2 of 2</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl"><span class="no">CharCounter</span><span class="o">.</span><span class="n">count_chars</span> <span class="s1">&#39;llo&#39;</span><span class="p">,</span> <span class="s1">&#39;llo&#39;</span> <span class="c1"># ParamContractError: Contract violation for argument 2 of 2</span></span></span></code></pre></div><h2 id="pattern-matching">Pattern matching</h2>
+<p>Pattern matching, like a contract, comes from functional programming.
+You can use your contracts to test if your method matches pattern or
+not. For example, let&rsquo;s find a factorial of number with contracts:</p>
+<p>#+begin_src ruby
+class Factorial
+include Contracts::Core
+include Contracts::Builtin</p>
+<p>Contract 0 =&gt; 1
+def self.factorial(_n)
+1
+end</p>
+<p>Contract Num =&gt; Num
+def self.factorial(n)
+n * factorial(n - 1)
+end
+end</p>
+<p>Factorial.factorial 0 # 0
+Factorial.factorial 10 # 3628800
+Factorial.factorial &lsquo;a&rsquo; # ContractError: Contract violation for argument 1 of 1 #+end_src</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>Ruby has simple and powerful type system, but if it&rsquo;s not enough or you
+want to use safety type checking and you don&rsquo;t like to write tons of a
+defensive code, then you may like <em>Contracts</em> library. Contracts allows
+you to check many types, conditions for your class methods much cleaner
+and simpler. Also you can define your own types or conditions with plain
+Ruby lambdas, and then use them for pattern-matching.</p>
+<p>If you&rsquo;re like it and want to know more,
+<a href="http://egonschiele.github.io/contracts.ruby/">there is Ruby contracts
+tutorial</a>.</p>
+]]></content:encoded>
+    </item>
+    <item>
+      <title>Type checking ruby with contracts</title>
+      <link>https://neiro.io/posts/2015-10-24-type-checking-for-ruby-with-contracts/</link>
+      <pubDate>Sat, 24 Oct 2015 10:00:00 +0200</pubDate>
+      <guid>https://neiro.io/posts/2015-10-24-type-checking-for-ruby-with-contracts/</guid>
+      <description>&lt;p&gt;Ruby is dynamically and strong typed programming language. In the most&#xA;of the cases it gives you required level of type safety with minimal&#xA;code. But if you want build more secure applications or you&amp;rsquo;re like&#xA;static typing, then you need to check every variable or method for it&amp;rsquo;s&#xA;type or class:&lt;/p&gt;&#xA;&#xA;&#xA;&#xA;&#xA;&#xA;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-ruby&#34; data-lang=&#34;ruby&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;cl&#34;&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;ln&#34;&gt;2&lt;/span&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;def&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;foo&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;bar&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;ln&#34;&gt;3&lt;/span&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;nb&#34;&gt;fail&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;I supposed it`s not a bar!&amp;#39;&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;ln&#34;&gt;4&lt;/span&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;k&#34;&gt;unless&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;bar&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;is_a?&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nb&#34;&gt;String&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;nb&#34;&gt;p&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;Hi, bar!&amp;#39;&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;ln&#34;&gt;5&lt;/span&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;end&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;ln&#34;&gt;6&lt;/span&gt;&lt;span class=&#34;cl&#34;&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;ln&#34;&gt;7&lt;/span&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;foo&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;bar&amp;#39;&lt;/span&gt; &lt;span class=&#34;c1&#34;&gt;# Hi, bar!&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;ln&#34;&gt;8&lt;/span&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;foo&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;100_500&lt;/span&gt; &lt;span class=&#34;c1&#34;&gt;# RuntimeError: I supposed it`s not a bar!&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;But what if you&amp;rsquo;re needing more complex type checking on multiple types&#xA;or conditions? Then you need to provide more boilerplate, defensive&#xA;code. If you&amp;rsquo;re want to make your type safety code much cleaner, there&#xA;is the &lt;a href=&#34;https://github.com/egonSchiele/contracts.ruby&#34;&gt;contracts&lt;/a&gt; library.&lt;/p&gt;</description>
+      <content:encoded><![CDATA[<p>Ruby is dynamically and strong typed programming language. In the most
+of the cases it gives you required level of type safety with minimal
+code. But if you want build more secure applications or you&rsquo;re like
+static typing, then you need to check every variable or method for it&rsquo;s
+type or class:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl">
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">bar</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl">  <span class="nb">fail</span> <span class="s1">&#39;I supposed it`s not a bar!&#39;</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl">  <span class="k">unless</span> <span class="n">bar</span><span class="o">.</span><span class="n">is_a?</span><span class="p">(</span><span class="nb">String</span><span class="p">)</span> <span class="nb">p</span> <span class="s1">&#39;Hi, bar!&#39;</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl"><span class="k">end</span>
+</span></span><span class="line"><span class="ln">6</span><span class="cl">
+</span></span><span class="line"><span class="ln">7</span><span class="cl"><span class="n">foo</span> <span class="s1">&#39;bar&#39;</span> <span class="c1"># Hi, bar!</span>
+</span></span><span class="line"><span class="ln">8</span><span class="cl"><span class="n">foo</span> <span class="mi">100_500</span> <span class="c1"># RuntimeError: I supposed it`s not a bar!</span></span></span></code></pre></div><p>But what if you&rsquo;re needing more complex type checking on multiple types
+or conditions? Then you need to provide more boilerplate, defensive
+code. If you&rsquo;re want to make your type safety code much cleaner, there
+is the <a href="https://github.com/egonSchiele/contracts.ruby">contracts</a> library.</p>
+<h2 id="contracts">Contracts</h2>
+<p>What is a contract? It&rsquo;s a pattern, that comes from functional
+programming world. In most cases this is one line of code before
+function or method, that validates the arguments and validates return
+value.</p>
+<p>For example, there is a simple contract:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="nb">require</span> <span class="s1">&#39;contracts&#39;</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="k">class</span> <span class="nc">Square</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">  <span class="kp">include</span> <span class="no">Contracts</span><span class="o">::</span><span class="no">Core</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">  <span class="kp">include</span> <span class="no">Contracts</span><span class="o">::</span><span class="no">Builtin</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">  <span class="no">Contract</span> <span class="no">Num</span> <span class="o">=&gt;</span> <span class="no">Num</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">area</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="n">a</span><span class="o">**</span><span class="mi">2</span> <span class="k">end</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="k">end</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">
+</span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="no">Square</span><span class="o">.</span><span class="n">area</span> <span class="mi">10</span> <span class="c1"># 100</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="no">Square</span><span class="o">.</span><span class="n">area</span> <span class="s1">&#39;a&#39;</span> <span class="c1"># ParamContractError: Contract violation for argument 1 of 1</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl"><span class="no">Square</span><span class="o">.</span><span class="n">area</span> <span class="o">[]</span> <span class="c1"># ParamContractError: Contract violation for argument 1 of 1</span></span></span></code></pre></div><p>You can also use it on multiple arguments or returns:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="k">class</span> <span class="nc">Rectangle</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  <span class="kp">include</span> <span class="no">Contracts</span><span class="o">::</span><span class="no">Core</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">  <span class="kp">include</span> <span class="no">Contracts</span><span class="o">::</span><span class="no">Builtin</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">  <span class="no">Contract</span> <span class="no">Num</span><span class="p">,</span> <span class="no">Num</span> <span class="o">=&gt;</span> <span class="no">Num</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">area</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">    <span class="n">a</span> <span class="o">*</span> <span class="n">b</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="k">end</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">
+</span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="no">Rectangle</span><span class="o">.</span><span class="n">area</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span> <span class="c1"># 100</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="no">Rectangle</span><span class="o">.</span><span class="n">area</span> <span class="o">[]</span><span class="p">,</span> <span class="kp">false</span> <span class="c1"># ParamContractError: Contract violation for argument 1 of 2</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl"><span class="no">Rectangle</span><span class="o">.</span><span class="n">area</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span> <span class="c1"># ParamContractError: Contract violation for argument 2 of 2</span></span></span></code></pre></div><p>If you don&rsquo;t want to throw exception, you can easily override error
+callback:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="no">Contract</span><span class="o">.</span><span class="n">override_failure_callback</span> <span class="k">do</span> <span class="o">|</span><span class="n">data</span><span class="o">|</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">  <span class="nb">puts</span> <span class="s1">&#39;IT`S AN OM~ ERROR!1&#39;</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl">  <span class="nb">p</span> <span class="n">data</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl"><span class="k">end</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl">
+</span></span><span class="line"><span class="ln">6</span><span class="cl"><span class="no">Rectangle</span><span class="o">.</span><span class="n">area</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span> <span class="c1"># &#39;IT`S AN OM~ ERROR!1&#39;</span></span></span></code></pre></div><h2 id="custom-types">Custom types</h2>
+<p><em>Contracts</em> library comes with many built-in type contracts:</p>
+<ul>
+<li>Basic types: <code>Num, Pos, Neg, Nat, Bool, Any, None</code></li>
+<li>Logical: <code>Maybe, Or, Xor, And, Not</code></li>
+<li>Collections: <code>ArrayOf, SetOf, HashOf, RangeOf, Enum</code></li>
+</ul>
+<p>and others. But if your want to create your own types or check more
+complex conditions, then you have to use lambdas:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="k">class</span> <span class="nc">CharCounter</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  <span class="kp">include</span> <span class="no">Contracts</span><span class="o">::</span><span class="no">Core</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">  <span class="kp">include</span> <span class="no">Contracts</span><span class="o">::</span><span class="no">Builtin</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">  <span class="no">Char</span> <span class="o">=</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">char</span><span class="p">)</span> <span class="p">{</span> <span class="n">char</span><span class="o">.</span><span class="n">is_a?</span><span class="p">(</span><span class="nb">String</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="n">char</span><span class="o">.</span><span class="n">length</span> <span class="o">==</span> <span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="n">char</span> <span class="o">=~</span> <span class="sr">/\w/</span> <span class="p">}</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">  <span class="no">Contract</span> <span class="no">Maybe</span><span class="o">[</span><span class="nb">String</span><span class="o">]</span><span class="p">,</span> <span class="no">Char</span> <span class="o">=&gt;</span> <span class="no">Num</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">count_chars</span><span class="p">(</span><span class="n">str</span><span class="p">,</span> <span class="n">ch</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    <span class="n">str</span><span class="o">.</span><span class="n">count</span> <span class="n">ch</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">    <span class="k">end</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="k">end</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">
+</span></span><span class="line"><span class="ln">14</span><span class="cl"><span class="no">CharCounter</span><span class="o">.</span><span class="n">count_chars</span> <span class="s1">&#39;hello&#39;</span><span class="p">,</span> <span class="s1">&#39;N&#39;</span> <span class="c1"># 0</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl"><span class="no">CharCounter</span><span class="o">.</span><span class="n">count_chars</span> <span class="s1">&#39;hello&#39;</span><span class="p">,</span> <span class="s1">&#39;l&#39;</span> <span class="c1"># 2</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl"><span class="no">CharCounter</span><span class="o">.</span><span class="n">count_chars</span> <span class="s1">&#39;hello&#39;</span><span class="p">,</span> <span class="s1">&#39;*&#39;</span> <span class="c1"># ParamContractError: Contract violation for argument 2 of 2</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl"><span class="no">CharCounter</span><span class="o">.</span><span class="n">count_chars</span> <span class="s1">&#39;llo&#39;</span><span class="p">,</span> <span class="s1">&#39;llo&#39;</span> <span class="c1"># ParamContractError: Contract violation for argument 2 of 2</span></span></span></code></pre></div><h2 id="pattern-matching">Pattern matching</h2>
+<p>Pattern matching, like a contract, comes from functional programming.
+You can use your contracts to test if your method matches pattern or
+not. For example, let&rsquo;s find a factorial of number with contracts:</p>
+<p>#+begin_src ruby
+class Factorial
+include Contracts::Core
+include Contracts::Builtin</p>
+<p>Contract 0 =&gt; 1
+def self.factorial(_n)
+1
+end</p>
+<p>Contract Num =&gt; Num
+def self.factorial(n)
+n * factorial(n - 1)
+end
+end</p>
+<p>Factorial.factorial 0 # 0
+Factorial.factorial 10 # 3628800
+Factorial.factorial &lsquo;a&rsquo; # ContractError: Contract violation for argument 1 of 1 #+end_src</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>Ruby has simple and powerful type system, but if it&rsquo;s not enough or you
+want to use safety type checking and you don&rsquo;t like to write tons of a
+defensive code, then you may like <em>Contracts</em> library. Contracts allows
+you to check many types, conditions for your class methods much cleaner
+and simpler. Also you can define your own types or conditions with plain
+Ruby lambdas, and then use them for pattern-matching.</p>
+<p>If you&rsquo;re like it and want to know more,
+<a href="http://egonschiele.github.io/contracts.ruby/">there is Ruby contracts
+tutorial</a>.</p>
+]]></content:encoded>
+    </item>
+  </channel>
+</rss>

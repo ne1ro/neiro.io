@@ -1,0 +1,1225 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Bitemporality on neiro blog</title>
+    <link>https://neiro.io/tags/bitemporality/</link>
+    <description>Recent content in Bitemporality on neiro blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-GB</language>
+    <copyright>neiro © 2012-2025</copyright>
+    <lastBuildDate>Wed, 19 Jul 2023 15:45:00 +0200</lastBuildDate>
+    <atom:link href="https://neiro.io/tags/bitemporality/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Taming the time: how to run XTDB in production</title>
+      <link>https://neiro.io/blog/2023-07-19-taming-the-time-how-we-run-xtdb-in-production/</link>
+      <pubDate>Wed, 19 Jul 2023 15:45:00 +0200</pubDate>
+      <guid>https://neiro.io/blog/2023-07-19-taming-the-time-how-we-run-xtdb-in-production/</guid>
+      <description>&lt;hr&gt;&#xA;&lt;p&gt;&lt;a href=&#34;https://dev.to/marleyspoon/taming-time-how-to-run-xtdb-in-production-2lgd&#34;&gt;The article was originally published in MarleySpoon DevBlog&lt;/a&gt;&lt;/p&gt;&#xA;&lt;h2 id=&#34;what-is-xtdb&#34;&gt;What is XTDB&lt;/h2&gt;&#xA;&lt;p&gt;&lt;a href=&#34;https://dev.to/ne1ro/series/22497&#34;&gt;In the previous articles&lt;/a&gt;, we explored the concept of bitemporality and discussed how to get started with XTDB, a bitemporal immutable database. Now, let&amp;rsquo;s dive into the technical details of deploying XTDB and running it in production. This blog post aims to provide valuable insights and considerations to keep in mind during this process.&lt;/p&gt;&#xA;&lt;h3 id=&#34;xtdb-1&#34;&gt;XTDB 1&lt;/h3&gt;&#xA;&lt;p&gt;Before we proceed, it&amp;rsquo;s important to note that the experiences shared in this article are based on working with XTDB version 1.21.&#xA;It&amp;rsquo;s worth mentioning that your experience may vary, especially with the introduction of &lt;a href=&#34;https://www.xtdb.com/v2&#34;&gt;XTDB 2.0&lt;/a&gt; and subsequent versions.&lt;/p&gt;</description>
+      <content:encoded><![CDATA[<hr>
+<p><a href="https://dev.to/marleyspoon/taming-time-how-to-run-xtdb-in-production-2lgd">The article was originally published in MarleySpoon DevBlog</a></p>
+<h2 id="what-is-xtdb">What is XTDB</h2>
+<p><a href="https://dev.to/ne1ro/series/22497">In the previous articles</a>, we explored the concept of bitemporality and discussed how to get started with XTDB, a bitemporal immutable database. Now, let&rsquo;s dive into the technical details of deploying XTDB and running it in production. This blog post aims to provide valuable insights and considerations to keep in mind during this process.</p>
+<h3 id="xtdb-1">XTDB 1</h3>
+<p>Before we proceed, it&rsquo;s important to note that the experiences shared in this article are based on working with XTDB version 1.21.
+It&rsquo;s worth mentioning that your experience may vary, especially with the introduction of <a href="https://www.xtdb.com/v2">XTDB 2.0</a> and subsequent versions.</p>
+<h2 id="deploying-xtdb">Deploying XTDB</h2>
+<p>Deploying XTDB in a production environment offers several options, each with its advantages and considerations:</p>
+<ul>
+<li>run as a part of your JVM application</li>
+<li>run separately, but on the same server together with your application</li>
+<li>run on a standalone node or in a separate container</li>
+<li>run a cluster of XTDB nodes</li>
+</ul>
+<p>To achieve a resilient and scalable setup, I recommend running a cluster of XTDB nodes, with each node deployed as a separate Docker container managed by Kubernetes. This allows easy orchestration, automatic scaling, and simplified management of the XTDB cluster.</p>
+<h3 id="containerised-xtdb">Containerised XTDB</h3>
+<p>In this section, we will explore how to build and run a Docker container with a custom configured XTDB application <em>(Clojure project)</em> in a Kubernetes cluster. However, in case you don&rsquo;t need to have a custom build and can simply use a <a href="https://hub.docker.com/r/juxt/xtdb-standalone-rocksdb">standalone Docker image</a>, you can skip right to the &ldquo;Authentication&rdquo; section.</p>
+<h4 id="uberjar">Uberjar</h4>
+<p>If we want to run the XTDB in Docker the most fitting way to run it in a container would be to compile our preconfigured XT application into a single &ldquo;uberjar&rdquo; file.</p>
+<p>This can be done by employing <a href="https://github.com/tonsky/uberdeps">Uberdeps</a> in our Clojure project:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-clojure" data-lang="clojure"><span class="line"><span class="ln">1</span><span class="cl"><span class="c1">; deps.edn</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="ss">:aliases</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl"> <span class="p">{</span><span class="ss">:uberdeps</span> <span class="p">{</span><span class="ss">:replace-deps</span> <span class="p">{</span><span class="nv">uberdeps/uberdeps</span> <span class="p">{</span><span class="ss">:mvn/version</span> <span class="s">&#34;1.1.0&#34;</span><span class="p">}}</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl">             <span class="ss">:replace-paths</span> <span class="p">[]</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl">             <span class="ss">:main-opts</span> <span class="p">[</span><span class="s">&#34;-m&#34;</span> <span class="s">&#34;uberdeps.uberjar&#34;</span><span class="p">]}}</span></span></span></code></pre></div><p>Once you have it installed, you can compile your project into a single Uberjar file:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="ln">1</span><span class="cl">clj -M:uberdeps</span></span></code></pre></div><h4 id="dockerfile">Dockerfile</h4>
+<p>We want our XTDB Docker image to be as lightweight as possible, so the best approach would be to have a multi-stage build image that builds and runs the Uberjar on the selected JVM image:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-dockerfile" data-lang="dockerfile"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="c"># Build clojure uberjar</span><span class="err">
+</span></span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="err"></span><span class="k">FROM</span><span class="s"> clojure:openjdk-17-tools-deps-alpine AS BUILD</span><span class="err">
+</span></span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="err"></span><span class="k">WORKDIR</span><span class="s"> /xtdb</span><span class="err">
+</span></span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="err"></span><span class="k">COPY</span> . /xtdb<span class="err">
+</span></span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="err"></span><span class="k">RUN</span> apk add --no-cache libstdc++<span class="err">
+</span></span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="err"></span><span class="k">RUN</span> clojure -M:uberdeps<span class="err">
+</span></span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="err"></span><span class="c"># Copy and run uberjar</span><span class="err">
+</span></span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="err"></span><span class="k">FROM</span><span class="s"> openjdk:17-alpine3.14</span><span class="err">
+</span></span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="err"></span><span class="k">WORKDIR</span><span class="s"> /usr/local/lib/xtdb</span><span class="err">
+</span></span></span><span class="line"><span class="ln">13</span><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="ln">14</span><span class="cl"><span class="err"></span><span class="k">RUN</span> apk --no-cache add bash libstdc++<span class="err">
+</span></span></span><span class="line"><span class="ln">15</span><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="ln">16</span><span class="cl"><span class="err"></span><span class="k">COPY</span> --from<span class="o">=</span>BUILD /xtdb/resources /usr/local/lib/xtdb/resources<span class="err">
+</span></span></span><span class="line"><span class="ln">17</span><span class="cl"><span class="err"></span><span class="k">COPY</span> --from<span class="o">=</span>BUILD /xtdb/target .<span class="err">
+</span></span></span><span class="line"><span class="ln">18</span><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="ln">19</span><span class="cl"><span class="err"></span><span class="k">ENV</span> <span class="nv">MALLOC_ARENA_MAX</span><span class="o">=</span><span class="m">2</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl"><span class="k">CMD</span> <span class="p">[</span><span class="s2">&#34;java&#34;</span><span class="p">,</span> <span class="s2">&#34;-cp&#34;</span><span class="p">,</span> <span class="s2">&#34;xtdb.jar&#34;</span><span class="p">,</span> <span class="s2">&#34;clojure.main&#34;</span><span class="p">,</span> <span class="s2">&#34;-m&#34;</span><span class="p">,</span> <span class="s2">&#34;xtdb.core&#34;</span><span class="p">]</span><span class="err">
+</span></span></span><span class="line"><span class="ln">21</span><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="ln">22</span><span class="cl"><span class="err"></span><span class="k">EXPOSE</span><span class="s"> 3000</span></span></span></code></pre></div><h4 id="graceful-shutdown">Graceful shutdown</h4>
+<p>Another requirement for running XT in Kubernetes is to gracefully shut down, e.g., on killing containers or Kubernetes deployment restart. To ensure that, we have to change our `xtdb.clj` file by adding a `SIGTERM` signal handler:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-clojure" data-lang="clojure"><span class="line"><span class="ln">1</span><span class="cl"><span class="c1">;; Stop the system on SIGTERM</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="p">(</span><span class="nf">with-handler</span> <span class="ss">:term</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl">  <span class="p">(</span><span class="nf">log/info</span> <span class="s">&#34;Caught SIGTERM, quitting&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl">  <span class="p">(</span><span class="nf">.close</span> <span class="o">@</span><span class="nv">xt-node</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl">  <span class="p">(</span><span class="nf">log/info</span> <span class="s">&#34;All components shut down&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">6</span><span class="cl">  <span class="p">(</span><span class="nf">System/exit</span> <span class="mi">0</span><span class="p">))</span></span></span></code></pre></div><h3 id="authentication">Authentication</h3>
+<p>Since we run our XTDB separately from our application containers, we might want to ensure that the requests from services to the database are properly authenticated.</p>
+<p>In order to ensure that we need to change the way we start XTDB by providing JWKS (<a href="https://auth0.com/docs/secure/tokens/json-web-tokens/json-web-key-sets">JSON Web Token key set</a>) as an environment variable to the XTDB node:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-clojure" data-lang="clojure"><span class="line"><span class="ln">1</span><span class="cl"><span class="c1">; core.clj</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="p">(</span><span class="k">def </span><span class="nv">config</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl">  <span class="p">{</span><span class="ss">:xtdb.http-server/server</span> <span class="p">{</span><span class="ss">:port</span> <span class="mi">3000</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl">                             <span class="ss">:jwks</span> <span class="p">(</span><span class="nf">System/getenv</span> <span class="s">&#34;XTDB_JWKS&#34;</span><span class="p">)}</span> <span class="nv">...</span></span></span></code></pre></div><p>The next step is to send the compatible JWT token from your application requests:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-elixir" data-lang="elixir"><span class="line"><span class="ln">1</span><span class="cl"><span class="p">{</span><span class="s2">&#34;Authorization&#34;</span><span class="p">,</span> <span class="s2">&#34;Bearer </span><span class="si">#{</span><span class="n">your_jwt</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">}</span></span></span></code></pre></div><h3 id="kubernetes">Kubernetes</h3>
+<p>As we&rsquo;ve decided to go with the running XT nodes as Docker containers in a Kubernetes cluster, we need to prepare Kubernetes manifests for that purpose.</p>
+<p>The simplest way to achieve that is to create a Kubernetes stateful set of multiple XT containers:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="nn">---</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="w"></span><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l">apps/v1</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="w"></span><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l">StatefulSet</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="w"></span><span class="nt">metadata</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">xtdb</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="w">  </span><span class="nt">labels</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="w">    </span><span class="nt">app.kubernetes.io/name</span><span class="p">:</span><span class="w"> </span><span class="l">xtdb</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="w"></span><span class="nt">spec</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="w">  </span><span class="nt">serviceName</span><span class="p">:</span><span class="w"> </span><span class="l">xtdb-headless</span><span class="w">
+</span></span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="w">  </span><span class="nt">replicas</span><span class="p">:</span><span class="w"> </span><span class="m">3</span><span class="w">
+</span></span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="w">  </span><span class="nt">selector</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="w">    </span><span class="nt">matchLabels</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">13</span><span class="cl"><span class="w">      </span><span class="nt">app.kubernetes.io/name</span><span class="p">:</span><span class="w"> </span><span class="l">xtdb</span><span class="w">
+</span></span></span><span class="line"><span class="ln">14</span><span class="cl"><span class="w">  </span><span class="nt">template</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">15</span><span class="cl"><span class="w">    </span><span class="nt">metadata</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">16</span><span class="cl"><span class="w">      </span><span class="nt">labels</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">17</span><span class="cl"><span class="w">      </span><span class="nt">app.kubernetes.io/name</span><span class="p">:</span><span class="w"> </span><span class="l">xtdb</span><span class="w">
+</span></span></span><span class="line"><span class="ln">18</span><span class="cl"><span class="w">    </span><span class="nt">spec</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">19</span><span class="cl"><span class="w">      </span><span class="nt">terminationGracePeriodSeconds</span><span class="p">:</span><span class="w"> </span><span class="m">30</span><span class="w">
+</span></span></span><span class="line"><span class="ln">20</span><span class="cl"><span class="w">      </span><span class="nt">containers</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">21</span><span class="cl"><span class="w">        </span>- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">xtdb</span><span class="w">
+</span></span></span><span class="line"><span class="ln">22</span><span class="cl"><span class="w">          </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">$REGISTRY/xtdb:1.21.0</span><span class="w">
+</span></span></span><span class="line"><span class="ln">23</span><span class="cl"><span class="w">          </span><span class="nt">imagePullPolicy</span><span class="p">:</span><span class="w"> </span><span class="l">Always</span><span class="w">
+</span></span></span><span class="line"><span class="ln">24</span><span class="cl"><span class="w">          </span><span class="nt">ports</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">25</span><span class="cl"><span class="w">            </span>- <span class="nt">containerPort</span><span class="p">:</span><span class="w"> </span><span class="m">3000</span><span class="w">
+</span></span></span><span class="line"><span class="ln">26</span><span class="cl"><span class="w">          </span><span class="nt">livenessProbe</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">27</span><span class="cl"><span class="w">            </span><span class="nt">tcpSocket</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">28</span><span class="cl"><span class="w">              </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="m">3000</span><span class="w">
+</span></span></span><span class="line"><span class="ln">29</span><span class="cl"><span class="w">            </span><span class="nt">periodSeconds</span><span class="p">:</span><span class="w"> </span><span class="m">10</span><span class="w">
+</span></span></span><span class="line"><span class="ln">30</span><span class="cl"><span class="w">            </span><span class="nt">initialDelaySeconds</span><span class="p">:</span><span class="w"> </span><span class="m">120</span><span class="w">
+</span></span></span><span class="line"><span class="ln">31</span><span class="cl"><span class="w">            </span><span class="nt">timeoutSeconds</span><span class="p">:</span><span class="w"> </span><span class="m">15</span><span class="w">
+</span></span></span><span class="line"><span class="ln">32</span><span class="cl"><span class="w">          </span><span class="nt">readinessProbe</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">33</span><span class="cl"><span class="w">            </span><span class="nt">exec</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">34</span><span class="cl"><span class="w">              </span><span class="nt">command</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">35</span><span class="cl"><span class="w">                </span>- <span class="l">bash</span><span class="w">
+</span></span></span><span class="line"><span class="ln">36</span><span class="cl"><span class="w">                </span><span class="c"># custom readiness check script</span><span class="w">
+</span></span></span><span class="line"><span class="ln">37</span><span class="cl"><span class="w">                </span>- <span class="l">scripts/readiness.sh</span><span class="w">
+</span></span></span><span class="line"><span class="ln">38</span><span class="cl"><span class="w">            </span><span class="nt">initialDelaySeconds</span><span class="p">:</span><span class="w"> </span><span class="m">30</span><span class="w">
+</span></span></span><span class="line"><span class="ln">39</span><span class="cl"><span class="w">            </span><span class="nt">periodSeconds</span><span class="p">:</span><span class="w"> </span><span class="m">15</span><span class="w">
+</span></span></span><span class="line"><span class="ln">40</span><span class="cl"><span class="w">          </span><span class="nt">envFrom</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">41</span><span class="cl"><span class="w">            </span>- <span class="nt">secretRef</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">42</span><span class="cl"><span class="w">                </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">xtdb-secrets</span></span></span></code></pre></div><p>As for the configuration, you can create a configmap with environment variables required for configuring XTDB and a secrets resource for providing secrets to your XT nodes.</p>
+<h2 id="running-xt-in-production">Running XT in production</h2>
+<p>XTDB is an <em>unbundled database</em> which means that it has a lot of components that can be swapped or changed — and it might work with different technologies and other databases.</p>
+<p>In general, it consists of 3 parts:</p>
+<ol>
+<li>Transaction log</li>
+<li>Document store</li>
+<li>Index store</li>
+</ol>
+<p>We had an experience using PostgreSQL and JDBC adapter for our XTDB setup, as well as experimenting with Kafka for transaction log — and using RocksDB as an index storage.</p>
+<p>However, there are many more other ways and modules to setup the database — you can find them in <a href="https://docs.xtdb.com/administration/configuring/">the documentation.</a></p>
+<h3 id="jdbc">JDBC</h3>
+<p>The transaction log and document store are considered to be <strong>golden stores</strong> in XTDB — which means that they should be reliably persisted, unlike the index storage that can be rebuilt from scratch on node restart.</p>
+<p>XT supports JDBC (Java Database Connectivity) which allows us to connect to various SQL databases like PostgreSQL, MySQL, SQLite, and others.
+In our example, we were using PostgreSQL + JDBC for both transaction log and document store.</p>
+<p>To use PostgreSQL and JDBC together, you have to provide these modules in your <em>deps.edn</em> first:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-clojure" data-lang="clojure"><span class="line"><span class="ln">1</span><span class="cl"><span class="ss">:deps</span> <span class="p">{</span><span class="nv">org.postgresql/postgresql</span> <span class="p">{</span><span class="ss">:mvn/version</span> <span class="s">&#34;42.2.18&#34;</span><span class="p">}</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">        <span class="nv">com.xtdb/xtdb-jdbc</span> <span class="p">{</span><span class="ss">:mvn/version</span> <span class="s">&#34;1.21.0&#34;</span><span class="p">}</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl">       <span class="nv">...</span></span></span></code></pre></div><p>If you want to use environment variables for connecting to PostgreSQL from the XTDB deployment you can also pass them in <strong>core.clj</strong> file:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-clojure" data-lang="clojure"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="p">(</span><span class="k">def </span><span class="nv">db-spec</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  <span class="p">{</span><span class="ss">:host</span> <span class="p">(</span><span class="nf">System/getenv</span> <span class="s">&#34;POSTGRES_HOST&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">   <span class="ss">:port</span> <span class="p">(</span><span class="nb">get </span><span class="p">(</span><span class="nf">System/getenv</span><span class="p">)</span> <span class="s">&#34;POSTGRES_PORT&#34;</span> <span class="s">&#34;5432&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">   <span class="ss">:dbname</span> <span class="p">(</span><span class="nf">System/getenv</span> <span class="s">&#34;POSTGRES_DB&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">   <span class="ss">:user</span> <span class="p">(</span><span class="nf">System/getenv</span> <span class="s">&#34;POSTGRES_USER&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">   <span class="ss">:password</span> <span class="p">(</span><span class="nf">System/getenv</span> <span class="s">&#34;POSTGRES_PASSWORD&#34;</span><span class="p">)})</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="p">(</span><span class="k">def </span><span class="nv">config</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">  <span class="p">{</span><span class="ss">:xtdb.jdbc/connection-pool</span> <span class="p">{</span><span class="ss">:dialect</span> <span class="p">{</span><span class="ss">:xtdb/module</span> <span class="ss">&#39;xtdb.jdbc.psql/-&gt;dialect</span><span class="p">}</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">                               <span class="ss">:pool-opts</span> <span class="p">{</span><span class="ss">:maximumPoolSize</span> <span class="mi">10</span><span class="p">}</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">                               <span class="ss">:db-spec</span> <span class="nv">db-spec</span><span class="p">}</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">   <span class="ss">:xtdb/tx-log</span> <span class="p">{</span><span class="ss">:xtdb/module</span> <span class="ss">&#39;xtdb.jdbc/-&gt;tx-log</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">                 <span class="ss">:connection-pool</span> <span class="ss">:xtdb.jdbc/connection-pool</span><span class="p">}</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">   <span class="ss">:xtdb/document-store</span> <span class="p">{</span><span class="ss">:xtdb/module</span> <span class="ss">&#39;xtdb.jdbc/-&gt;document-store</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">                         <span class="ss">:connection-pool</span> <span class="ss">:xtdb.jdbc/connection-pool</span><span class="p">}})</span></span></span></code></pre></div><p>That way we can also re-use the same connection pool for both transaction and document store.</p>
+<h3 id="kafka">Kafka</h3>
+<p>However, the recommended option (and also most often used in production) is to leverage Kafka for the transaction store.</p>
+<p>During node restarts <em>(e.g. on new deployments)</em> XTDB has to rebuild the transaction log from zero or the latest saved checkpoint, which means reading the whole transaction table in PostgreSQL — and in our experience, this process was slower than expected.</p>
+<p>Kafka seems to be a better fit for the very purpose of the transaction log because:</p>
+<ul>
+<li>it&rsquo;s basically a log of events</li>
+<li>we only need to use just one partition and one topic</li>
+<li>the transactions can be consumed very quickly</li>
+</ul>
+<p>Thus, the most optimal and performant setup for us looked like:</p>
+<ul>
+<li>using Kafka as a transaction log</li>
+<li>using JDBC and relational database as a document store</li>
+<li>using RocksDB as an index store</li>
+</ul>
+<p>That way, we can ensure that the transactions can be created quickly, the log can be re-consumed fast, and the document storage is performant enough and resilient.</p>
+<h3 id="checkpoints">Checkpoints</h3>
+<p>If we want to rebuild the query indices (e.g. on node restart), XT might need to replay the transaction log — which sometimes might be not so fast especially if you have a long history of changes.</p>
+<p>As we run our XTDB in a cluster, it&rsquo;s vital that the readiness time — when the XT instance is ready to serve DB requests — is as low as possible.
+Fortunately, XTDB has a solution for that problem called <strong>checkpoints</strong>.</p>
+<p>Right now, there are three ways to persist the local query indices state:</p>
+<ul>
+<li>local files (using Java&rsquo;s NIO file system)</li>
+<li>AWS S3</li>
+<li>GPC&rsquo;s cloud storage</li>
+</ul>
+<h4 id="aws-s3">AWS S3</h4>
+<p>In our case, we&rsquo;ve decided to go with the AWS setup in order to have a centralised and already configured storage for the checkpoints.
+However, it also requires some additional dependencies to be installed:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-clojure" data-lang="clojure"><span class="line"><span class="ln">1</span><span class="cl"><span class="c1">; deps.edn</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"> <span class="ss">:deps</span> <span class="p">{</span><span class="nv">com.xtdb/xtdb-s3</span> <span class="p">{</span><span class="ss">:mvn/version</span> <span class="s">&#34;1.21.0&#34;</span><span class="p">}</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl">        <span class="nv">software.amazon.awssdk/aws-core</span> <span class="p">{</span><span class="ss">:mvn/version</span> <span class="s">&#34;2.10.91&#34;</span><span class="p">}</span></span></span></code></pre></div><p>Additional setup in the node configuration is also required.</p>
+<p>As we&rsquo;ve experienced some requests to S3 taking a long time, we&rsquo;ve also decided to build a custom AWS S3 HTTP client:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-clojure" data-lang="clojure"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="p">(</span><span class="kd">defn- </span><span class="nv">make-s3-client</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  <span class="s">&#34;Increases timeouts for AWS S3 HTTP calls&#34;</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">  <span class="p">[]</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">  <span class="p">(</span><span class="k">let </span><span class="p">[</span><span class="nv">timeout</span> <span class="p">(</span><span class="nf">Duration/ofSeconds</span> <span class="mi">30</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">        <span class="nv">http-client-builder</span> <span class="p">(</span><span class="nf">-&gt;</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">                             <span class="p">(</span><span class="nf">NettyNioAsyncHttpClient/builder</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">                             <span class="p">(</span><span class="nf">.connectionAcquisitionTimeout</span> <span class="nv">timeout</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">                             <span class="p">(</span><span class="nf">.connectionTimeout</span> <span class="nv">timeout</span><span class="p">))]</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">    <span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">S3AsyncClient/builder</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">        <span class="p">(</span><span class="nf">.httpClientBuilder</span> <span class="nv">http-client-builder</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">        <span class="nv">.build</span><span class="p">)))</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">
+</span></span><span class="line"><span class="ln">13</span><span class="cl"><span class="p">(</span><span class="k">def </span><span class="nv">checkpoint-name</span> <span class="p">(</span><span class="nb">get </span><span class="p">(</span><span class="nf">System/getenv</span><span class="p">)</span> <span class="s">&#34;CHECKPOINT_NAME&#34;</span> <span class="s">&#34;&#34;</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">
+</span></span><span class="line"><span class="ln">15</span><span class="cl"><span class="p">(</span><span class="k">def </span><span class="nv">checkpoint-config</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl">  <span class="c1">; Checkpoints are not enabled on a local machine where we don&#39;t have the env</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">  <span class="p">(</span><span class="k">if </span><span class="p">(</span><span class="nf">str/blank?</span> <span class="nv">checkpoint-name</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl">    <span class="p">{}</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">    <span class="p">{</span><span class="ss">:xtdb/module</span> <span class="ss">&#39;xtdb.checkpoint/-&gt;checkpointer</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl">     <span class="ss">:store</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl">     <span class="p">{</span><span class="ss">:xtdb/module</span> <span class="ss">&#39;xtdb.s3.checkpoint/-&gt;cp-store</span>
+</span></span><span class="line"><span class="ln">22</span><span class="cl">      <span class="ss">:bucket</span> <span class="nv">checkpoint-name</span>
+</span></span><span class="line"><span class="ln">23</span><span class="cl">      <span class="ss">:configurator</span> <span class="p">(</span><span class="k">fn </span><span class="p">[</span><span class="nv">_</span><span class="p">]</span> <span class="p">(</span><span class="nf">reify</span> <span class="nv">S3Configurator</span> <span class="p">(</span><span class="nf">makeClient</span> <span class="p">[</span><span class="nv">_this</span><span class="p">]</span> <span class="p">(</span><span class="nf">make-s3-client</span><span class="p">))))}</span>
+</span></span><span class="line"><span class="ln">24</span><span class="cl">     <span class="ss">:Keep-dir-on-close?</span> <span class="nv">false</span>
+</span></span><span class="line"><span class="ln">25</span><span class="cl">     <span class="ss">:approx-frequency</span> <span class="p">(</span><span class="nf">Duration/ofHours</span> <span class="mi">2</span><span class="p">)}))</span></span></span></code></pre></div><p>Once configured, XT will persist the current index state to S3 every 2 hours. One might want to adjust S3&rsquo;s bucket policy so it archives or removes the obsolete checkpoints files.</p>
+<h2 id="caveats">Caveats</h2>
+<h3 id="memory-consumption">Memory consumption</h3>
+<p>JVM-based applications tend to consume quite a significant amount of memory budget — in our case, running XT with allowed 4GB of memory wasn&rsquo;t always enough so we&rsquo;ve decided to increase the memory limits in Kubernetes up to 8 gigabytes.</p>
+<p>Another consideration we&rsquo;ve observed is that the vertical scaling works better for an XTDB cluster — unlike the horizontal scaling, where we need to wait until the new node restores from the checkpoints or processes the transactions log.</p>
+<h3 id="rocksdb-tuning">RocksDB tuning</h3>
+<p>RocksDB is being used by XT as an index store, and as the result, it might consume quite a significant amount of resources.
+In order to avoid possible issues with the memory budgeting, it&rsquo;s recommended to <a href="https://github.com/facebook/rocksdb/wiki/Setup-Options-and-Basic-Tuning#block-cache-size">set RocksDB block cache to 1/3 of available memory</a> which can be done in XTDB configuration.</p>
+<h3 id="readiness-probes">Readiness probes</h3>
+<p>Depending on your technology stack that you use for XTDB deployment, consuming the transaction log even with the checkpoints feature enabled can take some time — and even though the starting node is able to handle REST API requests, they won&rsquo;t be processed until the node finishes the consumption.</p>
+<p>To avoid that, you might need to check the difference between the last submitted and last completed transactions, e.g. from a bash script:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="cp">#!/bin/bash
+</span></span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="cp"></span><span class="c1"># scripts/readiness.sh: A script that compares the latest submitted and indexed transactions</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="nb">set</span> -e
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="nv">THRESHOLD</span><span class="o">=</span><span class="m">1000</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="c1"># Assumes that you have jq and curl installed</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="nv">submitted_tx</span><span class="o">=</span><span class="sb">`</span>curl http://localhost:3000/_xtdb/latest-submitted-tx -H <span class="s2">&#34;Accept: application/json&#34;</span> -f <span class="p">|</span> jq .txId<span class="sb">`</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="nv">completed_tx</span><span class="o">=</span><span class="sb">`</span>curl http://localhost:3000/_xtdb/latest-completed-tx -H <span class="s2">&#34;Accept: application/json&#34;</span> -f <span class="p">|</span> jq .txId<span class="sb">`</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="nv">diff</span><span class="o">=</span>$<span class="o">[</span>submitted_tx - completed_tx<span class="o">]</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">
+</span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="k">if</span> <span class="o">((</span>diff &gt; THRESHOLD<span class="o">))</span><span class="p">;</span> <span class="k">then</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">    <span class="nb">echo</span> <span class="s2">&#34;Node is not ready&#34;</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">    <span class="nb">exit</span> <span class="m">1</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl"><span class="k">else</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl">    <span class="nb">echo</span> <span class="s2">&#34;Node is ready&#34;</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl"><span class="k">fi</span></span></span></code></pre></div><h3 id="load-balancing-and-xt-cluster">Load balancing and XT cluster</h3>
+<p>The index storage is not shared between XTDB nodes — so every node might have a slightly different data representation. To ensure integrity, we might need to use <em>await-tx</em> or <em>sync</em> functions whenever we submit a transaction.</p>
+<p>However, when we use REST API in a distributed cluster of nodes, it might be that the load balancer that stands in front of the nodes distributes requests to the database randomly — and when we submit a transaction to one node, we can end up reading data from another, which might have not processed that transaction yet.</p>
+<p>If we want to prevent such situation, we might need to implement sticky sessions or use <a href="https://dev.to/marleyspoon/taming-the-time-how-to-install-develop-with-xtdb-2lbf#http2">HTTP2</a> connections between your applications and database nodes.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>XTDB embraces the bitemporality concept and provides powerful capabilities of handling your data in an immutable way.</p>
+<p>However, this also implies that during your journey with XT, you might face some technical challenges caused by its unbundled database concept — and resolve them by reasoning about the selected components, technology stack, and implications.</p>
+<p>The new milestone in XTDB&rsquo;s development — <a href="https://www.xtdb.com/v2">XTDB 2.0</a> — looks very promising for us as it has a more flexible and scalable architecture as well as the first-class SQL support — and can be used by PostgreSQL clients.</p>
+<p>We look forward to trying out the new version and hope that you&rsquo;ve enjoyed our series of articles about XT.</p>
+<p>Happy hacking, and stay tuned!</p>
+]]></content:encoded>
+    </item>
+    <item>
+      <title>Taming the time: how to run XTDB in production</title>
+      <link>https://neiro.io/posts/2023-07-19-taming-the-time-how-we-run-xtdb-in-production/</link>
+      <pubDate>Wed, 19 Jul 2023 15:45:00 +0200</pubDate>
+      <guid>https://neiro.io/posts/2023-07-19-taming-the-time-how-we-run-xtdb-in-production/</guid>
+      <description>&lt;hr&gt;&#xA;&lt;p&gt;&lt;a href=&#34;https://dev.to/marleyspoon/taming-time-how-to-run-xtdb-in-production-2lgd&#34;&gt;The article was originally published in MarleySpoon DevBlog&lt;/a&gt;&lt;/p&gt;&#xA;&lt;h2 id=&#34;what-is-xtdb&#34;&gt;What is XTDB&lt;/h2&gt;&#xA;&lt;p&gt;&lt;a href=&#34;https://dev.to/ne1ro/series/22497&#34;&gt;In the previous articles&lt;/a&gt;, we explored the concept of bitemporality and discussed how to get started with XTDB, a bitemporal immutable database. Now, let&amp;rsquo;s dive into the technical details of deploying XTDB and running it in production. This blog post aims to provide valuable insights and considerations to keep in mind during this process.&lt;/p&gt;&#xA;&lt;h3 id=&#34;xtdb-1&#34;&gt;XTDB 1&lt;/h3&gt;&#xA;&lt;p&gt;Before we proceed, it&amp;rsquo;s important to note that the experiences shared in this article are based on working with XTDB version 1.21.&#xA;It&amp;rsquo;s worth mentioning that your experience may vary, especially with the introduction of &lt;a href=&#34;https://www.xtdb.com/v2&#34;&gt;XTDB 2.0&lt;/a&gt; and subsequent versions.&lt;/p&gt;</description>
+      <content:encoded><![CDATA[<hr>
+<p><a href="https://dev.to/marleyspoon/taming-time-how-to-run-xtdb-in-production-2lgd">The article was originally published in MarleySpoon DevBlog</a></p>
+<h2 id="what-is-xtdb">What is XTDB</h2>
+<p><a href="https://dev.to/ne1ro/series/22497">In the previous articles</a>, we explored the concept of bitemporality and discussed how to get started with XTDB, a bitemporal immutable database. Now, let&rsquo;s dive into the technical details of deploying XTDB and running it in production. This blog post aims to provide valuable insights and considerations to keep in mind during this process.</p>
+<h3 id="xtdb-1">XTDB 1</h3>
+<p>Before we proceed, it&rsquo;s important to note that the experiences shared in this article are based on working with XTDB version 1.21.
+It&rsquo;s worth mentioning that your experience may vary, especially with the introduction of <a href="https://www.xtdb.com/v2">XTDB 2.0</a> and subsequent versions.</p>
+<h2 id="deploying-xtdb">Deploying XTDB</h2>
+<p>Deploying XTDB in a production environment offers several options, each with its advantages and considerations:</p>
+<ul>
+<li>run as a part of your JVM application</li>
+<li>run separately, but on the same server together with your application</li>
+<li>run on a standalone node or in a separate container</li>
+<li>run a cluster of XTDB nodes</li>
+</ul>
+<p>To achieve a resilient and scalable setup, I recommend running a cluster of XTDB nodes, with each node deployed as a separate Docker container managed by Kubernetes. This allows easy orchestration, automatic scaling, and simplified management of the XTDB cluster.</p>
+<h3 id="containerised-xtdb">Containerised XTDB</h3>
+<p>In this section, we will explore how to build and run a Docker container with a custom configured XTDB application <em>(Clojure project)</em> in a Kubernetes cluster. However, in case you don&rsquo;t need to have a custom build and can simply use a <a href="https://hub.docker.com/r/juxt/xtdb-standalone-rocksdb">standalone Docker image</a>, you can skip right to the &ldquo;Authentication&rdquo; section.</p>
+<h4 id="uberjar">Uberjar</h4>
+<p>If we want to run the XTDB in Docker the most fitting way to run it in a container would be to compile our preconfigured XT application into a single &ldquo;uberjar&rdquo; file.</p>
+<p>This can be done by employing <a href="https://github.com/tonsky/uberdeps">Uberdeps</a> in our Clojure project:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-clojure" data-lang="clojure"><span class="line"><span class="ln">1</span><span class="cl"><span class="c1">; deps.edn</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="ss">:aliases</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl"> <span class="p">{</span><span class="ss">:uberdeps</span> <span class="p">{</span><span class="ss">:replace-deps</span> <span class="p">{</span><span class="nv">uberdeps/uberdeps</span> <span class="p">{</span><span class="ss">:mvn/version</span> <span class="s">&#34;1.1.0&#34;</span><span class="p">}}</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl">             <span class="ss">:replace-paths</span> <span class="p">[]</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl">             <span class="ss">:main-opts</span> <span class="p">[</span><span class="s">&#34;-m&#34;</span> <span class="s">&#34;uberdeps.uberjar&#34;</span><span class="p">]}}</span></span></span></code></pre></div><p>Once you have it installed, you can compile your project into a single Uberjar file:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="ln">1</span><span class="cl">clj -M:uberdeps</span></span></code></pre></div><h4 id="dockerfile">Dockerfile</h4>
+<p>We want our XTDB Docker image to be as lightweight as possible, so the best approach would be to have a multi-stage build image that builds and runs the Uberjar on the selected JVM image:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-dockerfile" data-lang="dockerfile"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="c"># Build clojure uberjar</span><span class="err">
+</span></span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="err"></span><span class="k">FROM</span><span class="s"> clojure:openjdk-17-tools-deps-alpine AS BUILD</span><span class="err">
+</span></span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="err"></span><span class="k">WORKDIR</span><span class="s"> /xtdb</span><span class="err">
+</span></span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="err"></span><span class="k">COPY</span> . /xtdb<span class="err">
+</span></span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="err"></span><span class="k">RUN</span> apk add --no-cache libstdc++<span class="err">
+</span></span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="err"></span><span class="k">RUN</span> clojure -M:uberdeps<span class="err">
+</span></span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="err"></span><span class="c"># Copy and run uberjar</span><span class="err">
+</span></span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="err"></span><span class="k">FROM</span><span class="s"> openjdk:17-alpine3.14</span><span class="err">
+</span></span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="err"></span><span class="k">WORKDIR</span><span class="s"> /usr/local/lib/xtdb</span><span class="err">
+</span></span></span><span class="line"><span class="ln">13</span><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="ln">14</span><span class="cl"><span class="err"></span><span class="k">RUN</span> apk --no-cache add bash libstdc++<span class="err">
+</span></span></span><span class="line"><span class="ln">15</span><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="ln">16</span><span class="cl"><span class="err"></span><span class="k">COPY</span> --from<span class="o">=</span>BUILD /xtdb/resources /usr/local/lib/xtdb/resources<span class="err">
+</span></span></span><span class="line"><span class="ln">17</span><span class="cl"><span class="err"></span><span class="k">COPY</span> --from<span class="o">=</span>BUILD /xtdb/target .<span class="err">
+</span></span></span><span class="line"><span class="ln">18</span><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="ln">19</span><span class="cl"><span class="err"></span><span class="k">ENV</span> <span class="nv">MALLOC_ARENA_MAX</span><span class="o">=</span><span class="m">2</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl"><span class="k">CMD</span> <span class="p">[</span><span class="s2">&#34;java&#34;</span><span class="p">,</span> <span class="s2">&#34;-cp&#34;</span><span class="p">,</span> <span class="s2">&#34;xtdb.jar&#34;</span><span class="p">,</span> <span class="s2">&#34;clojure.main&#34;</span><span class="p">,</span> <span class="s2">&#34;-m&#34;</span><span class="p">,</span> <span class="s2">&#34;xtdb.core&#34;</span><span class="p">]</span><span class="err">
+</span></span></span><span class="line"><span class="ln">21</span><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="ln">22</span><span class="cl"><span class="err"></span><span class="k">EXPOSE</span><span class="s"> 3000</span></span></span></code></pre></div><h4 id="graceful-shutdown">Graceful shutdown</h4>
+<p>Another requirement for running XT in Kubernetes is to gracefully shut down, e.g., on killing containers or Kubernetes deployment restart. To ensure that, we have to change our `xtdb.clj` file by adding a `SIGTERM` signal handler:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-clojure" data-lang="clojure"><span class="line"><span class="ln">1</span><span class="cl"><span class="c1">;; Stop the system on SIGTERM</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="p">(</span><span class="nf">with-handler</span> <span class="ss">:term</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl">  <span class="p">(</span><span class="nf">log/info</span> <span class="s">&#34;Caught SIGTERM, quitting&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl">  <span class="p">(</span><span class="nf">.close</span> <span class="o">@</span><span class="nv">xt-node</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl">  <span class="p">(</span><span class="nf">log/info</span> <span class="s">&#34;All components shut down&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">6</span><span class="cl">  <span class="p">(</span><span class="nf">System/exit</span> <span class="mi">0</span><span class="p">))</span></span></span></code></pre></div><h3 id="authentication">Authentication</h3>
+<p>Since we run our XTDB separately from our application containers, we might want to ensure that the requests from services to the database are properly authenticated.</p>
+<p>In order to ensure that we need to change the way we start XTDB by providing JWKS (<a href="https://auth0.com/docs/secure/tokens/json-web-tokens/json-web-key-sets">JSON Web Token key set</a>) as an environment variable to the XTDB node:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-clojure" data-lang="clojure"><span class="line"><span class="ln">1</span><span class="cl"><span class="c1">; core.clj</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="p">(</span><span class="k">def </span><span class="nv">config</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl">  <span class="p">{</span><span class="ss">:xtdb.http-server/server</span> <span class="p">{</span><span class="ss">:port</span> <span class="mi">3000</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl">                             <span class="ss">:jwks</span> <span class="p">(</span><span class="nf">System/getenv</span> <span class="s">&#34;XTDB_JWKS&#34;</span><span class="p">)}</span> <span class="nv">...</span></span></span></code></pre></div><p>The next step is to send the compatible JWT token from your application requests:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-elixir" data-lang="elixir"><span class="line"><span class="ln">1</span><span class="cl"><span class="p">{</span><span class="s2">&#34;Authorization&#34;</span><span class="p">,</span> <span class="s2">&#34;Bearer </span><span class="si">#{</span><span class="n">your_jwt</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">}</span></span></span></code></pre></div><h3 id="kubernetes">Kubernetes</h3>
+<p>As we&rsquo;ve decided to go with the running XT nodes as Docker containers in a Kubernetes cluster, we need to prepare Kubernetes manifests for that purpose.</p>
+<p>The simplest way to achieve that is to create a Kubernetes stateful set of multiple XT containers:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="nn">---</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="w"></span><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l">apps/v1</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="w"></span><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l">StatefulSet</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="w"></span><span class="nt">metadata</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">xtdb</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="w">  </span><span class="nt">labels</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="w">    </span><span class="nt">app.kubernetes.io/name</span><span class="p">:</span><span class="w"> </span><span class="l">xtdb</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="w"></span><span class="nt">spec</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="w">  </span><span class="nt">serviceName</span><span class="p">:</span><span class="w"> </span><span class="l">xtdb-headless</span><span class="w">
+</span></span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="w">  </span><span class="nt">replicas</span><span class="p">:</span><span class="w"> </span><span class="m">3</span><span class="w">
+</span></span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="w">  </span><span class="nt">selector</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="w">    </span><span class="nt">matchLabels</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">13</span><span class="cl"><span class="w">      </span><span class="nt">app.kubernetes.io/name</span><span class="p">:</span><span class="w"> </span><span class="l">xtdb</span><span class="w">
+</span></span></span><span class="line"><span class="ln">14</span><span class="cl"><span class="w">  </span><span class="nt">template</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">15</span><span class="cl"><span class="w">    </span><span class="nt">metadata</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">16</span><span class="cl"><span class="w">      </span><span class="nt">labels</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">17</span><span class="cl"><span class="w">      </span><span class="nt">app.kubernetes.io/name</span><span class="p">:</span><span class="w"> </span><span class="l">xtdb</span><span class="w">
+</span></span></span><span class="line"><span class="ln">18</span><span class="cl"><span class="w">    </span><span class="nt">spec</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">19</span><span class="cl"><span class="w">      </span><span class="nt">terminationGracePeriodSeconds</span><span class="p">:</span><span class="w"> </span><span class="m">30</span><span class="w">
+</span></span></span><span class="line"><span class="ln">20</span><span class="cl"><span class="w">      </span><span class="nt">containers</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">21</span><span class="cl"><span class="w">        </span>- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">xtdb</span><span class="w">
+</span></span></span><span class="line"><span class="ln">22</span><span class="cl"><span class="w">          </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">$REGISTRY/xtdb:1.21.0</span><span class="w">
+</span></span></span><span class="line"><span class="ln">23</span><span class="cl"><span class="w">          </span><span class="nt">imagePullPolicy</span><span class="p">:</span><span class="w"> </span><span class="l">Always</span><span class="w">
+</span></span></span><span class="line"><span class="ln">24</span><span class="cl"><span class="w">          </span><span class="nt">ports</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">25</span><span class="cl"><span class="w">            </span>- <span class="nt">containerPort</span><span class="p">:</span><span class="w"> </span><span class="m">3000</span><span class="w">
+</span></span></span><span class="line"><span class="ln">26</span><span class="cl"><span class="w">          </span><span class="nt">livenessProbe</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">27</span><span class="cl"><span class="w">            </span><span class="nt">tcpSocket</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">28</span><span class="cl"><span class="w">              </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="m">3000</span><span class="w">
+</span></span></span><span class="line"><span class="ln">29</span><span class="cl"><span class="w">            </span><span class="nt">periodSeconds</span><span class="p">:</span><span class="w"> </span><span class="m">10</span><span class="w">
+</span></span></span><span class="line"><span class="ln">30</span><span class="cl"><span class="w">            </span><span class="nt">initialDelaySeconds</span><span class="p">:</span><span class="w"> </span><span class="m">120</span><span class="w">
+</span></span></span><span class="line"><span class="ln">31</span><span class="cl"><span class="w">            </span><span class="nt">timeoutSeconds</span><span class="p">:</span><span class="w"> </span><span class="m">15</span><span class="w">
+</span></span></span><span class="line"><span class="ln">32</span><span class="cl"><span class="w">          </span><span class="nt">readinessProbe</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">33</span><span class="cl"><span class="w">            </span><span class="nt">exec</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">34</span><span class="cl"><span class="w">              </span><span class="nt">command</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">35</span><span class="cl"><span class="w">                </span>- <span class="l">bash</span><span class="w">
+</span></span></span><span class="line"><span class="ln">36</span><span class="cl"><span class="w">                </span><span class="c"># custom readiness check script</span><span class="w">
+</span></span></span><span class="line"><span class="ln">37</span><span class="cl"><span class="w">                </span>- <span class="l">scripts/readiness.sh</span><span class="w">
+</span></span></span><span class="line"><span class="ln">38</span><span class="cl"><span class="w">            </span><span class="nt">initialDelaySeconds</span><span class="p">:</span><span class="w"> </span><span class="m">30</span><span class="w">
+</span></span></span><span class="line"><span class="ln">39</span><span class="cl"><span class="w">            </span><span class="nt">periodSeconds</span><span class="p">:</span><span class="w"> </span><span class="m">15</span><span class="w">
+</span></span></span><span class="line"><span class="ln">40</span><span class="cl"><span class="w">          </span><span class="nt">envFrom</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">41</span><span class="cl"><span class="w">            </span>- <span class="nt">secretRef</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">42</span><span class="cl"><span class="w">                </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">xtdb-secrets</span></span></span></code></pre></div><p>As for the configuration, you can create a configmap with environment variables required for configuring XTDB and a secrets resource for providing secrets to your XT nodes.</p>
+<h2 id="running-xt-in-production">Running XT in production</h2>
+<p>XTDB is an <em>unbundled database</em> which means that it has a lot of components that can be swapped or changed — and it might work with different technologies and other databases.</p>
+<p>In general, it consists of 3 parts:</p>
+<ol>
+<li>Transaction log</li>
+<li>Document store</li>
+<li>Index store</li>
+</ol>
+<p>We had an experience using PostgreSQL and JDBC adapter for our XTDB setup, as well as experimenting with Kafka for transaction log — and using RocksDB as an index storage.</p>
+<p>However, there are many more other ways and modules to setup the database — you can find them in <a href="https://docs.xtdb.com/administration/configuring/">the documentation.</a></p>
+<h3 id="jdbc">JDBC</h3>
+<p>The transaction log and document store are considered to be <strong>golden stores</strong> in XTDB — which means that they should be reliably persisted, unlike the index storage that can be rebuilt from scratch on node restart.</p>
+<p>XT supports JDBC (Java Database Connectivity) which allows us to connect to various SQL databases like PostgreSQL, MySQL, SQLite, and others.
+In our example, we were using PostgreSQL + JDBC for both transaction log and document store.</p>
+<p>To use PostgreSQL and JDBC together, you have to provide these modules in your <em>deps.edn</em> first:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-clojure" data-lang="clojure"><span class="line"><span class="ln">1</span><span class="cl"><span class="ss">:deps</span> <span class="p">{</span><span class="nv">org.postgresql/postgresql</span> <span class="p">{</span><span class="ss">:mvn/version</span> <span class="s">&#34;42.2.18&#34;</span><span class="p">}</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">        <span class="nv">com.xtdb/xtdb-jdbc</span> <span class="p">{</span><span class="ss">:mvn/version</span> <span class="s">&#34;1.21.0&#34;</span><span class="p">}</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl">       <span class="nv">...</span></span></span></code></pre></div><p>If you want to use environment variables for connecting to PostgreSQL from the XTDB deployment you can also pass them in <strong>core.clj</strong> file:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-clojure" data-lang="clojure"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="p">(</span><span class="k">def </span><span class="nv">db-spec</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  <span class="p">{</span><span class="ss">:host</span> <span class="p">(</span><span class="nf">System/getenv</span> <span class="s">&#34;POSTGRES_HOST&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">   <span class="ss">:port</span> <span class="p">(</span><span class="nb">get </span><span class="p">(</span><span class="nf">System/getenv</span><span class="p">)</span> <span class="s">&#34;POSTGRES_PORT&#34;</span> <span class="s">&#34;5432&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">   <span class="ss">:dbname</span> <span class="p">(</span><span class="nf">System/getenv</span> <span class="s">&#34;POSTGRES_DB&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">   <span class="ss">:user</span> <span class="p">(</span><span class="nf">System/getenv</span> <span class="s">&#34;POSTGRES_USER&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">   <span class="ss">:password</span> <span class="p">(</span><span class="nf">System/getenv</span> <span class="s">&#34;POSTGRES_PASSWORD&#34;</span><span class="p">)})</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="p">(</span><span class="k">def </span><span class="nv">config</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">  <span class="p">{</span><span class="ss">:xtdb.jdbc/connection-pool</span> <span class="p">{</span><span class="ss">:dialect</span> <span class="p">{</span><span class="ss">:xtdb/module</span> <span class="ss">&#39;xtdb.jdbc.psql/-&gt;dialect</span><span class="p">}</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">                               <span class="ss">:pool-opts</span> <span class="p">{</span><span class="ss">:maximumPoolSize</span> <span class="mi">10</span><span class="p">}</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">                               <span class="ss">:db-spec</span> <span class="nv">db-spec</span><span class="p">}</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">   <span class="ss">:xtdb/tx-log</span> <span class="p">{</span><span class="ss">:xtdb/module</span> <span class="ss">&#39;xtdb.jdbc/-&gt;tx-log</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">                 <span class="ss">:connection-pool</span> <span class="ss">:xtdb.jdbc/connection-pool</span><span class="p">}</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">   <span class="ss">:xtdb/document-store</span> <span class="p">{</span><span class="ss">:xtdb/module</span> <span class="ss">&#39;xtdb.jdbc/-&gt;document-store</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">                         <span class="ss">:connection-pool</span> <span class="ss">:xtdb.jdbc/connection-pool</span><span class="p">}})</span></span></span></code></pre></div><p>That way we can also re-use the same connection pool for both transaction and document store.</p>
+<h3 id="kafka">Kafka</h3>
+<p>However, the recommended option (and also most often used in production) is to leverage Kafka for the transaction store.</p>
+<p>During node restarts <em>(e.g. on new deployments)</em> XTDB has to rebuild the transaction log from zero or the latest saved checkpoint, which means reading the whole transaction table in PostgreSQL — and in our experience, this process was slower than expected.</p>
+<p>Kafka seems to be a better fit for the very purpose of the transaction log because:</p>
+<ul>
+<li>it&rsquo;s basically a log of events</li>
+<li>we only need to use just one partition and one topic</li>
+<li>the transactions can be consumed very quickly</li>
+</ul>
+<p>Thus, the most optimal and performant setup for us looked like:</p>
+<ul>
+<li>using Kafka as a transaction log</li>
+<li>using JDBC and relational database as a document store</li>
+<li>using RocksDB as an index store</li>
+</ul>
+<p>That way, we can ensure that the transactions can be created quickly, the log can be re-consumed fast, and the document storage is performant enough and resilient.</p>
+<h3 id="checkpoints">Checkpoints</h3>
+<p>If we want to rebuild the query indices (e.g. on node restart), XT might need to replay the transaction log — which sometimes might be not so fast especially if you have a long history of changes.</p>
+<p>As we run our XTDB in a cluster, it&rsquo;s vital that the readiness time — when the XT instance is ready to serve DB requests — is as low as possible.
+Fortunately, XTDB has a solution for that problem called <strong>checkpoints</strong>.</p>
+<p>Right now, there are three ways to persist the local query indices state:</p>
+<ul>
+<li>local files (using Java&rsquo;s NIO file system)</li>
+<li>AWS S3</li>
+<li>GPC&rsquo;s cloud storage</li>
+</ul>
+<h4 id="aws-s3">AWS S3</h4>
+<p>In our case, we&rsquo;ve decided to go with the AWS setup in order to have a centralised and already configured storage for the checkpoints.
+However, it also requires some additional dependencies to be installed:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-clojure" data-lang="clojure"><span class="line"><span class="ln">1</span><span class="cl"><span class="c1">; deps.edn</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"> <span class="ss">:deps</span> <span class="p">{</span><span class="nv">com.xtdb/xtdb-s3</span> <span class="p">{</span><span class="ss">:mvn/version</span> <span class="s">&#34;1.21.0&#34;</span><span class="p">}</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl">        <span class="nv">software.amazon.awssdk/aws-core</span> <span class="p">{</span><span class="ss">:mvn/version</span> <span class="s">&#34;2.10.91&#34;</span><span class="p">}</span></span></span></code></pre></div><p>Additional setup in the node configuration is also required.</p>
+<p>As we&rsquo;ve experienced some requests to S3 taking a long time, we&rsquo;ve also decided to build a custom AWS S3 HTTP client:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-clojure" data-lang="clojure"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="p">(</span><span class="kd">defn- </span><span class="nv">make-s3-client</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  <span class="s">&#34;Increases timeouts for AWS S3 HTTP calls&#34;</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">  <span class="p">[]</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">  <span class="p">(</span><span class="k">let </span><span class="p">[</span><span class="nv">timeout</span> <span class="p">(</span><span class="nf">Duration/ofSeconds</span> <span class="mi">30</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">        <span class="nv">http-client-builder</span> <span class="p">(</span><span class="nf">-&gt;</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">                             <span class="p">(</span><span class="nf">NettyNioAsyncHttpClient/builder</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">                             <span class="p">(</span><span class="nf">.connectionAcquisitionTimeout</span> <span class="nv">timeout</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">                             <span class="p">(</span><span class="nf">.connectionTimeout</span> <span class="nv">timeout</span><span class="p">))]</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">    <span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">S3AsyncClient/builder</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">        <span class="p">(</span><span class="nf">.httpClientBuilder</span> <span class="nv">http-client-builder</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">        <span class="nv">.build</span><span class="p">)))</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">
+</span></span><span class="line"><span class="ln">13</span><span class="cl"><span class="p">(</span><span class="k">def </span><span class="nv">checkpoint-name</span> <span class="p">(</span><span class="nb">get </span><span class="p">(</span><span class="nf">System/getenv</span><span class="p">)</span> <span class="s">&#34;CHECKPOINT_NAME&#34;</span> <span class="s">&#34;&#34;</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">
+</span></span><span class="line"><span class="ln">15</span><span class="cl"><span class="p">(</span><span class="k">def </span><span class="nv">checkpoint-config</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl">  <span class="c1">; Checkpoints are not enabled on a local machine where we don&#39;t have the env</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">  <span class="p">(</span><span class="k">if </span><span class="p">(</span><span class="nf">str/blank?</span> <span class="nv">checkpoint-name</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl">    <span class="p">{}</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">    <span class="p">{</span><span class="ss">:xtdb/module</span> <span class="ss">&#39;xtdb.checkpoint/-&gt;checkpointer</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl">     <span class="ss">:store</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl">     <span class="p">{</span><span class="ss">:xtdb/module</span> <span class="ss">&#39;xtdb.s3.checkpoint/-&gt;cp-store</span>
+</span></span><span class="line"><span class="ln">22</span><span class="cl">      <span class="ss">:bucket</span> <span class="nv">checkpoint-name</span>
+</span></span><span class="line"><span class="ln">23</span><span class="cl">      <span class="ss">:configurator</span> <span class="p">(</span><span class="k">fn </span><span class="p">[</span><span class="nv">_</span><span class="p">]</span> <span class="p">(</span><span class="nf">reify</span> <span class="nv">S3Configurator</span> <span class="p">(</span><span class="nf">makeClient</span> <span class="p">[</span><span class="nv">_this</span><span class="p">]</span> <span class="p">(</span><span class="nf">make-s3-client</span><span class="p">))))}</span>
+</span></span><span class="line"><span class="ln">24</span><span class="cl">     <span class="ss">:Keep-dir-on-close?</span> <span class="nv">false</span>
+</span></span><span class="line"><span class="ln">25</span><span class="cl">     <span class="ss">:approx-frequency</span> <span class="p">(</span><span class="nf">Duration/ofHours</span> <span class="mi">2</span><span class="p">)}))</span></span></span></code></pre></div><p>Once configured, XT will persist the current index state to S3 every 2 hours. One might want to adjust S3&rsquo;s bucket policy so it archives or removes the obsolete checkpoints files.</p>
+<h2 id="caveats">Caveats</h2>
+<h3 id="memory-consumption">Memory consumption</h3>
+<p>JVM-based applications tend to consume quite a significant amount of memory budget — in our case, running XT with allowed 4GB of memory wasn&rsquo;t always enough so we&rsquo;ve decided to increase the memory limits in Kubernetes up to 8 gigabytes.</p>
+<p>Another consideration we&rsquo;ve observed is that the vertical scaling works better for an XTDB cluster — unlike the horizontal scaling, where we need to wait until the new node restores from the checkpoints or processes the transactions log.</p>
+<h3 id="rocksdb-tuning">RocksDB tuning</h3>
+<p>RocksDB is being used by XT as an index store, and as the result, it might consume quite a significant amount of resources.
+In order to avoid possible issues with the memory budgeting, it&rsquo;s recommended to <a href="https://github.com/facebook/rocksdb/wiki/Setup-Options-and-Basic-Tuning#block-cache-size">set RocksDB block cache to 1/3 of available memory</a> which can be done in XTDB configuration.</p>
+<h3 id="readiness-probes">Readiness probes</h3>
+<p>Depending on your technology stack that you use for XTDB deployment, consuming the transaction log even with the checkpoints feature enabled can take some time — and even though the starting node is able to handle REST API requests, they won&rsquo;t be processed until the node finishes the consumption.</p>
+<p>To avoid that, you might need to check the difference between the last submitted and last completed transactions, e.g. from a bash script:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="cp">#!/bin/bash
+</span></span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="cp"></span><span class="c1"># scripts/readiness.sh: A script that compares the latest submitted and indexed transactions</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="nb">set</span> -e
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="nv">THRESHOLD</span><span class="o">=</span><span class="m">1000</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="c1"># Assumes that you have jq and curl installed</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="nv">submitted_tx</span><span class="o">=</span><span class="sb">`</span>curl http://localhost:3000/_xtdb/latest-submitted-tx -H <span class="s2">&#34;Accept: application/json&#34;</span> -f <span class="p">|</span> jq .txId<span class="sb">`</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="nv">completed_tx</span><span class="o">=</span><span class="sb">`</span>curl http://localhost:3000/_xtdb/latest-completed-tx -H <span class="s2">&#34;Accept: application/json&#34;</span> -f <span class="p">|</span> jq .txId<span class="sb">`</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="nv">diff</span><span class="o">=</span>$<span class="o">[</span>submitted_tx - completed_tx<span class="o">]</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">
+</span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="k">if</span> <span class="o">((</span>diff &gt; THRESHOLD<span class="o">))</span><span class="p">;</span> <span class="k">then</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">    <span class="nb">echo</span> <span class="s2">&#34;Node is not ready&#34;</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">    <span class="nb">exit</span> <span class="m">1</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl"><span class="k">else</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl">    <span class="nb">echo</span> <span class="s2">&#34;Node is ready&#34;</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl"><span class="k">fi</span></span></span></code></pre></div><h3 id="load-balancing-and-xt-cluster">Load balancing and XT cluster</h3>
+<p>The index storage is not shared between XTDB nodes — so every node might have a slightly different data representation. To ensure integrity, we might need to use <em>await-tx</em> or <em>sync</em> functions whenever we submit a transaction.</p>
+<p>However, when we use REST API in a distributed cluster of nodes, it might be that the load balancer that stands in front of the nodes distributes requests to the database randomly — and when we submit a transaction to one node, we can end up reading data from another, which might have not processed that transaction yet.</p>
+<p>If we want to prevent such situation, we might need to implement sticky sessions or use <a href="https://dev.to/marleyspoon/taming-the-time-how-to-install-develop-with-xtdb-2lbf#http2">HTTP2</a> connections between your applications and database nodes.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>XTDB embraces the bitemporality concept and provides powerful capabilities of handling your data in an immutable way.</p>
+<p>However, this also implies that during your journey with XT, you might face some technical challenges caused by its unbundled database concept — and resolve them by reasoning about the selected components, technology stack, and implications.</p>
+<p>The new milestone in XTDB&rsquo;s development — <a href="https://www.xtdb.com/v2">XTDB 2.0</a> — looks very promising for us as it has a more flexible and scalable architecture as well as the first-class SQL support — and can be used by PostgreSQL clients.</p>
+<p>We look forward to trying out the new version and hope that you&rsquo;ve enjoyed our series of articles about XT.</p>
+<p>Happy hacking, and stay tuned!</p>
+]]></content:encoded>
+    </item>
+    <item>
+      <title>Bitemporality, or how to change the past</title>
+      <link>https://neiro.io/blog/2022-12-13-bitemporality-or-how-to-change-the-past/</link>
+      <pubDate>Wed, 21 Dec 2022 13:20:00 +0100</pubDate>
+      <guid>https://neiro.io/blog/2022-12-13-bitemporality-or-how-to-change-the-past/</guid>
+      <description>&lt;p&gt;&lt;em&gt;The article was originally posted on &lt;a href=&#34;https://dev.to/marleyspoon/bitemporality-or-how-to-change-the-past-3k4f&#34;&gt;MarleySpoon Dev Blog&lt;/a&gt;&lt;/em&gt;&lt;/p&gt;&#xA;&lt;p&gt;We can definitely see the whole history of humanity as a chain of &lt;em&gt;events&lt;/em&gt;:&#xA;tiny events, big events, huge events, crucial events – some of them were negligible and some, on the contrary, predefined the next link in the chain and changed the way our world looks now.&lt;/p&gt;&#xA;&lt;p&gt;However, the more details we dig out about our history, the more white spots we erase, the more surprising and even contradictious things we see – things that sometimes can completely refute our views and assumptions. Things that we thought and believed to be &lt;strong&gt;facts&lt;/strong&gt; can be invalidated – and we will need to &lt;strong&gt;alter the past&lt;/strong&gt;.&lt;/p&gt;</description>
+      <content:encoded><![CDATA[<p><em>The article was originally posted on <a href="https://dev.to/marleyspoon/bitemporality-or-how-to-change-the-past-3k4f">MarleySpoon Dev Blog</a></em></p>
+<p>We can definitely see the whole history of humanity as a chain of <em>events</em>:
+tiny events, big events, huge events, crucial events – some of them were negligible and some, on the contrary, predefined the next link in the chain and changed the way our world looks now.</p>
+<p>However, the more details we dig out about our history, the more white spots we erase, the more surprising and even contradictious things we see – things that sometimes can completely refute our views and assumptions. Things that we thought and believed to be <strong>facts</strong> can be invalidated – and we will need to <strong>alter the past</strong>.</p>
+<p>Every kind of record system is not perfect and can contain errors. But what if we wanted to build a system that is resilient to such errors? What if we wanted to change the past but keep the history as a track of facts?</p>
+<h2 id="updates-in-place">Updates in place</h2>
+<p>Throughout almost all the existence of computers and computer science, resources were the biggest limitation and one of the most complex issues.</p>
+<p>Our progress allowed us to switch from bytes to kilobytes, from kilobytes to mega and gigabytes. Modern PCs, smartphones, and cloud systems can easily handle virtually unlimited amounts of data.</p>
+<p><strong>The storage</strong>, which was physically enormous at the beginning of the computer era and started with devices taking over the halls and rooms, moved to CDs, floppy disks and hard drives – so we could even carry movies, tons of photos and music in our pockets. The storage, which always seemed to be the problem, became the smallest of our headaches when it came to building software.</p>
+<p>Nonetheless, the habit <em>(the bad one)</em> we inherited from the dawn of the computer era is still there and arguably is one of the biggest developer&rsquo;s headaches – <strong>mutability</strong>. Before the progress in the storage capacity, we were very careful with how we consumed the RAM and disk space, and that forced us to mutate variables and data instead of persisting them in the immutable way, i.e. saving a new record instead of updating an existing one.</p>
+<p>That habit is still haunting us, even though functional programming languages and <a href="https://en.wikipedia.org/wiki/Immutable_object">the immutability approach</a> are on the rise, we still <em>(mostly)</em> update our records in place – as that is the way most popular databases are built.</p>
+<h3 id="an-audit-system">An audit system</h3>
+<p>How can we design a record tracking system using a common mutable DB? Let&rsquo;s say we use PostgreSQL and define a simple <code>audits</code> table:</p>
+<table>
+  <thead>
+      <tr>
+          <th>Company</th>
+          <th>Issues found</th>
+          <th>Auditor</th>
+          <th>Date</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>BullSheepInc</td>
+          <td>180</td>
+          <td>Joe</td>
+          <td>15.09.2021</td>
+      </tr>
+      <tr>
+          <td>OverHypeD</td>
+          <td>420</td>
+          <td>Max</td>
+          <td>14.02.2022</td>
+      </tr>
+      <tr>
+          <td>BullSheepInc</td>
+          <td>0</td>
+          <td>Max</td>
+          <td>15.02.2022</td>
+      </tr>
+  </tbody>
+</table>
+<p>However, one and a half months ago we&rsquo;ve discovered that Max forgot to write down the records for BullSheepInc — and as the column has default of <code>0</code>, we were unaware of the change for quite some time. Now, if we want to fix it, we have to <strong>overwrite</strong> the existing record:</p>
+<table>
+  <thead>
+      <tr>
+          <th>Company</th>
+          <th>Issues found</th>
+          <th>Auditor</th>
+          <th>Date</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>BullSheepInc</td>
+          <td>180</td>
+          <td>Joe</td>
+          <td>15.09.2021</td>
+      </tr>
+      <tr>
+          <td>OverHypeD</td>
+          <td>420</td>
+          <td>Max</td>
+          <td>14.02.2022</td>
+      </tr>
+      <tr>
+          <td>BullSheepInc</td>
+          <td><strong>101</strong></td>
+          <td>Max</td>
+          <td>01.04.2022</td>
+      </tr>
+  </tbody>
+</table>
+<p>The drawbacks of such an approach are clearly visible: we&rsquo;ve lost track of the changes and forgot about the mistake. As our reports were already sent, there won&rsquo;t be any punishment for BullSheepInc.</p>
+<h2 id="temporality">Temporality</h2>
+<p>The next step from mutability to our goal of designing a perfect track record system will be to <strong>persist changes as facts</strong>, instead of updating data in place.
+In order to build a truly immutable system we want to disallow overriding records in our audit system. Instead, we will be storing any kind of data change as a
+separate row in the database:</p>
+<table>
+  <thead>
+      <tr>
+          <th>Company</th>
+          <th>Issues found</th>
+          <th>Auditor</th>
+          <th>Date</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>BullSheepInc</td>
+          <td>180</td>
+          <td>Joe</td>
+          <td>15.09.2021</td>
+      </tr>
+      <tr>
+          <td>OverHypeD</td>
+          <td>420</td>
+          <td>Max</td>
+          <td>14.02.2022</td>
+      </tr>
+      <tr>
+          <td>BullSheepInc</td>
+          <td><strong>0</strong></td>
+          <td>Max</td>
+          <td>15.02.2022</td>
+      </tr>
+      <tr>
+          <td>BullSheepInc</td>
+          <td><strong>101</strong></td>
+          <td>Max</td>
+          <td>01.04.2022</td>
+      </tr>
+  </tbody>
+</table>
+<p>It looks like this option worked out better for us; now we see that the inventory record change was tracked and we&rsquo;ve actually discovered some issues.
+We could stop there and pretend we&rsquo;ve built the most advanced audit system, but that would be too far away from being the truth, as soon we&rsquo;ve got yet another request &hellip;</p>
+<h2 id="retroactive-changes">Retroactive changes</h2>
+<p>Once our employees started seeing not just audit records but also data fixes, John has recalled that it was actually him who did the counting, and the amount of found issues was actually <em>99</em> instead of <em>101</em>.
+We&rsquo;ve got a serious problem now as the new record doesn&rsquo;t fit into our data model:</p>
+<table>
+  <thead>
+      <tr>
+          <th>Company</th>
+          <th>Issues found</th>
+          <th>Auditor</th>
+          <th>Date</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>BullSheepInc</td>
+          <td>180</td>
+          <td>Joe</td>
+          <td>15.09.2021</td>
+      </tr>
+      <tr>
+          <td>OverHypeD</td>
+          <td>420</td>
+          <td>Max</td>
+          <td>14.02.2022</td>
+      </tr>
+      <tr>
+          <td>BullSheepInc</td>
+          <td>0</td>
+          <td>Max</td>
+          <td>15.02.2022</td>
+      </tr>
+      <tr>
+          <td>BullSheepInc</td>
+          <td><strong>101</strong></td>
+          <td><strong>Max</strong></td>
+          <td>01.04.2022</td>
+      </tr>
+      <tr>
+          <td>BullSheepInc</td>
+          <td><strong>99</strong></td>
+          <td><strong>John</strong></td>
+          <td>01.05.2022</td>
+      </tr>
+  </tbody>
+</table>
+<p>Which record is really <em>valid</em> now? Should we trust Max or John? How should we define what was the error and <strong>how it was corrected</strong> ?
+That&rsquo;s where the concept of <strong>bitemporality</strong> comes to the rescue.</p>
+<h2 id="bitemporality">Bitemporality</h2>
+<p>In the example above, we have only one time column: the record, or <em>transaction date</em>.
+Bitemporality assumes adding another time dimension — the so-called <strong>valid time</strong> or effective time — along the <strong>transaction time</strong> for tracking <strong>when the change really happened</strong>.</p>
+<p><strong>Transaction time</strong> represents the time when the record was inserted into the data storage. This can be quite useful for audit purposes, tracking changes and event sourcing.
+<strong>Valid time</strong> represents when the change became <em>valid</em> and happened in the real world.</p>
+<p>If we follow these definitions we can say that <em>transaction</em> time is the time we <em>thought</em> the data was correct at that point in time — and it was <em>actually</em> correct on the <strong>valid</strong> time:</p>
+<blockquote>
+<p>On the 15th of February, we’ve thought Max has not found any issues.
+On the 1st of April, Max corrected the number of issues to be 101.
+On May 1st, we’ve discovered that John actually found 99 issues.
+In reality, we want the actual amount of issues recorded to be 99 as of 15th of February.</p>
+</blockquote>
+<p>In a bitemporal system transaction time is immutable and can be only increased while valid time can be any past or future timestamp.
+Let&rsquo;s see how we can redesign the audit system using these two time dimensions:</p>
+<h3 id="the-perfect-audit-system">The perfect audit system™</h3>
+<p>Now that we know how to utilise transaction and valid dates, we can change our records by writing the record time as <em>transaction date</em> and
+time when it became valid as <em>valid time</em>:</p>
+<table>
+  <thead>
+      <tr>
+          <th>Company</th>
+          <th>Issues found</th>
+          <th>Auditor</th>
+          <th>Transaction date</th>
+          <th>Valid date</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>BullSheepInc</td>
+          <td>180</td>
+          <td>Joe</td>
+          <td>15.09.2021</td>
+          <td>15.09.2021</td>
+      </tr>
+      <tr>
+          <td>OverHypeD</td>
+          <td>420</td>
+          <td>Max</td>
+          <td>14.02.2022</td>
+          <td>14.02.2022</td>
+      </tr>
+      <tr>
+          <td>BullSheepInc</td>
+          <td>0</td>
+          <td>Max</td>
+          <td>15.02.2022</td>
+          <td>15.02.2022</td>
+      </tr>
+      <tr>
+          <td>BullSheepInc</td>
+          <td>101</td>
+          <td>Max</td>
+          <td>01.04.2022</td>
+          <td>15.02.2022</td>
+      </tr>
+      <tr>
+          <td>BullSheepInc</td>
+          <td>99</td>
+          <td>John</td>
+          <td>01.05.2022</td>
+          <td>15.02.2022</td>
+      </tr>
+  </tbody>
+</table>
+<p>Let&rsquo;s execute some queries to our database:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="k">module</span> <span class="nn">Audit</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  <span class="c1"># @returns [Hash] a hash with auditor, issues found and transaction date fields</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">  <span class="k">def</span> <span class="nf">get_record</span><span class="p">(</span><span class="n">company</span><span class="p">,</span> <span class="n">valid_date</span> <span class="o">=</span> <span class="kp">nil</span><span class="p">,</span> <span class="n">transaction_date</span> <span class="o">=</span> <span class="kp">nil</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">    <span class="c1"># calling the DB ...</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="k">end</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="o">&gt;</span> <span class="no">Audit</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="s2">&#34;BullSheepInc&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="c1"># {auditor: &#34;John&#34;, issues_found: 99, transaction_date: &#34;01.05.2022&#34;}</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="o">&gt;</span> <span class="no">Audit</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="s2">&#34;BullSheepInc&#34;</span><span class="p">,</span> <span class="s2">&#34;15.09.2021&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="c1"># {auditor: &#34;Joe&#34;, issues_found: 180, transaction_date: &#34;15.09.2021&#34;}</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="o">&gt;</span> <span class="no">Audit</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="s2">&#34;BullSheepInc&#34;</span><span class="p">,</span> <span class="s2">&#34;01.01.2021&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl"><span class="c1"># nil - we didn&#39;t inspect the company as of 01.01.2021</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl"><span class="o">&gt;</span> <span class="no">Audit</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="s2">&#34;BullSheepInc&#34;</span><span class="p">,</span> <span class="s2">&#34;15.02.2022&#34;</span><span class="p">,</span> <span class="s2">&#34;01.04.2022&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl"><span class="c1"># {auditor: &#34;Max&#34;, issues_found: 101, transaction_date: &#34;01.04.2022&#34;}</span></span></span></code></pre></div><p>As you can see, now we have the latest correct value returned by default,
+but we can also fetch the record the record as it was on a given valid date in the past.</p>
+<h3 id="use-cases">Use-cases</h3>
+<p>Bitemporality can be proven useful for any system where you have a track of the data and where it&rsquo;s <em>possible</em> to have errors and recover them:</p>
+<ul>
+<li>payrolls, payment systems</li>
+<li>auditing</li>
+<li>risk systems</li>
+<li>blockchains</li>
+<li>insurance</li>
+<li>compliance &amp; privacy</li>
+<li>temporal data management</li>
+<li>event-based systems</li>
+<li>distributed transactions</li>
+</ul>
+<h2 id="cross-time-database">Cross-time Database</h2>
+<p>Supporting bitemporality in an existing database might be not a trivial task, especially when it comes to the traditional relational database where we all relations between tables should also take into account bitemporal columns.</p>
+<p>At the moment, the most prominent open-source solution is <a href="https://xtdb.com">XTDB (or cross-time) database</a> developed by <a href="https://juxt.pro">JUXT</a> which has a lot of benefits compared to its competitors:</p>
+<ul>
+<li>Bitemporal at its core</li>
+<li>Supports retroactive corrections</li>
+<li>Document&amp;graph based (ultimately a store of versioned documents)</li>
+<li><a href="https://en.wikipedia.org/wiki/Datalog">Datalog queries</a> and SQL support</li>
+<li>Data eviction (supports eviction of active and historical data to assist with technical compliance for information privacy regulations)</li>
+<li>Distributed and scalable</li>
+<li>Unbundled database (can be deployed on top of many existing technologies and databases like Kafka, JDBC, AWS S3)</li>
+<li>Can be easily integrated into any existing JVM application or connected using its REST API</li>
+</ul>
+<p>As we will explore more in the next articles, XTDB can be used as a ready solution for building immutable and bitemporal software.</p>
+<h2 id="what-s-next">What&rsquo;s next?</h2>
+<p>As one can see, bitemporality can be a perfect match for cases where we build systems that are:</p>
+<ol>
+<li>Tracking the history of changes or how data was changing over time</li>
+<li>Can potentially have errors, corrections or data adjustments</li>
+</ol>
+<p>If we take that concept as the cornerstone of such systems there will be way more chances they will be successful and
+we will escape from mutability issues.</p>
+<p>We can also recommend some more reading on the topic:</p>
+<ul>
+<li><a href="https://martinfowler.com/articles/bitemporal-history.html">Martin Fowler on Bitemporality</a></li>
+<li><a href="https://xtdb.com/">XTDB — the open database with temporal graph query</a></li>
+<li><a href="https://docs.xtdb.com/concepts/bitemporality/">Bitemporality concept in XTDB docs</a></li>
+</ul>
+<p>In the upcoming article we will share our experience working with XTDB, connecting to it from an Elixir application and what we learned from it.</p>
+<p>Happy Hacking and stay tuned!</p>
+<p>Thanks <a href="https://dev.to/carpmeister">Carsten</a> for the review!</p>
+]]></content:encoded>
+    </item>
+    <item>
+      <title>Bitemporality, or how to change the past</title>
+      <link>https://neiro.io/posts/2022-12-13-bitemporality-or-how-to-change-the-past/</link>
+      <pubDate>Wed, 21 Dec 2022 13:20:00 +0100</pubDate>
+      <guid>https://neiro.io/posts/2022-12-13-bitemporality-or-how-to-change-the-past/</guid>
+      <description>&lt;p&gt;&lt;em&gt;The article was originally posted on &lt;a href=&#34;https://dev.to/marleyspoon/bitemporality-or-how-to-change-the-past-3k4f&#34;&gt;MarleySpoon Dev Blog&lt;/a&gt;&lt;/em&gt;&lt;/p&gt;&#xA;&lt;p&gt;We can definitely see the whole history of humanity as a chain of &lt;em&gt;events&lt;/em&gt;:&#xA;tiny events, big events, huge events, crucial events – some of them were negligible and some, on the contrary, predefined the next link in the chain and changed the way our world looks now.&lt;/p&gt;&#xA;&lt;p&gt;However, the more details we dig out about our history, the more white spots we erase, the more surprising and even contradictious things we see – things that sometimes can completely refute our views and assumptions. Things that we thought and believed to be &lt;strong&gt;facts&lt;/strong&gt; can be invalidated – and we will need to &lt;strong&gt;alter the past&lt;/strong&gt;.&lt;/p&gt;</description>
+      <content:encoded><![CDATA[<p><em>The article was originally posted on <a href="https://dev.to/marleyspoon/bitemporality-or-how-to-change-the-past-3k4f">MarleySpoon Dev Blog</a></em></p>
+<p>We can definitely see the whole history of humanity as a chain of <em>events</em>:
+tiny events, big events, huge events, crucial events – some of them were negligible and some, on the contrary, predefined the next link in the chain and changed the way our world looks now.</p>
+<p>However, the more details we dig out about our history, the more white spots we erase, the more surprising and even contradictious things we see – things that sometimes can completely refute our views and assumptions. Things that we thought and believed to be <strong>facts</strong> can be invalidated – and we will need to <strong>alter the past</strong>.</p>
+<p>Every kind of record system is not perfect and can contain errors. But what if we wanted to build a system that is resilient to such errors? What if we wanted to change the past but keep the history as a track of facts?</p>
+<h2 id="updates-in-place">Updates in place</h2>
+<p>Throughout almost all the existence of computers and computer science, resources were the biggest limitation and one of the most complex issues.</p>
+<p>Our progress allowed us to switch from bytes to kilobytes, from kilobytes to mega and gigabytes. Modern PCs, smartphones, and cloud systems can easily handle virtually unlimited amounts of data.</p>
+<p><strong>The storage</strong>, which was physically enormous at the beginning of the computer era and started with devices taking over the halls and rooms, moved to CDs, floppy disks and hard drives – so we could even carry movies, tons of photos and music in our pockets. The storage, which always seemed to be the problem, became the smallest of our headaches when it came to building software.</p>
+<p>Nonetheless, the habit <em>(the bad one)</em> we inherited from the dawn of the computer era is still there and arguably is one of the biggest developer&rsquo;s headaches – <strong>mutability</strong>. Before the progress in the storage capacity, we were very careful with how we consumed the RAM and disk space, and that forced us to mutate variables and data instead of persisting them in the immutable way, i.e. saving a new record instead of updating an existing one.</p>
+<p>That habit is still haunting us, even though functional programming languages and <a href="https://en.wikipedia.org/wiki/Immutable_object">the immutability approach</a> are on the rise, we still <em>(mostly)</em> update our records in place – as that is the way most popular databases are built.</p>
+<h3 id="an-audit-system">An audit system</h3>
+<p>How can we design a record tracking system using a common mutable DB? Let&rsquo;s say we use PostgreSQL and define a simple <code>audits</code> table:</p>
+<table>
+  <thead>
+      <tr>
+          <th>Company</th>
+          <th>Issues found</th>
+          <th>Auditor</th>
+          <th>Date</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>BullSheepInc</td>
+          <td>180</td>
+          <td>Joe</td>
+          <td>15.09.2021</td>
+      </tr>
+      <tr>
+          <td>OverHypeD</td>
+          <td>420</td>
+          <td>Max</td>
+          <td>14.02.2022</td>
+      </tr>
+      <tr>
+          <td>BullSheepInc</td>
+          <td>0</td>
+          <td>Max</td>
+          <td>15.02.2022</td>
+      </tr>
+  </tbody>
+</table>
+<p>However, one and a half months ago we&rsquo;ve discovered that Max forgot to write down the records for BullSheepInc — and as the column has default of <code>0</code>, we were unaware of the change for quite some time. Now, if we want to fix it, we have to <strong>overwrite</strong> the existing record:</p>
+<table>
+  <thead>
+      <tr>
+          <th>Company</th>
+          <th>Issues found</th>
+          <th>Auditor</th>
+          <th>Date</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>BullSheepInc</td>
+          <td>180</td>
+          <td>Joe</td>
+          <td>15.09.2021</td>
+      </tr>
+      <tr>
+          <td>OverHypeD</td>
+          <td>420</td>
+          <td>Max</td>
+          <td>14.02.2022</td>
+      </tr>
+      <tr>
+          <td>BullSheepInc</td>
+          <td><strong>101</strong></td>
+          <td>Max</td>
+          <td>01.04.2022</td>
+      </tr>
+  </tbody>
+</table>
+<p>The drawbacks of such an approach are clearly visible: we&rsquo;ve lost track of the changes and forgot about the mistake. As our reports were already sent, there won&rsquo;t be any punishment for BullSheepInc.</p>
+<h2 id="temporality">Temporality</h2>
+<p>The next step from mutability to our goal of designing a perfect track record system will be to <strong>persist changes as facts</strong>, instead of updating data in place.
+In order to build a truly immutable system we want to disallow overriding records in our audit system. Instead, we will be storing any kind of data change as a
+separate row in the database:</p>
+<table>
+  <thead>
+      <tr>
+          <th>Company</th>
+          <th>Issues found</th>
+          <th>Auditor</th>
+          <th>Date</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>BullSheepInc</td>
+          <td>180</td>
+          <td>Joe</td>
+          <td>15.09.2021</td>
+      </tr>
+      <tr>
+          <td>OverHypeD</td>
+          <td>420</td>
+          <td>Max</td>
+          <td>14.02.2022</td>
+      </tr>
+      <tr>
+          <td>BullSheepInc</td>
+          <td><strong>0</strong></td>
+          <td>Max</td>
+          <td>15.02.2022</td>
+      </tr>
+      <tr>
+          <td>BullSheepInc</td>
+          <td><strong>101</strong></td>
+          <td>Max</td>
+          <td>01.04.2022</td>
+      </tr>
+  </tbody>
+</table>
+<p>It looks like this option worked out better for us; now we see that the inventory record change was tracked and we&rsquo;ve actually discovered some issues.
+We could stop there and pretend we&rsquo;ve built the most advanced audit system, but that would be too far away from being the truth, as soon we&rsquo;ve got yet another request &hellip;</p>
+<h2 id="retroactive-changes">Retroactive changes</h2>
+<p>Once our employees started seeing not just audit records but also data fixes, John has recalled that it was actually him who did the counting, and the amount of found issues was actually <em>99</em> instead of <em>101</em>.
+We&rsquo;ve got a serious problem now as the new record doesn&rsquo;t fit into our data model:</p>
+<table>
+  <thead>
+      <tr>
+          <th>Company</th>
+          <th>Issues found</th>
+          <th>Auditor</th>
+          <th>Date</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>BullSheepInc</td>
+          <td>180</td>
+          <td>Joe</td>
+          <td>15.09.2021</td>
+      </tr>
+      <tr>
+          <td>OverHypeD</td>
+          <td>420</td>
+          <td>Max</td>
+          <td>14.02.2022</td>
+      </tr>
+      <tr>
+          <td>BullSheepInc</td>
+          <td>0</td>
+          <td>Max</td>
+          <td>15.02.2022</td>
+      </tr>
+      <tr>
+          <td>BullSheepInc</td>
+          <td><strong>101</strong></td>
+          <td><strong>Max</strong></td>
+          <td>01.04.2022</td>
+      </tr>
+      <tr>
+          <td>BullSheepInc</td>
+          <td><strong>99</strong></td>
+          <td><strong>John</strong></td>
+          <td>01.05.2022</td>
+      </tr>
+  </tbody>
+</table>
+<p>Which record is really <em>valid</em> now? Should we trust Max or John? How should we define what was the error and <strong>how it was corrected</strong> ?
+That&rsquo;s where the concept of <strong>bitemporality</strong> comes to the rescue.</p>
+<h2 id="bitemporality">Bitemporality</h2>
+<p>In the example above, we have only one time column: the record, or <em>transaction date</em>.
+Bitemporality assumes adding another time dimension — the so-called <strong>valid time</strong> or effective time — along the <strong>transaction time</strong> for tracking <strong>when the change really happened</strong>.</p>
+<p><strong>Transaction time</strong> represents the time when the record was inserted into the data storage. This can be quite useful for audit purposes, tracking changes and event sourcing.
+<strong>Valid time</strong> represents when the change became <em>valid</em> and happened in the real world.</p>
+<p>If we follow these definitions we can say that <em>transaction</em> time is the time we <em>thought</em> the data was correct at that point in time — and it was <em>actually</em> correct on the <strong>valid</strong> time:</p>
+<blockquote>
+<p>On the 15th of February, we’ve thought Max has not found any issues.
+On the 1st of April, Max corrected the number of issues to be 101.
+On May 1st, we’ve discovered that John actually found 99 issues.
+In reality, we want the actual amount of issues recorded to be 99 as of 15th of February.</p>
+</blockquote>
+<p>In a bitemporal system transaction time is immutable and can be only increased while valid time can be any past or future timestamp.
+Let&rsquo;s see how we can redesign the audit system using these two time dimensions:</p>
+<h3 id="the-perfect-audit-system">The perfect audit system™</h3>
+<p>Now that we know how to utilise transaction and valid dates, we can change our records by writing the record time as <em>transaction date</em> and
+time when it became valid as <em>valid time</em>:</p>
+<table>
+  <thead>
+      <tr>
+          <th>Company</th>
+          <th>Issues found</th>
+          <th>Auditor</th>
+          <th>Transaction date</th>
+          <th>Valid date</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>BullSheepInc</td>
+          <td>180</td>
+          <td>Joe</td>
+          <td>15.09.2021</td>
+          <td>15.09.2021</td>
+      </tr>
+      <tr>
+          <td>OverHypeD</td>
+          <td>420</td>
+          <td>Max</td>
+          <td>14.02.2022</td>
+          <td>14.02.2022</td>
+      </tr>
+      <tr>
+          <td>BullSheepInc</td>
+          <td>0</td>
+          <td>Max</td>
+          <td>15.02.2022</td>
+          <td>15.02.2022</td>
+      </tr>
+      <tr>
+          <td>BullSheepInc</td>
+          <td>101</td>
+          <td>Max</td>
+          <td>01.04.2022</td>
+          <td>15.02.2022</td>
+      </tr>
+      <tr>
+          <td>BullSheepInc</td>
+          <td>99</td>
+          <td>John</td>
+          <td>01.05.2022</td>
+          <td>15.02.2022</td>
+      </tr>
+  </tbody>
+</table>
+<p>Let&rsquo;s execute some queries to our database:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="k">module</span> <span class="nn">Audit</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  <span class="c1"># @returns [Hash] a hash with auditor, issues found and transaction date fields</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">  <span class="k">def</span> <span class="nf">get_record</span><span class="p">(</span><span class="n">company</span><span class="p">,</span> <span class="n">valid_date</span> <span class="o">=</span> <span class="kp">nil</span><span class="p">,</span> <span class="n">transaction_date</span> <span class="o">=</span> <span class="kp">nil</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">    <span class="c1"># calling the DB ...</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="k">end</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="o">&gt;</span> <span class="no">Audit</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="s2">&#34;BullSheepInc&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="c1"># {auditor: &#34;John&#34;, issues_found: 99, transaction_date: &#34;01.05.2022&#34;}</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="o">&gt;</span> <span class="no">Audit</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="s2">&#34;BullSheepInc&#34;</span><span class="p">,</span> <span class="s2">&#34;15.09.2021&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="c1"># {auditor: &#34;Joe&#34;, issues_found: 180, transaction_date: &#34;15.09.2021&#34;}</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="o">&gt;</span> <span class="no">Audit</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="s2">&#34;BullSheepInc&#34;</span><span class="p">,</span> <span class="s2">&#34;01.01.2021&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl"><span class="c1"># nil - we didn&#39;t inspect the company as of 01.01.2021</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl"><span class="o">&gt;</span> <span class="no">Audit</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="s2">&#34;BullSheepInc&#34;</span><span class="p">,</span> <span class="s2">&#34;15.02.2022&#34;</span><span class="p">,</span> <span class="s2">&#34;01.04.2022&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl"><span class="c1"># {auditor: &#34;Max&#34;, issues_found: 101, transaction_date: &#34;01.04.2022&#34;}</span></span></span></code></pre></div><p>As you can see, now we have the latest correct value returned by default,
+but we can also fetch the record the record as it was on a given valid date in the past.</p>
+<h3 id="use-cases">Use-cases</h3>
+<p>Bitemporality can be proven useful for any system where you have a track of the data and where it&rsquo;s <em>possible</em> to have errors and recover them:</p>
+<ul>
+<li>payrolls, payment systems</li>
+<li>auditing</li>
+<li>risk systems</li>
+<li>blockchains</li>
+<li>insurance</li>
+<li>compliance &amp; privacy</li>
+<li>temporal data management</li>
+<li>event-based systems</li>
+<li>distributed transactions</li>
+</ul>
+<h2 id="cross-time-database">Cross-time Database</h2>
+<p>Supporting bitemporality in an existing database might be not a trivial task, especially when it comes to the traditional relational database where we all relations between tables should also take into account bitemporal columns.</p>
+<p>At the moment, the most prominent open-source solution is <a href="https://xtdb.com">XTDB (or cross-time) database</a> developed by <a href="https://juxt.pro">JUXT</a> which has a lot of benefits compared to its competitors:</p>
+<ul>
+<li>Bitemporal at its core</li>
+<li>Supports retroactive corrections</li>
+<li>Document&amp;graph based (ultimately a store of versioned documents)</li>
+<li><a href="https://en.wikipedia.org/wiki/Datalog">Datalog queries</a> and SQL support</li>
+<li>Data eviction (supports eviction of active and historical data to assist with technical compliance for information privacy regulations)</li>
+<li>Distributed and scalable</li>
+<li>Unbundled database (can be deployed on top of many existing technologies and databases like Kafka, JDBC, AWS S3)</li>
+<li>Can be easily integrated into any existing JVM application or connected using its REST API</li>
+</ul>
+<p>As we will explore more in the next articles, XTDB can be used as a ready solution for building immutable and bitemporal software.</p>
+<h2 id="what-s-next">What&rsquo;s next?</h2>
+<p>As one can see, bitemporality can be a perfect match for cases where we build systems that are:</p>
+<ol>
+<li>Tracking the history of changes or how data was changing over time</li>
+<li>Can potentially have errors, corrections or data adjustments</li>
+</ol>
+<p>If we take that concept as the cornerstone of such systems there will be way more chances they will be successful and
+we will escape from mutability issues.</p>
+<p>We can also recommend some more reading on the topic:</p>
+<ul>
+<li><a href="https://martinfowler.com/articles/bitemporal-history.html">Martin Fowler on Bitemporality</a></li>
+<li><a href="https://xtdb.com/">XTDB — the open database with temporal graph query</a></li>
+<li><a href="https://docs.xtdb.com/concepts/bitemporality/">Bitemporality concept in XTDB docs</a></li>
+</ul>
+<p>In the upcoming article we will share our experience working with XTDB, connecting to it from an Elixir application and what we learned from it.</p>
+<p>Happy Hacking and stay tuned!</p>
+<p>Thanks <a href="https://dev.to/carpmeister">Carsten</a> for the review!</p>
+]]></content:encoded>
+    </item>
+  </channel>
+</rss>

@@ -1,0 +1,1193 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Architecture on neiro blog</title>
+    <link>https://neiro.io/tags/architecture/</link>
+    <description>Recent content in Architecture on neiro blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-GB</language>
+    <copyright>neiro © 2012-2025</copyright>
+    <lastBuildDate>Wed, 21 Dec 2022 13:20:00 +0100</lastBuildDate>
+    <atom:link href="https://neiro.io/tags/architecture/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Bitemporality, or how to change the past</title>
+      <link>https://neiro.io/blog/2022-12-13-bitemporality-or-how-to-change-the-past/</link>
+      <pubDate>Wed, 21 Dec 2022 13:20:00 +0100</pubDate>
+      <guid>https://neiro.io/blog/2022-12-13-bitemporality-or-how-to-change-the-past/</guid>
+      <description>&lt;p&gt;&lt;em&gt;The article was originally posted on &lt;a href=&#34;https://dev.to/marleyspoon/bitemporality-or-how-to-change-the-past-3k4f&#34;&gt;MarleySpoon Dev Blog&lt;/a&gt;&lt;/em&gt;&lt;/p&gt;&#xA;&lt;p&gt;We can definitely see the whole history of humanity as a chain of &lt;em&gt;events&lt;/em&gt;:&#xA;tiny events, big events, huge events, crucial events – some of them were negligible and some, on the contrary, predefined the next link in the chain and changed the way our world looks now.&lt;/p&gt;&#xA;&lt;p&gt;However, the more details we dig out about our history, the more white spots we erase, the more surprising and even contradictious things we see – things that sometimes can completely refute our views and assumptions. Things that we thought and believed to be &lt;strong&gt;facts&lt;/strong&gt; can be invalidated – and we will need to &lt;strong&gt;alter the past&lt;/strong&gt;.&lt;/p&gt;</description>
+      <content:encoded><![CDATA[<p><em>The article was originally posted on <a href="https://dev.to/marleyspoon/bitemporality-or-how-to-change-the-past-3k4f">MarleySpoon Dev Blog</a></em></p>
+<p>We can definitely see the whole history of humanity as a chain of <em>events</em>:
+tiny events, big events, huge events, crucial events – some of them were negligible and some, on the contrary, predefined the next link in the chain and changed the way our world looks now.</p>
+<p>However, the more details we dig out about our history, the more white spots we erase, the more surprising and even contradictious things we see – things that sometimes can completely refute our views and assumptions. Things that we thought and believed to be <strong>facts</strong> can be invalidated – and we will need to <strong>alter the past</strong>.</p>
+<p>Every kind of record system is not perfect and can contain errors. But what if we wanted to build a system that is resilient to such errors? What if we wanted to change the past but keep the history as a track of facts?</p>
+<h2 id="updates-in-place">Updates in place</h2>
+<p>Throughout almost all the existence of computers and computer science, resources were the biggest limitation and one of the most complex issues.</p>
+<p>Our progress allowed us to switch from bytes to kilobytes, from kilobytes to mega and gigabytes. Modern PCs, smartphones, and cloud systems can easily handle virtually unlimited amounts of data.</p>
+<p><strong>The storage</strong>, which was physically enormous at the beginning of the computer era and started with devices taking over the halls and rooms, moved to CDs, floppy disks and hard drives – so we could even carry movies, tons of photos and music in our pockets. The storage, which always seemed to be the problem, became the smallest of our headaches when it came to building software.</p>
+<p>Nonetheless, the habit <em>(the bad one)</em> we inherited from the dawn of the computer era is still there and arguably is one of the biggest developer&rsquo;s headaches – <strong>mutability</strong>. Before the progress in the storage capacity, we were very careful with how we consumed the RAM and disk space, and that forced us to mutate variables and data instead of persisting them in the immutable way, i.e. saving a new record instead of updating an existing one.</p>
+<p>That habit is still haunting us, even though functional programming languages and <a href="https://en.wikipedia.org/wiki/Immutable_object">the immutability approach</a> are on the rise, we still <em>(mostly)</em> update our records in place – as that is the way most popular databases are built.</p>
+<h3 id="an-audit-system">An audit system</h3>
+<p>How can we design a record tracking system using a common mutable DB? Let&rsquo;s say we use PostgreSQL and define a simple <code>audits</code> table:</p>
+<table>
+  <thead>
+      <tr>
+          <th>Company</th>
+          <th>Issues found</th>
+          <th>Auditor</th>
+          <th>Date</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>BullSheepInc</td>
+          <td>180</td>
+          <td>Joe</td>
+          <td>15.09.2021</td>
+      </tr>
+      <tr>
+          <td>OverHypeD</td>
+          <td>420</td>
+          <td>Max</td>
+          <td>14.02.2022</td>
+      </tr>
+      <tr>
+          <td>BullSheepInc</td>
+          <td>0</td>
+          <td>Max</td>
+          <td>15.02.2022</td>
+      </tr>
+  </tbody>
+</table>
+<p>However, one and a half months ago we&rsquo;ve discovered that Max forgot to write down the records for BullSheepInc — and as the column has default of <code>0</code>, we were unaware of the change for quite some time. Now, if we want to fix it, we have to <strong>overwrite</strong> the existing record:</p>
+<table>
+  <thead>
+      <tr>
+          <th>Company</th>
+          <th>Issues found</th>
+          <th>Auditor</th>
+          <th>Date</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>BullSheepInc</td>
+          <td>180</td>
+          <td>Joe</td>
+          <td>15.09.2021</td>
+      </tr>
+      <tr>
+          <td>OverHypeD</td>
+          <td>420</td>
+          <td>Max</td>
+          <td>14.02.2022</td>
+      </tr>
+      <tr>
+          <td>BullSheepInc</td>
+          <td><strong>101</strong></td>
+          <td>Max</td>
+          <td>01.04.2022</td>
+      </tr>
+  </tbody>
+</table>
+<p>The drawbacks of such an approach are clearly visible: we&rsquo;ve lost track of the changes and forgot about the mistake. As our reports were already sent, there won&rsquo;t be any punishment for BullSheepInc.</p>
+<h2 id="temporality">Temporality</h2>
+<p>The next step from mutability to our goal of designing a perfect track record system will be to <strong>persist changes as facts</strong>, instead of updating data in place.
+In order to build a truly immutable system we want to disallow overriding records in our audit system. Instead, we will be storing any kind of data change as a
+separate row in the database:</p>
+<table>
+  <thead>
+      <tr>
+          <th>Company</th>
+          <th>Issues found</th>
+          <th>Auditor</th>
+          <th>Date</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>BullSheepInc</td>
+          <td>180</td>
+          <td>Joe</td>
+          <td>15.09.2021</td>
+      </tr>
+      <tr>
+          <td>OverHypeD</td>
+          <td>420</td>
+          <td>Max</td>
+          <td>14.02.2022</td>
+      </tr>
+      <tr>
+          <td>BullSheepInc</td>
+          <td><strong>0</strong></td>
+          <td>Max</td>
+          <td>15.02.2022</td>
+      </tr>
+      <tr>
+          <td>BullSheepInc</td>
+          <td><strong>101</strong></td>
+          <td>Max</td>
+          <td>01.04.2022</td>
+      </tr>
+  </tbody>
+</table>
+<p>It looks like this option worked out better for us; now we see that the inventory record change was tracked and we&rsquo;ve actually discovered some issues.
+We could stop there and pretend we&rsquo;ve built the most advanced audit system, but that would be too far away from being the truth, as soon we&rsquo;ve got yet another request &hellip;</p>
+<h2 id="retroactive-changes">Retroactive changes</h2>
+<p>Once our employees started seeing not just audit records but also data fixes, John has recalled that it was actually him who did the counting, and the amount of found issues was actually <em>99</em> instead of <em>101</em>.
+We&rsquo;ve got a serious problem now as the new record doesn&rsquo;t fit into our data model:</p>
+<table>
+  <thead>
+      <tr>
+          <th>Company</th>
+          <th>Issues found</th>
+          <th>Auditor</th>
+          <th>Date</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>BullSheepInc</td>
+          <td>180</td>
+          <td>Joe</td>
+          <td>15.09.2021</td>
+      </tr>
+      <tr>
+          <td>OverHypeD</td>
+          <td>420</td>
+          <td>Max</td>
+          <td>14.02.2022</td>
+      </tr>
+      <tr>
+          <td>BullSheepInc</td>
+          <td>0</td>
+          <td>Max</td>
+          <td>15.02.2022</td>
+      </tr>
+      <tr>
+          <td>BullSheepInc</td>
+          <td><strong>101</strong></td>
+          <td><strong>Max</strong></td>
+          <td>01.04.2022</td>
+      </tr>
+      <tr>
+          <td>BullSheepInc</td>
+          <td><strong>99</strong></td>
+          <td><strong>John</strong></td>
+          <td>01.05.2022</td>
+      </tr>
+  </tbody>
+</table>
+<p>Which record is really <em>valid</em> now? Should we trust Max or John? How should we define what was the error and <strong>how it was corrected</strong> ?
+That&rsquo;s where the concept of <strong>bitemporality</strong> comes to the rescue.</p>
+<h2 id="bitemporality">Bitemporality</h2>
+<p>In the example above, we have only one time column: the record, or <em>transaction date</em>.
+Bitemporality assumes adding another time dimension — the so-called <strong>valid time</strong> or effective time — along the <strong>transaction time</strong> for tracking <strong>when the change really happened</strong>.</p>
+<p><strong>Transaction time</strong> represents the time when the record was inserted into the data storage. This can be quite useful for audit purposes, tracking changes and event sourcing.
+<strong>Valid time</strong> represents when the change became <em>valid</em> and happened in the real world.</p>
+<p>If we follow these definitions we can say that <em>transaction</em> time is the time we <em>thought</em> the data was correct at that point in time — and it was <em>actually</em> correct on the <strong>valid</strong> time:</p>
+<blockquote>
+<p>On the 15th of February, we’ve thought Max has not found any issues.
+On the 1st of April, Max corrected the number of issues to be 101.
+On May 1st, we’ve discovered that John actually found 99 issues.
+In reality, we want the actual amount of issues recorded to be 99 as of 15th of February.</p>
+</blockquote>
+<p>In a bitemporal system transaction time is immutable and can be only increased while valid time can be any past or future timestamp.
+Let&rsquo;s see how we can redesign the audit system using these two time dimensions:</p>
+<h3 id="the-perfect-audit-system">The perfect audit system™</h3>
+<p>Now that we know how to utilise transaction and valid dates, we can change our records by writing the record time as <em>transaction date</em> and
+time when it became valid as <em>valid time</em>:</p>
+<table>
+  <thead>
+      <tr>
+          <th>Company</th>
+          <th>Issues found</th>
+          <th>Auditor</th>
+          <th>Transaction date</th>
+          <th>Valid date</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>BullSheepInc</td>
+          <td>180</td>
+          <td>Joe</td>
+          <td>15.09.2021</td>
+          <td>15.09.2021</td>
+      </tr>
+      <tr>
+          <td>OverHypeD</td>
+          <td>420</td>
+          <td>Max</td>
+          <td>14.02.2022</td>
+          <td>14.02.2022</td>
+      </tr>
+      <tr>
+          <td>BullSheepInc</td>
+          <td>0</td>
+          <td>Max</td>
+          <td>15.02.2022</td>
+          <td>15.02.2022</td>
+      </tr>
+      <tr>
+          <td>BullSheepInc</td>
+          <td>101</td>
+          <td>Max</td>
+          <td>01.04.2022</td>
+          <td>15.02.2022</td>
+      </tr>
+      <tr>
+          <td>BullSheepInc</td>
+          <td>99</td>
+          <td>John</td>
+          <td>01.05.2022</td>
+          <td>15.02.2022</td>
+      </tr>
+  </tbody>
+</table>
+<p>Let&rsquo;s execute some queries to our database:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="k">module</span> <span class="nn">Audit</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  <span class="c1"># @returns [Hash] a hash with auditor, issues found and transaction date fields</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">  <span class="k">def</span> <span class="nf">get_record</span><span class="p">(</span><span class="n">company</span><span class="p">,</span> <span class="n">valid_date</span> <span class="o">=</span> <span class="kp">nil</span><span class="p">,</span> <span class="n">transaction_date</span> <span class="o">=</span> <span class="kp">nil</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">    <span class="c1"># calling the DB ...</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="k">end</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="o">&gt;</span> <span class="no">Audit</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="s2">&#34;BullSheepInc&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="c1"># {auditor: &#34;John&#34;, issues_found: 99, transaction_date: &#34;01.05.2022&#34;}</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="o">&gt;</span> <span class="no">Audit</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="s2">&#34;BullSheepInc&#34;</span><span class="p">,</span> <span class="s2">&#34;15.09.2021&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="c1"># {auditor: &#34;Joe&#34;, issues_found: 180, transaction_date: &#34;15.09.2021&#34;}</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="o">&gt;</span> <span class="no">Audit</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="s2">&#34;BullSheepInc&#34;</span><span class="p">,</span> <span class="s2">&#34;01.01.2021&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl"><span class="c1"># nil - we didn&#39;t inspect the company as of 01.01.2021</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl"><span class="o">&gt;</span> <span class="no">Audit</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="s2">&#34;BullSheepInc&#34;</span><span class="p">,</span> <span class="s2">&#34;15.02.2022&#34;</span><span class="p">,</span> <span class="s2">&#34;01.04.2022&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl"><span class="c1"># {auditor: &#34;Max&#34;, issues_found: 101, transaction_date: &#34;01.04.2022&#34;}</span></span></span></code></pre></div><p>As you can see, now we have the latest correct value returned by default,
+but we can also fetch the record the record as it was on a given valid date in the past.</p>
+<h3 id="use-cases">Use-cases</h3>
+<p>Bitemporality can be proven useful for any system where you have a track of the data and where it&rsquo;s <em>possible</em> to have errors and recover them:</p>
+<ul>
+<li>payrolls, payment systems</li>
+<li>auditing</li>
+<li>risk systems</li>
+<li>blockchains</li>
+<li>insurance</li>
+<li>compliance &amp; privacy</li>
+<li>temporal data management</li>
+<li>event-based systems</li>
+<li>distributed transactions</li>
+</ul>
+<h2 id="cross-time-database">Cross-time Database</h2>
+<p>Supporting bitemporality in an existing database might be not a trivial task, especially when it comes to the traditional relational database where we all relations between tables should also take into account bitemporal columns.</p>
+<p>At the moment, the most prominent open-source solution is <a href="https://xtdb.com">XTDB (or cross-time) database</a> developed by <a href="https://juxt.pro">JUXT</a> which has a lot of benefits compared to its competitors:</p>
+<ul>
+<li>Bitemporal at its core</li>
+<li>Supports retroactive corrections</li>
+<li>Document&amp;graph based (ultimately a store of versioned documents)</li>
+<li><a href="https://en.wikipedia.org/wiki/Datalog">Datalog queries</a> and SQL support</li>
+<li>Data eviction (supports eviction of active and historical data to assist with technical compliance for information privacy regulations)</li>
+<li>Distributed and scalable</li>
+<li>Unbundled database (can be deployed on top of many existing technologies and databases like Kafka, JDBC, AWS S3)</li>
+<li>Can be easily integrated into any existing JVM application or connected using its REST API</li>
+</ul>
+<p>As we will explore more in the next articles, XTDB can be used as a ready solution for building immutable and bitemporal software.</p>
+<h2 id="what-s-next">What&rsquo;s next?</h2>
+<p>As one can see, bitemporality can be a perfect match for cases where we build systems that are:</p>
+<ol>
+<li>Tracking the history of changes or how data was changing over time</li>
+<li>Can potentially have errors, corrections or data adjustments</li>
+</ol>
+<p>If we take that concept as the cornerstone of such systems there will be way more chances they will be successful and
+we will escape from mutability issues.</p>
+<p>We can also recommend some more reading on the topic:</p>
+<ul>
+<li><a href="https://martinfowler.com/articles/bitemporal-history.html">Martin Fowler on Bitemporality</a></li>
+<li><a href="https://xtdb.com/">XTDB — the open database with temporal graph query</a></li>
+<li><a href="https://docs.xtdb.com/concepts/bitemporality/">Bitemporality concept in XTDB docs</a></li>
+</ul>
+<p>In the upcoming article we will share our experience working with XTDB, connecting to it from an Elixir application and what we learned from it.</p>
+<p>Happy Hacking and stay tuned!</p>
+<p>Thanks <a href="https://dev.to/carpmeister">Carsten</a> for the review!</p>
+]]></content:encoded>
+    </item>
+    <item>
+      <title>Bitemporality, or how to change the past</title>
+      <link>https://neiro.io/posts/2022-12-13-bitemporality-or-how-to-change-the-past/</link>
+      <pubDate>Wed, 21 Dec 2022 13:20:00 +0100</pubDate>
+      <guid>https://neiro.io/posts/2022-12-13-bitemporality-or-how-to-change-the-past/</guid>
+      <description>&lt;p&gt;&lt;em&gt;The article was originally posted on &lt;a href=&#34;https://dev.to/marleyspoon/bitemporality-or-how-to-change-the-past-3k4f&#34;&gt;MarleySpoon Dev Blog&lt;/a&gt;&lt;/em&gt;&lt;/p&gt;&#xA;&lt;p&gt;We can definitely see the whole history of humanity as a chain of &lt;em&gt;events&lt;/em&gt;:&#xA;tiny events, big events, huge events, crucial events – some of them were negligible and some, on the contrary, predefined the next link in the chain and changed the way our world looks now.&lt;/p&gt;&#xA;&lt;p&gt;However, the more details we dig out about our history, the more white spots we erase, the more surprising and even contradictious things we see – things that sometimes can completely refute our views and assumptions. Things that we thought and believed to be &lt;strong&gt;facts&lt;/strong&gt; can be invalidated – and we will need to &lt;strong&gt;alter the past&lt;/strong&gt;.&lt;/p&gt;</description>
+      <content:encoded><![CDATA[<p><em>The article was originally posted on <a href="https://dev.to/marleyspoon/bitemporality-or-how-to-change-the-past-3k4f">MarleySpoon Dev Blog</a></em></p>
+<p>We can definitely see the whole history of humanity as a chain of <em>events</em>:
+tiny events, big events, huge events, crucial events – some of them were negligible and some, on the contrary, predefined the next link in the chain and changed the way our world looks now.</p>
+<p>However, the more details we dig out about our history, the more white spots we erase, the more surprising and even contradictious things we see – things that sometimes can completely refute our views and assumptions. Things that we thought and believed to be <strong>facts</strong> can be invalidated – and we will need to <strong>alter the past</strong>.</p>
+<p>Every kind of record system is not perfect and can contain errors. But what if we wanted to build a system that is resilient to such errors? What if we wanted to change the past but keep the history as a track of facts?</p>
+<h2 id="updates-in-place">Updates in place</h2>
+<p>Throughout almost all the existence of computers and computer science, resources were the biggest limitation and one of the most complex issues.</p>
+<p>Our progress allowed us to switch from bytes to kilobytes, from kilobytes to mega and gigabytes. Modern PCs, smartphones, and cloud systems can easily handle virtually unlimited amounts of data.</p>
+<p><strong>The storage</strong>, which was physically enormous at the beginning of the computer era and started with devices taking over the halls and rooms, moved to CDs, floppy disks and hard drives – so we could even carry movies, tons of photos and music in our pockets. The storage, which always seemed to be the problem, became the smallest of our headaches when it came to building software.</p>
+<p>Nonetheless, the habit <em>(the bad one)</em> we inherited from the dawn of the computer era is still there and arguably is one of the biggest developer&rsquo;s headaches – <strong>mutability</strong>. Before the progress in the storage capacity, we were very careful with how we consumed the RAM and disk space, and that forced us to mutate variables and data instead of persisting them in the immutable way, i.e. saving a new record instead of updating an existing one.</p>
+<p>That habit is still haunting us, even though functional programming languages and <a href="https://en.wikipedia.org/wiki/Immutable_object">the immutability approach</a> are on the rise, we still <em>(mostly)</em> update our records in place – as that is the way most popular databases are built.</p>
+<h3 id="an-audit-system">An audit system</h3>
+<p>How can we design a record tracking system using a common mutable DB? Let&rsquo;s say we use PostgreSQL and define a simple <code>audits</code> table:</p>
+<table>
+  <thead>
+      <tr>
+          <th>Company</th>
+          <th>Issues found</th>
+          <th>Auditor</th>
+          <th>Date</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>BullSheepInc</td>
+          <td>180</td>
+          <td>Joe</td>
+          <td>15.09.2021</td>
+      </tr>
+      <tr>
+          <td>OverHypeD</td>
+          <td>420</td>
+          <td>Max</td>
+          <td>14.02.2022</td>
+      </tr>
+      <tr>
+          <td>BullSheepInc</td>
+          <td>0</td>
+          <td>Max</td>
+          <td>15.02.2022</td>
+      </tr>
+  </tbody>
+</table>
+<p>However, one and a half months ago we&rsquo;ve discovered that Max forgot to write down the records for BullSheepInc — and as the column has default of <code>0</code>, we were unaware of the change for quite some time. Now, if we want to fix it, we have to <strong>overwrite</strong> the existing record:</p>
+<table>
+  <thead>
+      <tr>
+          <th>Company</th>
+          <th>Issues found</th>
+          <th>Auditor</th>
+          <th>Date</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>BullSheepInc</td>
+          <td>180</td>
+          <td>Joe</td>
+          <td>15.09.2021</td>
+      </tr>
+      <tr>
+          <td>OverHypeD</td>
+          <td>420</td>
+          <td>Max</td>
+          <td>14.02.2022</td>
+      </tr>
+      <tr>
+          <td>BullSheepInc</td>
+          <td><strong>101</strong></td>
+          <td>Max</td>
+          <td>01.04.2022</td>
+      </tr>
+  </tbody>
+</table>
+<p>The drawbacks of such an approach are clearly visible: we&rsquo;ve lost track of the changes and forgot about the mistake. As our reports were already sent, there won&rsquo;t be any punishment for BullSheepInc.</p>
+<h2 id="temporality">Temporality</h2>
+<p>The next step from mutability to our goal of designing a perfect track record system will be to <strong>persist changes as facts</strong>, instead of updating data in place.
+In order to build a truly immutable system we want to disallow overriding records in our audit system. Instead, we will be storing any kind of data change as a
+separate row in the database:</p>
+<table>
+  <thead>
+      <tr>
+          <th>Company</th>
+          <th>Issues found</th>
+          <th>Auditor</th>
+          <th>Date</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>BullSheepInc</td>
+          <td>180</td>
+          <td>Joe</td>
+          <td>15.09.2021</td>
+      </tr>
+      <tr>
+          <td>OverHypeD</td>
+          <td>420</td>
+          <td>Max</td>
+          <td>14.02.2022</td>
+      </tr>
+      <tr>
+          <td>BullSheepInc</td>
+          <td><strong>0</strong></td>
+          <td>Max</td>
+          <td>15.02.2022</td>
+      </tr>
+      <tr>
+          <td>BullSheepInc</td>
+          <td><strong>101</strong></td>
+          <td>Max</td>
+          <td>01.04.2022</td>
+      </tr>
+  </tbody>
+</table>
+<p>It looks like this option worked out better for us; now we see that the inventory record change was tracked and we&rsquo;ve actually discovered some issues.
+We could stop there and pretend we&rsquo;ve built the most advanced audit system, but that would be too far away from being the truth, as soon we&rsquo;ve got yet another request &hellip;</p>
+<h2 id="retroactive-changes">Retroactive changes</h2>
+<p>Once our employees started seeing not just audit records but also data fixes, John has recalled that it was actually him who did the counting, and the amount of found issues was actually <em>99</em> instead of <em>101</em>.
+We&rsquo;ve got a serious problem now as the new record doesn&rsquo;t fit into our data model:</p>
+<table>
+  <thead>
+      <tr>
+          <th>Company</th>
+          <th>Issues found</th>
+          <th>Auditor</th>
+          <th>Date</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>BullSheepInc</td>
+          <td>180</td>
+          <td>Joe</td>
+          <td>15.09.2021</td>
+      </tr>
+      <tr>
+          <td>OverHypeD</td>
+          <td>420</td>
+          <td>Max</td>
+          <td>14.02.2022</td>
+      </tr>
+      <tr>
+          <td>BullSheepInc</td>
+          <td>0</td>
+          <td>Max</td>
+          <td>15.02.2022</td>
+      </tr>
+      <tr>
+          <td>BullSheepInc</td>
+          <td><strong>101</strong></td>
+          <td><strong>Max</strong></td>
+          <td>01.04.2022</td>
+      </tr>
+      <tr>
+          <td>BullSheepInc</td>
+          <td><strong>99</strong></td>
+          <td><strong>John</strong></td>
+          <td>01.05.2022</td>
+      </tr>
+  </tbody>
+</table>
+<p>Which record is really <em>valid</em> now? Should we trust Max or John? How should we define what was the error and <strong>how it was corrected</strong> ?
+That&rsquo;s where the concept of <strong>bitemporality</strong> comes to the rescue.</p>
+<h2 id="bitemporality">Bitemporality</h2>
+<p>In the example above, we have only one time column: the record, or <em>transaction date</em>.
+Bitemporality assumes adding another time dimension — the so-called <strong>valid time</strong> or effective time — along the <strong>transaction time</strong> for tracking <strong>when the change really happened</strong>.</p>
+<p><strong>Transaction time</strong> represents the time when the record was inserted into the data storage. This can be quite useful for audit purposes, tracking changes and event sourcing.
+<strong>Valid time</strong> represents when the change became <em>valid</em> and happened in the real world.</p>
+<p>If we follow these definitions we can say that <em>transaction</em> time is the time we <em>thought</em> the data was correct at that point in time — and it was <em>actually</em> correct on the <strong>valid</strong> time:</p>
+<blockquote>
+<p>On the 15th of February, we’ve thought Max has not found any issues.
+On the 1st of April, Max corrected the number of issues to be 101.
+On May 1st, we’ve discovered that John actually found 99 issues.
+In reality, we want the actual amount of issues recorded to be 99 as of 15th of February.</p>
+</blockquote>
+<p>In a bitemporal system transaction time is immutable and can be only increased while valid time can be any past or future timestamp.
+Let&rsquo;s see how we can redesign the audit system using these two time dimensions:</p>
+<h3 id="the-perfect-audit-system">The perfect audit system™</h3>
+<p>Now that we know how to utilise transaction and valid dates, we can change our records by writing the record time as <em>transaction date</em> and
+time when it became valid as <em>valid time</em>:</p>
+<table>
+  <thead>
+      <tr>
+          <th>Company</th>
+          <th>Issues found</th>
+          <th>Auditor</th>
+          <th>Transaction date</th>
+          <th>Valid date</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>BullSheepInc</td>
+          <td>180</td>
+          <td>Joe</td>
+          <td>15.09.2021</td>
+          <td>15.09.2021</td>
+      </tr>
+      <tr>
+          <td>OverHypeD</td>
+          <td>420</td>
+          <td>Max</td>
+          <td>14.02.2022</td>
+          <td>14.02.2022</td>
+      </tr>
+      <tr>
+          <td>BullSheepInc</td>
+          <td>0</td>
+          <td>Max</td>
+          <td>15.02.2022</td>
+          <td>15.02.2022</td>
+      </tr>
+      <tr>
+          <td>BullSheepInc</td>
+          <td>101</td>
+          <td>Max</td>
+          <td>01.04.2022</td>
+          <td>15.02.2022</td>
+      </tr>
+      <tr>
+          <td>BullSheepInc</td>
+          <td>99</td>
+          <td>John</td>
+          <td>01.05.2022</td>
+          <td>15.02.2022</td>
+      </tr>
+  </tbody>
+</table>
+<p>Let&rsquo;s execute some queries to our database:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="k">module</span> <span class="nn">Audit</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  <span class="c1"># @returns [Hash] a hash with auditor, issues found and transaction date fields</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">  <span class="k">def</span> <span class="nf">get_record</span><span class="p">(</span><span class="n">company</span><span class="p">,</span> <span class="n">valid_date</span> <span class="o">=</span> <span class="kp">nil</span><span class="p">,</span> <span class="n">transaction_date</span> <span class="o">=</span> <span class="kp">nil</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">    <span class="c1"># calling the DB ...</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="k">end</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="o">&gt;</span> <span class="no">Audit</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="s2">&#34;BullSheepInc&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="c1"># {auditor: &#34;John&#34;, issues_found: 99, transaction_date: &#34;01.05.2022&#34;}</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="o">&gt;</span> <span class="no">Audit</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="s2">&#34;BullSheepInc&#34;</span><span class="p">,</span> <span class="s2">&#34;15.09.2021&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="c1"># {auditor: &#34;Joe&#34;, issues_found: 180, transaction_date: &#34;15.09.2021&#34;}</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="o">&gt;</span> <span class="no">Audit</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="s2">&#34;BullSheepInc&#34;</span><span class="p">,</span> <span class="s2">&#34;01.01.2021&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl"><span class="c1"># nil - we didn&#39;t inspect the company as of 01.01.2021</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl"><span class="o">&gt;</span> <span class="no">Audit</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="s2">&#34;BullSheepInc&#34;</span><span class="p">,</span> <span class="s2">&#34;15.02.2022&#34;</span><span class="p">,</span> <span class="s2">&#34;01.04.2022&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl"><span class="c1"># {auditor: &#34;Max&#34;, issues_found: 101, transaction_date: &#34;01.04.2022&#34;}</span></span></span></code></pre></div><p>As you can see, now we have the latest correct value returned by default,
+but we can also fetch the record the record as it was on a given valid date in the past.</p>
+<h3 id="use-cases">Use-cases</h3>
+<p>Bitemporality can be proven useful for any system where you have a track of the data and where it&rsquo;s <em>possible</em> to have errors and recover them:</p>
+<ul>
+<li>payrolls, payment systems</li>
+<li>auditing</li>
+<li>risk systems</li>
+<li>blockchains</li>
+<li>insurance</li>
+<li>compliance &amp; privacy</li>
+<li>temporal data management</li>
+<li>event-based systems</li>
+<li>distributed transactions</li>
+</ul>
+<h2 id="cross-time-database">Cross-time Database</h2>
+<p>Supporting bitemporality in an existing database might be not a trivial task, especially when it comes to the traditional relational database where we all relations between tables should also take into account bitemporal columns.</p>
+<p>At the moment, the most prominent open-source solution is <a href="https://xtdb.com">XTDB (or cross-time) database</a> developed by <a href="https://juxt.pro">JUXT</a> which has a lot of benefits compared to its competitors:</p>
+<ul>
+<li>Bitemporal at its core</li>
+<li>Supports retroactive corrections</li>
+<li>Document&amp;graph based (ultimately a store of versioned documents)</li>
+<li><a href="https://en.wikipedia.org/wiki/Datalog">Datalog queries</a> and SQL support</li>
+<li>Data eviction (supports eviction of active and historical data to assist with technical compliance for information privacy regulations)</li>
+<li>Distributed and scalable</li>
+<li>Unbundled database (can be deployed on top of many existing technologies and databases like Kafka, JDBC, AWS S3)</li>
+<li>Can be easily integrated into any existing JVM application or connected using its REST API</li>
+</ul>
+<p>As we will explore more in the next articles, XTDB can be used as a ready solution for building immutable and bitemporal software.</p>
+<h2 id="what-s-next">What&rsquo;s next?</h2>
+<p>As one can see, bitemporality can be a perfect match for cases where we build systems that are:</p>
+<ol>
+<li>Tracking the history of changes or how data was changing over time</li>
+<li>Can potentially have errors, corrections or data adjustments</li>
+</ol>
+<p>If we take that concept as the cornerstone of such systems there will be way more chances they will be successful and
+we will escape from mutability issues.</p>
+<p>We can also recommend some more reading on the topic:</p>
+<ul>
+<li><a href="https://martinfowler.com/articles/bitemporal-history.html">Martin Fowler on Bitemporality</a></li>
+<li><a href="https://xtdb.com/">XTDB — the open database with temporal graph query</a></li>
+<li><a href="https://docs.xtdb.com/concepts/bitemporality/">Bitemporality concept in XTDB docs</a></li>
+</ul>
+<p>In the upcoming article we will share our experience working with XTDB, connecting to it from an Elixir application and what we learned from it.</p>
+<p>Happy Hacking and stay tuned!</p>
+<p>Thanks <a href="https://dev.to/carpmeister">Carsten</a> for the review!</p>
+]]></content:encoded>
+    </item>
+    <item>
+      <title>Well-crafted functional architecture: ports and adapters</title>
+      <link>https://neiro.io/blog/2019-10-01-well-crafted-functional-architecture-ports-and-adapters.md/</link>
+      <pubDate>Tue, 01 Oct 2019 10:00:00 +0200</pubDate>
+      <guid>https://neiro.io/blog/2019-10-01-well-crafted-functional-architecture-ports-and-adapters.md/</guid>
+      <description>&lt;p&gt;At &lt;a href=&#34;https://salam.io&#34;&gt;Salam.io&lt;/a&gt; we are developing a modern social&#xA;platform containing a humongous amount of features.&lt;/p&gt;&#xA;&lt;p&gt;Development of such product is quite hard and challenging - we need our&#xA;software to be robust, scalable, fault-tolerant, performant and at the&#xA;same time we want it to be easy to extend, test, maintain and support.&lt;/p&gt;&#xA;&lt;p&gt;All these issues are inevitable upon growth of the app but they for sure&#xA;can be simplified or even avoided by choosing, optimising the software&#xA;architecture.&lt;/p&gt;</description>
+      <content:encoded><![CDATA[<p>At <a href="https://salam.io">Salam.io</a> we are developing a modern social
+platform containing a humongous amount of features.</p>
+<p>Development of such product is quite hard and challenging - we need our
+software to be robust, scalable, fault-tolerant, performant and at the
+same time we want it to be easy to extend, test, maintain and support.</p>
+<p>All these issues are inevitable upon growth of the app but they for sure
+can be simplified or even avoided by choosing, optimising the software
+architecture.</p>
+<p>We also use functional programming languages -
+<a href="https://clojure.org">Clojure</a> &amp; <a href="https://elixir-lang.org">Elixir</a> -
+for the backend and frontend as much as possible. Therefore, we need to
+adjust the existing architecture approaches to powerful abilities and
+intricacies of modern functional programming.</p>
+<p>That&rsquo;s why we&rsquo;re starting these series of articles - we think it&rsquo;s
+crucial for everyone who&rsquo;s crafting the functional systems to understand
+and apply software architectures rules and principles.</p>
+<h2 id="why-ports-adapters">Why ports &amp; adapters ?</h2>
+<p>Even if you&rsquo;re developing a relatively small scale software you still
+need to design it first - and to design it properly. The earlier you
+start caring about your architecture the earlier you can benefit from it
+and the later a lot of issues caused by bad architecture would appear.</p>
+<p>The main idea of ports &amp; adapters architecture is that application that
+you&rsquo;re building is a <em>closed area</em>. This means that all your business
+logic should be separated from technical details in this area. Often
+architecture is about the boundaries so are the ports &amp; adapters.</p>
+<p>In case you stick with ports &amp; adapters from the very beginning then
+this approach should help you to keep your business logic separated and
+easily tested s well as technology agnostic - you can write a port &amp; an
+adapter for any software/third-party service/library that you&rsquo;re using
+so it can be easily extended or switched in favour of another one.</p>
+<h2 id="hexagonal">Hexagonal</h2>
+<p>Ports &amp; adapters architecture also has another name: <em>Hexagonal
+architecture</em>. According to this terminology the inner part of your
+software - the place where you put your business logic - is hexagon
+while your adapters are placed surround it.</p>
+<figure><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Hexagonal_Architecture.svg/1000px-Hexagonal_Architecture.svg.png"
+    alt="Figure 1: Hexagon"><figcaption>
+      <p><span class="figure-number">Figure 1: </span>Hexagon</p>
+    </figcaption>
+</figure>
+
+<p>The hexagon should not contain any references to another frameworks,
+real world services, libraries, etc. - all these elements should be
+adapters. At the same time the architecture doesn&rsquo;t prescribe you to
+design your hexagon in some certain way - you can use Layer
+architecture, Onion, DDD or any another suitable architecture inside or
+it may be a pure business logic without any sophistications - it&rsquo;s up to
+you.</p>
+<p>Why hexagon? Well, any geometric figure with boundaries could work, but
+the hexagon represents better the concept that you have ports at the
+edges of your application and adapters behind it. Likewise, it&rsquo;s a
+symmetric figure and we&rsquo;ll describe below why it&rsquo;s important.</p>
+<h2 id="ports">Ports</h2>
+<p>Every time you need to interact with something from beyond of your
+application logic you need to group these actions and describe them in a
+<em>port</em>. The port is the edge of hexagon and it should be an integral and
+essential part of your application.</p>
+<p>Naming of the ports is quite important - you shouldn&rsquo;t use any
+technology name in your port but focus on its mission instead. Some of
+examples:</p>
+<ul>
+<li>PushNotifications</li>
+<li>Search</li>
+<li>Persistence</li>
+<li>Authentication</li>
+</ul>
+<p>The majority of programming languages usually contain interfaces /
+protocols feature allowing you to build a port. In Clojure, for example,
+you can use <em>multimethods</em> or <em>protocols</em> to achieve this goal. But for
+now let&rsquo;s see how we can implement the realisation of port for Elixir
+using its&rsquo; capability to create <strong>behaviours</strong>:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">  defmodule Core.PushNotifications do
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">    @moduledoc &#34;&#34;&#34;
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">    Port for sending push notifications.
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">    &#34;&#34;&#34;
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">    @type message :: %{title: String.t(), body: String.t()}
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">    @type payload :: Keyword.t
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">    @type recipients :: [map]
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    @adapter :core |&gt; Application.fetch_env!(__MODULE__) |&gt; Keyword.fetch!(:adapter)
+</span></span><span class="line"><span class="ln">11</span><span class="cl">
+</span></span><span class="line"><span class="ln">12</span><span class="cl">    @callback send_notifications(message, recipients, payload) :: {:ok, [map]} | {:error, any}
+</span></span><span class="line"><span class="ln">13</span><span class="cl">
+</span></span><span class="line"><span class="ln">14</span><span class="cl">    defdelegate send_notifications(message, recipients, payload), to: @adapter
+</span></span><span class="line"><span class="ln">15</span><span class="cl">  end</span></span></code></pre></div><p>The example above is nothing more than an abstraction for using push
+notifications from <code>Core</code>. We declare the behaviour and one callback
+that specifies what we send and what we can expect as the result. The
+exact implementation - adapter - should be placed in your app
+configuration like:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">  config :core, Core.PushNotifications, adapter: PushNotifications.APNS</span></span></code></pre></div><p>If you want to call this port from your application you just need to use
+the delegated function:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">  defmodule Core do
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    alias Core.PushNotifications
+</span></span><span class="line"><span class="ln">3</span><span class="cl">
+</span></span><span class="line"><span class="ln">4</span><span class="cl">    def register_user(params) do
+</span></span><span class="line"><span class="ln">5</span><span class="cl">      # business logic ...
+</span></span><span class="line"><span class="ln">6</span><span class="cl">       result = PushNotifications.send_notifications(message, recipients, payload)
+</span></span><span class="line"><span class="ln">7</span><span class="cl">      # handle the result somehow
+</span></span><span class="line"><span class="ln">8</span><span class="cl">    end
+</span></span><span class="line"><span class="ln">9</span><span class="cl">  end</span></span></code></pre></div><p>As you can see, from the <code>Core</code> we know nothing about the implementation
+details - we just send notifications to users and that&rsquo;s it. In ideal
+case we need to move <strong>any impure function, any side-effect</strong> to the edge
+of the system - to adapters and call them <strong>only by using ports</strong> .</p>
+<h2 id="driver-adapters">Driver Adapters</h2>
+<p>Adapters are components which are placed outside of your application -
+and your hexagon. They should represent the technology, service, library
+that you need to interact through the port.</p>
+<p>We specify two types of adapters: <em>Driver</em> and <em>Driven</em>.</p>
+<p>The first ones are something from the left side of the picture above. It
+could be a HTML page, API endpoint, CLI application, GUI or anything
+that <em>drives</em> your application. That also means that the driver adapter
+should use a driver port interface so your app receives technology
+agnostic request on its borders.</p>
+<p>Let&rsquo;s assume that we also have a web application that uses our <em>Core</em>.
+If we want to register user then we need to call a
+<code>Core.register_user/1</code> function from inside of our controller. In that
+case <code>UserController</code> is our driver adapter and <code>Core</code> is the called
+application. Fortunately, in Elixir we have type specs that can play a
+role of specification of driver port so you&rsquo;ll always be able to see
+what we need to send and what we should expect in response.</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">  defmodule Web.UserController do
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    use Web, :controller
+</span></span><span class="line"><span class="ln">3</span><span class="cl">
+</span></span><span class="line"><span class="ln">4</span><span class="cl">    def create(conn, params) do
+</span></span><span class="line"><span class="ln">5</span><span class="cl">      result = Core.register_user(params) # will create user and send notifications
+</span></span><span class="line"><span class="ln">6</span><span class="cl">     # handle the result somehow
+</span></span><span class="line"><span class="ln">7</span><span class="cl">    end
+</span></span><span class="line"><span class="ln">8</span><span class="cl">  end</span></span></code></pre></div><p>In the approach above you can see that we use <code>Core.register_user/1</code>
+function as the driver port - because it&rsquo;s spec describes the
+interface - and <code>Web.UserController.index/2</code> as the driver adapter.</p>
+<h2 id="driven-adapters">Driven Adapters</h2>
+<p>A <em>Driven</em> adapter implements an interface given by driven port. That
+means that now driven adapter depends on our application, but not visa
+versa. The same as driver, this adapter should also be placed outside of
+our hexagon and represents a technology/library/real-world device.</p>
+<p>Common examples are:</p>
+<ul>
+<li>Persistence adapters - SQL, NoSQL databases or even in-memory / file
+storage</li>
+<li>Cache adapters - Redis / Memcached / ETS or in-memory storage</li>
+<li>Email adapters - SMTP or third-party services</li>
+<li>Message queue adapters</li>
+<li>Third-party APIs</li>
+</ul>
+<p>Let&rsquo;s continue the push notifications solution we&rsquo;ve started before.
+Now, in order to implement the driver adapter, we need to use the port
+<code>Core.PushNotifications</code> and it&rsquo;s callback <code>send_notifications</code>. We will
+adapt realisation of sending push notifications over APNS by the
+specification that was given us by this port:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">  defmodule PushNotifications.APNS do
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">    @moduledoc &#34;APNS adapter for push notifications&#34;
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">    @behaviour Core.PushNotifications
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">    @impl true
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">    def send_notifications(message, recipients, payload) do
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">      {:ok, recipients
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">      |&gt; Enum.map(fn r -&gt; build_notification(message, r, payload) end)
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">      |&gt; Pigeon.APNS.Notification.push()}
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    end
+</span></span><span class="line"><span class="ln">11</span><span class="cl">
+</span></span><span class="line"><span class="ln">12</span><span class="cl">     defp build_notification(message, recipient, payload) do
+</span></span><span class="line"><span class="ln">13</span><span class="cl">       Pigeon.APNS.Notification.new(message, recipient.device_token, payload)
+</span></span><span class="line"><span class="ln">14</span><span class="cl">     end
+</span></span><span class="line"><span class="ln">15</span><span class="cl">  end</span></span></code></pre></div><p>Now our push notifications are almost completed. We can always change
+the implementation - for example, from APNS to Firebase - or use
+third-party library <strong>* without changing our core application*</strong> - so we
+can say that&rsquo;s technology agnostic approach.</p>
+<h2 id="testing">Testing</h2>
+<p>Of course the main benefit of ports and adapters architecture is
+improved testability. Instead of manually mocking calls to the
+real-world providers we just need to create a test adapter that we
+satisfy testing conditions. In the perfect case every <em>driven adapter</em>
+should have a test analogue as well as all behaviours of <code>driver ports</code>
+should be tested. Let&rsquo;s write a test adapter for the PushNotifications
+port then:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">  defmodule PushNotifications.TestAdapter do
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    @moduledoc &#34;Test adapter for push notifications&#34;
+</span></span><span class="line"><span class="ln">3</span><span class="cl">    @behaviour Core.PushNotifications
+</span></span><span class="line"><span class="ln">4</span><span class="cl">
+</span></span><span class="line"><span class="ln">5</span><span class="cl">    @impl true
+</span></span><span class="line"><span class="ln">6</span><span class="cl">    def send_notifications(message, recipients, payload) do
+</span></span><span class="line"><span class="ln">7</span><span class="cl">       {:ok, [%{message: message, payload: payload, recipients: recipients}]}
+</span></span><span class="line"><span class="ln">8</span><span class="cl">    end
+</span></span><span class="line"><span class="ln">9</span><span class="cl">  end</span></span></code></pre></div><p>As you can see we are not sending data to the outer world but use a pure
+function instead. In case of any incoming input we will know its&rsquo; output
+for sure. Now, when we unit-test the <code>Core</code> module we just need to
+select test adapter as the implementation of <code>PushNotifications</code>
+interface. In Elixir ecosystem we have a great library called <code>Mox</code> that
+can be used for such case:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">  Mox.defmock(PushNotifications.TestMock, for: Core.PushNotifications)
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">  defmodule CoreTest do
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">    use Core.DataCase, async: true
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">    import Mox
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">   # Make sure mocks are verified when the test exits
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">    setup :verify_on_exit!
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    test &#34;register/1&#34; do
+</span></span><span class="line"><span class="ln">11</span><span class="cl">       stub_with(PushNotifications.TestMock, PushNotifications.TestAdapter)
+</span></span><span class="line"><span class="ln">12</span><span class="cl">       assert {:ok, _} = Core.register_user(some_params)
+</span></span><span class="line"><span class="ln">13</span><span class="cl">    end
+</span></span><span class="line"><span class="ln">14</span><span class="cl">  end</span></span></code></pre></div><p>In this example you can see that we&rsquo;re not sending push notifications in
+the real world but using the local test mock instead. We are free to
+change the test adapter for any testing purposes if we want to.</p>
+<p>From now you get your <em>driver</em> port&rsquo;s behaviour tested. As the next step
+you can test exactly the adapter implementation without any outside
+logic attached - you just need to check that your implementation is
+working fine as it was predicted. As for the integration testing you&rsquo;re
+free to choose between the real-world adapters or you may use some test
+adapters for this purpose - it&rsquo;s up to you.</p>
+<h2 id="pros-vs-cons">Pros vs Cons</h2>
+<p>Now we&rsquo;ve covered the basics of ports and adapters architecture. Let&rsquo;s
+summarise what we have:</p>
+<h3 id="pros">Pros</h3>
+<ul>
+<li>Testability</li>
+<li>Replaceability</li>
+<li>Technology-agnostic approach - you can delay technological solutions</li>
+<li>Isolating pure code from impure code</li>
+<li>Isolating side-effects</li>
+<li>Maintainability</li>
+</ul>
+<h3 id="cons">Cons</h3>
+<ul>
+<li>Sometimes it may be an overhead, especially for a small scale software</li>
+<li>You may not need it if you are pretty sure that the technology stack
+of your project will remain the same over the years</li>
+</ul>
+<h2 id="conclusion">Conclusion</h2>
+<p>We applied ports &amp; adapters architecture at
+<a href="https://salam.io">Salam.io</a> when it became clear that our software
+will be using a lot of services which could be replaced in the future.
+This approach has already given a lot of benefits and allowed us to make
+our software even more testable and flexible.</p>
+<p>If you want to know more about this architecture you can take a look at
+the
+<a href="https://web.archive.org/web/20180822100852/http://alistair.cockburn.us/Hexagonal&#43;architecture">original
+article by Alistair Cockburn</a> .</p>
+<p>In the next article of this series we will show how you can apply ports
+&amp; adapters architecture in Clojure by using its language tools and
+component libraries.</p>
+<p>Stay tuned!</p>
+]]></content:encoded>
+    </item>
+    <item>
+      <title>Well-crafted functional architecture: ports and adapters</title>
+      <link>https://neiro.io/posts/2019-10-01-well-crafted-functional-architecture-ports-and-adapters.md/</link>
+      <pubDate>Tue, 01 Oct 2019 10:00:00 +0200</pubDate>
+      <guid>https://neiro.io/posts/2019-10-01-well-crafted-functional-architecture-ports-and-adapters.md/</guid>
+      <description>&lt;p&gt;At &lt;a href=&#34;https://salam.io&#34;&gt;Salam.io&lt;/a&gt; we are developing a modern social&#xA;platform containing a humongous amount of features.&lt;/p&gt;&#xA;&lt;p&gt;Development of such product is quite hard and challenging - we need our&#xA;software to be robust, scalable, fault-tolerant, performant and at the&#xA;same time we want it to be easy to extend, test, maintain and support.&lt;/p&gt;&#xA;&lt;p&gt;All these issues are inevitable upon growth of the app but they for sure&#xA;can be simplified or even avoided by choosing, optimising the software&#xA;architecture.&lt;/p&gt;</description>
+      <content:encoded><![CDATA[<p>At <a href="https://salam.io">Salam.io</a> we are developing a modern social
+platform containing a humongous amount of features.</p>
+<p>Development of such product is quite hard and challenging - we need our
+software to be robust, scalable, fault-tolerant, performant and at the
+same time we want it to be easy to extend, test, maintain and support.</p>
+<p>All these issues are inevitable upon growth of the app but they for sure
+can be simplified or even avoided by choosing, optimising the software
+architecture.</p>
+<p>We also use functional programming languages -
+<a href="https://clojure.org">Clojure</a> &amp; <a href="https://elixir-lang.org">Elixir</a> -
+for the backend and frontend as much as possible. Therefore, we need to
+adjust the existing architecture approaches to powerful abilities and
+intricacies of modern functional programming.</p>
+<p>That&rsquo;s why we&rsquo;re starting these series of articles - we think it&rsquo;s
+crucial for everyone who&rsquo;s crafting the functional systems to understand
+and apply software architectures rules and principles.</p>
+<h2 id="why-ports-adapters">Why ports &amp; adapters ?</h2>
+<p>Even if you&rsquo;re developing a relatively small scale software you still
+need to design it first - and to design it properly. The earlier you
+start caring about your architecture the earlier you can benefit from it
+and the later a lot of issues caused by bad architecture would appear.</p>
+<p>The main idea of ports &amp; adapters architecture is that application that
+you&rsquo;re building is a <em>closed area</em>. This means that all your business
+logic should be separated from technical details in this area. Often
+architecture is about the boundaries so are the ports &amp; adapters.</p>
+<p>In case you stick with ports &amp; adapters from the very beginning then
+this approach should help you to keep your business logic separated and
+easily tested s well as technology agnostic - you can write a port &amp; an
+adapter for any software/third-party service/library that you&rsquo;re using
+so it can be easily extended or switched in favour of another one.</p>
+<h2 id="hexagonal">Hexagonal</h2>
+<p>Ports &amp; adapters architecture also has another name: <em>Hexagonal
+architecture</em>. According to this terminology the inner part of your
+software - the place where you put your business logic - is hexagon
+while your adapters are placed surround it.</p>
+<figure><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Hexagonal_Architecture.svg/1000px-Hexagonal_Architecture.svg.png"
+    alt="Figure 1: Hexagon"><figcaption>
+      <p><span class="figure-number">Figure 1: </span>Hexagon</p>
+    </figcaption>
+</figure>
+
+<p>The hexagon should not contain any references to another frameworks,
+real world services, libraries, etc. - all these elements should be
+adapters. At the same time the architecture doesn&rsquo;t prescribe you to
+design your hexagon in some certain way - you can use Layer
+architecture, Onion, DDD or any another suitable architecture inside or
+it may be a pure business logic without any sophistications - it&rsquo;s up to
+you.</p>
+<p>Why hexagon? Well, any geometric figure with boundaries could work, but
+the hexagon represents better the concept that you have ports at the
+edges of your application and adapters behind it. Likewise, it&rsquo;s a
+symmetric figure and we&rsquo;ll describe below why it&rsquo;s important.</p>
+<h2 id="ports">Ports</h2>
+<p>Every time you need to interact with something from beyond of your
+application logic you need to group these actions and describe them in a
+<em>port</em>. The port is the edge of hexagon and it should be an integral and
+essential part of your application.</p>
+<p>Naming of the ports is quite important - you shouldn&rsquo;t use any
+technology name in your port but focus on its mission instead. Some of
+examples:</p>
+<ul>
+<li>PushNotifications</li>
+<li>Search</li>
+<li>Persistence</li>
+<li>Authentication</li>
+</ul>
+<p>The majority of programming languages usually contain interfaces /
+protocols feature allowing you to build a port. In Clojure, for example,
+you can use <em>multimethods</em> or <em>protocols</em> to achieve this goal. But for
+now let&rsquo;s see how we can implement the realisation of port for Elixir
+using its&rsquo; capability to create <strong>behaviours</strong>:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">  defmodule Core.PushNotifications do
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">    @moduledoc &#34;&#34;&#34;
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">    Port for sending push notifications.
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">    &#34;&#34;&#34;
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">    @type message :: %{title: String.t(), body: String.t()}
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">    @type payload :: Keyword.t
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">    @type recipients :: [map]
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    @adapter :core |&gt; Application.fetch_env!(__MODULE__) |&gt; Keyword.fetch!(:adapter)
+</span></span><span class="line"><span class="ln">11</span><span class="cl">
+</span></span><span class="line"><span class="ln">12</span><span class="cl">    @callback send_notifications(message, recipients, payload) :: {:ok, [map]} | {:error, any}
+</span></span><span class="line"><span class="ln">13</span><span class="cl">
+</span></span><span class="line"><span class="ln">14</span><span class="cl">    defdelegate send_notifications(message, recipients, payload), to: @adapter
+</span></span><span class="line"><span class="ln">15</span><span class="cl">  end</span></span></code></pre></div><p>The example above is nothing more than an abstraction for using push
+notifications from <code>Core</code>. We declare the behaviour and one callback
+that specifies what we send and what we can expect as the result. The
+exact implementation - adapter - should be placed in your app
+configuration like:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">  config :core, Core.PushNotifications, adapter: PushNotifications.APNS</span></span></code></pre></div><p>If you want to call this port from your application you just need to use
+the delegated function:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">  defmodule Core do
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    alias Core.PushNotifications
+</span></span><span class="line"><span class="ln">3</span><span class="cl">
+</span></span><span class="line"><span class="ln">4</span><span class="cl">    def register_user(params) do
+</span></span><span class="line"><span class="ln">5</span><span class="cl">      # business logic ...
+</span></span><span class="line"><span class="ln">6</span><span class="cl">       result = PushNotifications.send_notifications(message, recipients, payload)
+</span></span><span class="line"><span class="ln">7</span><span class="cl">      # handle the result somehow
+</span></span><span class="line"><span class="ln">8</span><span class="cl">    end
+</span></span><span class="line"><span class="ln">9</span><span class="cl">  end</span></span></code></pre></div><p>As you can see, from the <code>Core</code> we know nothing about the implementation
+details - we just send notifications to users and that&rsquo;s it. In ideal
+case we need to move <strong>any impure function, any side-effect</strong> to the edge
+of the system - to adapters and call them <strong>only by using ports</strong> .</p>
+<h2 id="driver-adapters">Driver Adapters</h2>
+<p>Adapters are components which are placed outside of your application -
+and your hexagon. They should represent the technology, service, library
+that you need to interact through the port.</p>
+<p>We specify two types of adapters: <em>Driver</em> and <em>Driven</em>.</p>
+<p>The first ones are something from the left side of the picture above. It
+could be a HTML page, API endpoint, CLI application, GUI or anything
+that <em>drives</em> your application. That also means that the driver adapter
+should use a driver port interface so your app receives technology
+agnostic request on its borders.</p>
+<p>Let&rsquo;s assume that we also have a web application that uses our <em>Core</em>.
+If we want to register user then we need to call a
+<code>Core.register_user/1</code> function from inside of our controller. In that
+case <code>UserController</code> is our driver adapter and <code>Core</code> is the called
+application. Fortunately, in Elixir we have type specs that can play a
+role of specification of driver port so you&rsquo;ll always be able to see
+what we need to send and what we should expect in response.</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">  defmodule Web.UserController do
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    use Web, :controller
+</span></span><span class="line"><span class="ln">3</span><span class="cl">
+</span></span><span class="line"><span class="ln">4</span><span class="cl">    def create(conn, params) do
+</span></span><span class="line"><span class="ln">5</span><span class="cl">      result = Core.register_user(params) # will create user and send notifications
+</span></span><span class="line"><span class="ln">6</span><span class="cl">     # handle the result somehow
+</span></span><span class="line"><span class="ln">7</span><span class="cl">    end
+</span></span><span class="line"><span class="ln">8</span><span class="cl">  end</span></span></code></pre></div><p>In the approach above you can see that we use <code>Core.register_user/1</code>
+function as the driver port - because it&rsquo;s spec describes the
+interface - and <code>Web.UserController.index/2</code> as the driver adapter.</p>
+<h2 id="driven-adapters">Driven Adapters</h2>
+<p>A <em>Driven</em> adapter implements an interface given by driven port. That
+means that now driven adapter depends on our application, but not visa
+versa. The same as driver, this adapter should also be placed outside of
+our hexagon and represents a technology/library/real-world device.</p>
+<p>Common examples are:</p>
+<ul>
+<li>Persistence adapters - SQL, NoSQL databases or even in-memory / file
+storage</li>
+<li>Cache adapters - Redis / Memcached / ETS or in-memory storage</li>
+<li>Email adapters - SMTP or third-party services</li>
+<li>Message queue adapters</li>
+<li>Third-party APIs</li>
+</ul>
+<p>Let&rsquo;s continue the push notifications solution we&rsquo;ve started before.
+Now, in order to implement the driver adapter, we need to use the port
+<code>Core.PushNotifications</code> and it&rsquo;s callback <code>send_notifications</code>. We will
+adapt realisation of sending push notifications over APNS by the
+specification that was given us by this port:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">  defmodule PushNotifications.APNS do
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">    @moduledoc &#34;APNS adapter for push notifications&#34;
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">    @behaviour Core.PushNotifications
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">    @impl true
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">    def send_notifications(message, recipients, payload) do
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">      {:ok, recipients
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">      |&gt; Enum.map(fn r -&gt; build_notification(message, r, payload) end)
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">      |&gt; Pigeon.APNS.Notification.push()}
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    end
+</span></span><span class="line"><span class="ln">11</span><span class="cl">
+</span></span><span class="line"><span class="ln">12</span><span class="cl">     defp build_notification(message, recipient, payload) do
+</span></span><span class="line"><span class="ln">13</span><span class="cl">       Pigeon.APNS.Notification.new(message, recipient.device_token, payload)
+</span></span><span class="line"><span class="ln">14</span><span class="cl">     end
+</span></span><span class="line"><span class="ln">15</span><span class="cl">  end</span></span></code></pre></div><p>Now our push notifications are almost completed. We can always change
+the implementation - for example, from APNS to Firebase - or use
+third-party library <strong>* without changing our core application*</strong> - so we
+can say that&rsquo;s technology agnostic approach.</p>
+<h2 id="testing">Testing</h2>
+<p>Of course the main benefit of ports and adapters architecture is
+improved testability. Instead of manually mocking calls to the
+real-world providers we just need to create a test adapter that we
+satisfy testing conditions. In the perfect case every <em>driven adapter</em>
+should have a test analogue as well as all behaviours of <code>driver ports</code>
+should be tested. Let&rsquo;s write a test adapter for the PushNotifications
+port then:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">  defmodule PushNotifications.TestAdapter do
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    @moduledoc &#34;Test adapter for push notifications&#34;
+</span></span><span class="line"><span class="ln">3</span><span class="cl">    @behaviour Core.PushNotifications
+</span></span><span class="line"><span class="ln">4</span><span class="cl">
+</span></span><span class="line"><span class="ln">5</span><span class="cl">    @impl true
+</span></span><span class="line"><span class="ln">6</span><span class="cl">    def send_notifications(message, recipients, payload) do
+</span></span><span class="line"><span class="ln">7</span><span class="cl">       {:ok, [%{message: message, payload: payload, recipients: recipients}]}
+</span></span><span class="line"><span class="ln">8</span><span class="cl">    end
+</span></span><span class="line"><span class="ln">9</span><span class="cl">  end</span></span></code></pre></div><p>As you can see we are not sending data to the outer world but use a pure
+function instead. In case of any incoming input we will know its&rsquo; output
+for sure. Now, when we unit-test the <code>Core</code> module we just need to
+select test adapter as the implementation of <code>PushNotifications</code>
+interface. In Elixir ecosystem we have a great library called <code>Mox</code> that
+can be used for such case:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">  Mox.defmock(PushNotifications.TestMock, for: Core.PushNotifications)
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">  defmodule CoreTest do
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">    use Core.DataCase, async: true
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">    import Mox
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">   # Make sure mocks are verified when the test exits
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">    setup :verify_on_exit!
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    test &#34;register/1&#34; do
+</span></span><span class="line"><span class="ln">11</span><span class="cl">       stub_with(PushNotifications.TestMock, PushNotifications.TestAdapter)
+</span></span><span class="line"><span class="ln">12</span><span class="cl">       assert {:ok, _} = Core.register_user(some_params)
+</span></span><span class="line"><span class="ln">13</span><span class="cl">    end
+</span></span><span class="line"><span class="ln">14</span><span class="cl">  end</span></span></code></pre></div><p>In this example you can see that we&rsquo;re not sending push notifications in
+the real world but using the local test mock instead. We are free to
+change the test adapter for any testing purposes if we want to.</p>
+<p>From now you get your <em>driver</em> port&rsquo;s behaviour tested. As the next step
+you can test exactly the adapter implementation without any outside
+logic attached - you just need to check that your implementation is
+working fine as it was predicted. As for the integration testing you&rsquo;re
+free to choose between the real-world adapters or you may use some test
+adapters for this purpose - it&rsquo;s up to you.</p>
+<h2 id="pros-vs-cons">Pros vs Cons</h2>
+<p>Now we&rsquo;ve covered the basics of ports and adapters architecture. Let&rsquo;s
+summarise what we have:</p>
+<h3 id="pros">Pros</h3>
+<ul>
+<li>Testability</li>
+<li>Replaceability</li>
+<li>Technology-agnostic approach - you can delay technological solutions</li>
+<li>Isolating pure code from impure code</li>
+<li>Isolating side-effects</li>
+<li>Maintainability</li>
+</ul>
+<h3 id="cons">Cons</h3>
+<ul>
+<li>Sometimes it may be an overhead, especially for a small scale software</li>
+<li>You may not need it if you are pretty sure that the technology stack
+of your project will remain the same over the years</li>
+</ul>
+<h2 id="conclusion">Conclusion</h2>
+<p>We applied ports &amp; adapters architecture at
+<a href="https://salam.io">Salam.io</a> when it became clear that our software
+will be using a lot of services which could be replaced in the future.
+This approach has already given a lot of benefits and allowed us to make
+our software even more testable and flexible.</p>
+<p>If you want to know more about this architecture you can take a look at
+the
+<a href="https://web.archive.org/web/20180822100852/http://alistair.cockburn.us/Hexagonal&#43;architecture">original
+article by Alistair Cockburn</a> .</p>
+<p>In the next article of this series we will show how you can apply ports
+&amp; adapters architecture in Clojure by using its language tools and
+component libraries.</p>
+<p>Stay tuned!</p>
+]]></content:encoded>
+    </item>
+  </channel>
+</rss>

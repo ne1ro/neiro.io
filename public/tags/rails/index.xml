@@ -1,0 +1,747 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Rails on neiro blog</title>
+    <link>https://neiro.io/tags/rails/</link>
+    <description>Recent content in Rails on neiro blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-GB</language>
+    <copyright>neiro © 2012-2025</copyright>
+    <lastBuildDate>Wed, 05 Oct 2016 10:00:00 +0200</lastBuildDate>
+    <atom:link href="https://neiro.io/tags/rails/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Query objects in Ruby on Rails</title>
+      <link>https://neiro.io/blog/2016-10-05-query-objects-in-ruby-on-rails.md/</link>
+      <pubDate>Wed, 05 Oct 2016 10:00:00 +0200</pubDate>
+      <guid>https://neiro.io/blog/2016-10-05-query-objects-in-ruby-on-rails.md/</guid>
+      <description>&lt;p&gt;Database queries are common when you develop web applications. &lt;em&gt;Ruby on&#xA;Rails&lt;/em&gt; and it&amp;rsquo;s &lt;em&gt;ActiveRecord&lt;/em&gt; liberates you from writing tons of&#xA;boilerplate SQL code and results in creation of elegant, eloquent&#xA;queries in plain Ruby.&lt;/p&gt;&#xA;&lt;figure&gt;&lt;img src=&#34;https://cdn-images-1.medium.com/max/1600/1*-oIlwIWlt0BDN4b5a9rRCQ.png&#34;&gt;&#xA;&lt;/figure&gt;&#xA;&#xA;&lt;p&gt;But plenty of immense possibilities that Ruby and ActiveRecord provide,&#xA;unfortunately, remain unused. I bet that often you see a lot of enormous&#xA;scopes in Ruby on Rails models, endless chains of queries in controllers&#xA;and even bulky chunks of raw SQL.&lt;/p&gt;</description>
+      <content:encoded><![CDATA[<p>Database queries are common when you develop web applications. <em>Ruby on
+Rails</em> and it&rsquo;s <em>ActiveRecord</em> liberates you from writing tons of
+boilerplate SQL code and results in creation of elegant, eloquent
+queries in plain Ruby.</p>
+<figure><img src="https://cdn-images-1.medium.com/max/1600/1*-oIlwIWlt0BDN4b5a9rRCQ.png">
+</figure>
+
+<p>But plenty of immense possibilities that Ruby and ActiveRecord provide,
+unfortunately, remain unused. I bet that often you see a lot of enormous
+scopes in Ruby on Rails models, endless chains of queries in controllers
+and even bulky chunks of raw SQL.</p>
+<p>#+begin_src ruby
+@articles = Article.includes(:user)
+.order(&ldquo;created_at DESC&rdquo;)
+.where(&ldquo;text IS NOT NULL&rdquo;)
+.page(page)</p>
+<p>@articles = Articles.connection
+.select_all(%Q{SELECT articles.* FROM
+articles WHERE (text IS NOT NULL) ORDER BY created_at DESC LIMIT 5
+OFFSET 0})
+#+end_src <em>Bad cases of using ActiveRecord queries</em></p>
+<p>These poor practices may create obstacles and become a reason of
+developer&rsquo;s headaches in the real-world web applications.</p>
+<h2 id="typical-db-queries-application-problems">Typical DB queries application problems:</h2>
+<ul>
+<li>Big pieces of queries code in controllers/models/services mess up your
+code</li>
+<li>It is hard to understand complex database requests</li>
+<li>Inserts of raw SQL are non-consistent and often mix with ActiveRecord
+queries</li>
+<li>Testing one separate query in isolation is very problematic</li>
+<li>It is difficult to compose, extend or inherit queries</li>
+<li>Often Single Responsibility Principle gets violated</li>
+</ul>
+<h2 id="solution">Solution:</h2>
+<p>These problems can be solved by using <em>Query Object</em> pattern &mdash; a
+common technique that isolates your complex queries.</p>
+<p><em>Query Object</em> in ideal case is a separate class that contains one
+specific query that implements just one business logic rule.</p>
+<h2 id="implementation">Implementation:</h2>
+<p>For most of the cases <em>Query Object</em> is PORO that accepts relation in
+constructor and defines queries named like an <em>ActiveRecord</em> common
+methods:</p>
+<p>#+begin_src ruby</p>
+<p>class Article &lt; ActiveRecord::Base
+scope :by_title, -&gt;(direction) { order title: direction }
+scope :by_date, -&gt;(direction) { order created_at: direction }
+scope :by_author, -&gt;(direction) { order &ldquo;users.full_name #{direction}&rdquo; }</p>
+<p>SORT_OPTIONS = %w(by_date by_title by_author).freeze</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">  def initialize(params = {}, relation = Article.includes(:user))
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">    @relation = relation
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">    @params = params
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">  end
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">  def all
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">    @relation.public_send(sort_by, direction)
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">  end
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">
+</span></span><span class="line"><span class="ln">10</span><span class="cl">  private
+</span></span><span class="line"><span class="ln">11</span><span class="cl">
+</span></span><span class="line"><span class="ln">12</span><span class="cl">  def sort_by
+</span></span><span class="line"><span class="ln">13</span><span class="cl">    @params[:sort].presence_in(SORT_OPTIONS) || :by_date
+</span></span><span class="line"><span class="ln">14</span><span class="cl">  end
+</span></span><span class="line"><span class="ln">15</span><span class="cl">
+</span></span><span class="line"><span class="ln">16</span><span class="cl">  def direction
+</span></span><span class="line"><span class="ln">17</span><span class="cl">    @params[:direction] == &#34;asc&#34; ? :asc : :desc
+</span></span><span class="line"><span class="ln">18</span><span class="cl">  end</span></span></code></pre></div><p>end</p>
+<p>index @articles = OrderedArticlesQuery.new(sort_query_params).all.page(params[:page])
+end</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">  private
+</span></span><span class="line"><span class="ln">2</span><span class="cl">
+</span></span><span class="line"><span class="ln">3</span><span class="cl">  def sort_query_params
+</span></span><span class="line"><span class="ln">4</span><span class="cl">    params.slice(:sort_by, :direction)
+</span></span><span class="line"><span class="ln">5</span><span class="cl">  end</span></span></code></pre></div><p>end
+#+end_src <em>Query Object implementation and usage in
+controller</em></p>
+<h3 id="heredoc-syntax-for-raw-sql">HEREDOC syntax for raw SQL:</h3>
+<p>For the cases where you desperately need to use raw SQL code try to
+isolate it using Ruby&rsquo;s <em>HEREDOC syntax:</em></p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"> <span class="k">class</span> <span class="nc">PopularArticlesQuery</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  <span class="no">POPULAR_TRESHOLD</span> <span class="o">=</span> <span class="mi">5</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">subscriptions</span> <span class="o">=</span> <span class="no">Subscription</span><span class="o">.</span><span class="n">all</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">    <span class="vi">@subscriptions</span> <span class="o">=</span> <span class="n">subscriptions</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">  <span class="k">def</span> <span class="nf">all</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">    <span class="vi">@subscriptions</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">
+</span></span><span class="line"><span class="ln">12</span><span class="cl">  <span class="kp">private</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">
+</span></span><span class="line"><span class="ln">14</span><span class="cl">  <span class="k">def</span> <span class="nf">query</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">    <span class="s">&lt;&lt;-SQL
+</span></span></span><span class="line"><span class="ln">16</span><span class="cl"><span class="s"></span>      <span class="n">articles</span><span class="o">.</span><span class="n">comments_count</span> <span class="o">&gt;=</span> <span class="c1">#{POPULAR_TRESHOLD}</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">      <span class="no">AND</span> <span class="n">articles</span><span class="o">.</span><span class="n">content</span> <span class="no">IS</span> <span class="no">NOT</span> <span class="no">NULL</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl">      <span class="no">AND</span> <span class="n">articles</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="c1">#{Article::STATUSES[:published]}</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">      <span class="no">ORDER</span> <span class="no">BY</span> <span class="n">articles</span><span class="o">.</span><span class="n">comments_count</span> <span class="no">DESC</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl">    <span class="no">SQL</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">22</span><span class="cl"><span class="k">end</span></span></span></code></pre></div><p><em>HEREDOC syntax example for raw SQL inserts</em></p>
+<h3 id="extending-scope">Extending scope:</h3>
+<p>If your scope relates to existing <em>QueryObject</em>, you can easily extend
+its relation instead of cluttering up your models.
+<a href="http://apidock.com/rails/ActiveRecord/QueryMethods/extending">ActiveRecord::QueryMethods.extending</a>
+method will help you:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="k">class</span> <span class="nc">OrderedArticlesQuery</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  <span class="no">SORT_OPTIONS</span> <span class="o">=</span> <span class="sx">%w(by_date by_title by_author)</span><span class="o">.</span><span class="n">freeze</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">params</span> <span class="o">=</span> <span class="p">{},</span> <span class="n">relation</span> <span class="o">=</span> <span class="no">Article</span><span class="o">.</span><span class="n">includes</span><span class="p">(</span><span class="ss">:user</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">    <span class="vi">@relation</span> <span class="o">=</span> <span class="n">relation</span><span class="o">.</span><span class="n">extending</span><span class="p">(</span><span class="no">Scopes</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">    <span class="vi">@params</span> <span class="o">=</span> <span class="n">params</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">
+</span></span><span class="line"><span class="ln">10</span><span class="cl">  <span class="k">def</span> <span class="nf">all</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">    <span class="vi">@relation</span><span class="o">.</span><span class="n">public_send</span><span class="p">(</span><span class="n">sort_by</span><span class="p">,</span> <span class="n">direction</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">
+</span></span><span class="line"><span class="ln">14</span><span class="cl">  <span class="kp">private</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">
+</span></span><span class="line"><span class="ln">16</span><span class="cl">  <span class="k">def</span> <span class="nf">sort_by</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">    <span class="vi">@params</span><span class="o">[</span><span class="ss">:sort</span><span class="o">].</span><span class="n">presence_in</span><span class="p">(</span><span class="no">SORT_OPTIONS</span><span class="p">)</span> <span class="o">||</span> <span class="ss">:by_date</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">
+</span></span><span class="line"><span class="ln">20</span><span class="cl">  <span class="k">def</span> <span class="nf">direction</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl">    <span class="vi">@params</span><span class="o">[</span><span class="ss">:direction</span><span class="o">]</span> <span class="o">==</span> <span class="s2">&#34;asc&#34;</span> <span class="p">?</span> <span class="ss">:asc</span> <span class="p">:</span> <span class="ss">:desc</span>
+</span></span><span class="line"><span class="ln">22</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">23</span><span class="cl">
+</span></span><span class="line"><span class="ln">24</span><span class="cl">  <span class="c1"># Group additional scope methods in module in order to extend relation</span>
+</span></span><span class="line"><span class="ln">25</span><span class="cl">  <span class="k">module</span> <span class="nn">Scopes</span>
+</span></span><span class="line"><span class="ln">26</span><span class="cl">    <span class="k">def</span> <span class="nf">by_title</span><span class="p">(</span><span class="n">direction</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">27</span><span class="cl">      <span class="n">order</span><span class="p">(</span><span class="ss">title</span><span class="p">:</span> <span class="n">direction</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">28</span><span class="cl">    <span class="k">end</span>
+</span></span><span class="line"><span class="ln">29</span><span class="cl">
+</span></span><span class="line"><span class="ln">30</span><span class="cl">    <span class="k">def</span> <span class="nf">by_date</span><span class="p">(</span><span class="n">direction</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">31</span><span class="cl">      <span class="n">order</span><span class="p">(</span><span class="ss">created_at</span><span class="p">:</span> <span class="n">direction</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">32</span><span class="cl">    <span class="k">end</span>
+</span></span><span class="line"><span class="ln">33</span><span class="cl">
+</span></span><span class="line"><span class="ln">34</span><span class="cl">    <span class="k">def</span> <span class="nf">by_author</span>
+</span></span><span class="line"><span class="ln">35</span><span class="cl">      <span class="n">order</span><span class="p">(</span><span class="s2">&#34;users.full_name </span><span class="si">#{</span><span class="n">direction</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">36</span><span class="cl">    <span class="k">end</span>
+</span></span><span class="line"><span class="ln">37</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">38</span><span class="cl"><span class="k">end</span></span></span></code></pre></div><p><em>Extending scope for Query Objects relations</em></p>
+<h2 id="composing-query-objects">Composing Query Objects:</h2>
+<p><em>Query Objects</em> should be devised to support composition with other
+<em>Query Objects</em> and other ActiveRecord relations. In the example below
+two composed Query Objects represent one SQL query:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="k">class</span> <span class="nc">FeaturedQuery</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">relation</span> <span class="o">=</span> <span class="no">Article</span><span class="o">.</span><span class="n">all</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">    <span class="vi">@relation</span> <span class="o">=</span> <span class="n">relation</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">  <span class="k">def</span> <span class="nf">all</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">    <span class="vi">@relation</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="ss">featured</span><span class="p">:</span> <span class="kp">true</span><span class="p">)</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="s2">&#34;views_count &gt; ?&#34;</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="k">end</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">
+</span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="k">class</span> <span class="nc">ArticlesController</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">  <span class="k">def</span> <span class="nf">index</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">    <span class="vi">@articles</span> <span class="o">=</span> <span class="no">FeaturedArticlesQuery</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">sorted_articles</span><span class="p">)</span><span class="o">.</span><span class="n">all</span> <span class="c1"># SELECT &#34;articles&#34;.* FROM &#34;articles&#34; WHERE &#34;articles&#34;.&#34;featured&#34; = $1 # AND (views_count &gt;100) ORDER BY &#34;articles&#34;.&#34;created_at&#34; DESC LIMIT 10 OFFSET 0</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">
+</span></span><span class="line"><span class="ln">16</span><span class="cl">  <span class="kp">private</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">
+</span></span><span class="line"><span class="ln">18</span><span class="cl">  <span class="k">def</span> <span class="nf">sorted_articles</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">    <span class="no">SortedArticlesQuery</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">sort_query_params</span><span class="p">)</span><span class="o">.</span><span class="n">all</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl">
+</span></span><span class="line"><span class="ln">22</span><span class="cl">  <span class="k">def</span> <span class="nf">sort_query_params</span>
+</span></span><span class="line"><span class="ln">23</span><span class="cl">    <span class="p">{</span> <span class="ss">sort</span><span class="p">:</span> <span class="ss">:by_title</span><span class="p">,</span> <span class="ss">direction</span><span class="p">:</span> <span class="ss">:desc</span> <span class="p">}</span>
+</span></span><span class="line"><span class="ln">24</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">25</span><span class="cl"><span class="k">end</span></span></span></code></pre></div><p><em>Composing two Query Objects</em></p>
+<h2 id="inheritance-of-query-objects">Inheritance of Query Objects:</h2>
+<p>If you have similar queries you may want them to be inherited to reduce
+repetition and follow DRY principle:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="k">class</span> <span class="nc">ArticlesQuery</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  <span class="no">TEXT_LENGTH</span> <span class="o">=</span> <span class="mi">3</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="c1">#+BEGIN_EXAMPLE</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">comments</span> <span class="o">=</span> <span class="no">Comment</span><span class="o">.</span><span class="n">all</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">    <span class="vi">@comments</span> <span class="o">=</span> <span class="n">comments</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">  <span class="k">def</span> <span class="nf">all</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    <span class="n">comments</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">      <span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="s2">&#34;user_id IS NOT NULL&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">      <span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="s2">&#34;LENGTH(content) </span><span class="si">#{</span><span class="n">condition</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">
+</span></span><span class="line"><span class="ln">15</span><span class="cl">  <span class="k">def</span> <span class="nf">condition</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl">    <span class="s2">&#34;&gt; </span><span class="si">#{</span><span class="no">TEXT_LENGTH</span><span class="si">}</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl"><span class="k">end</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">
+</span></span><span class="line"><span class="ln">20</span><span class="cl"><span class="k">class</span> <span class="nc">LongArticlesQuery</span> <span class="o">&lt;</span> <span class="no">ArticlesQuery</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl">  <span class="no">TEXT_LENGTH</span> <span class="o">=</span> <span class="mi">5</span>
+</span></span><span class="line"><span class="ln">22</span><span class="cl">
+</span></span><span class="line"><span class="ln">23</span><span class="cl">  <span class="c1">#+BEGIN_EXAMPLE</span>
+</span></span><span class="line"><span class="ln">24</span><span class="cl">  <span class="k">def</span> <span class="nf">condition</span>
+</span></span><span class="line"><span class="ln">25</span><span class="cl">    <span class="s2">&#34;&gt;= </span><span class="si">#{</span><span class="no">TEXT_LENGTH</span><span class="si">}</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="ln">26</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">27</span><span class="cl"><span class="k">end</span></span></span></code></pre></div><p><em>Inheritance of Query Objects</em></p>
+<h2 id="testing-query-objects">Testing Query Objects:</h2>
+<p>Query Objects should be designed to be pleasant for testing. In most
+cases you just need to test core methods defined in query for their
+results:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="nb">require</span> <span class="s2">&#34;rails_helper&#34;</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="n">describe</span> <span class="no">LongArticlesQuery</span> <span class="k">do</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">  <span class="n">describe</span> <span class="s2">&#34;#all&#34;</span> <span class="k">do</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">    <span class="n">subject</span><span class="p">(</span><span class="ss">:all</span><span class="p">)</span> <span class="p">{</span> <span class="n">described_class</span><span class="o">.</span><span class="n">new</span><span class="o">.</span><span class="n">all</span> <span class="p">}</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">    <span class="n">before</span> <span class="k">do</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">      <span class="n">create</span> <span class="ss">:article</span><span class="p">,</span> <span class="ss">text</span><span class="p">:</span> <span class="s2">&#34;abc&#34;</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">      <span class="n">create</span> <span class="ss">:article</span><span class="p">,</span> <span class="ss">text</span><span class="p">:</span> <span class="s2">&#34;this is long article&#34;</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    <span class="k">end</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">
+</span></span><span class="line"><span class="ln">12</span><span class="cl">    <span class="n">it</span> <span class="s2">&#34;returns one short comment&#34;</span> <span class="k">do</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">      <span class="n">expect</span><span class="p">(</span><span class="n">all</span><span class="o">.</span><span class="n">size</span><span class="p">)</span><span class="o">.</span><span class="n">to</span> <span class="n">eq</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">    <span class="k">end</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl"><span class="k">end</span></span></span></code></pre></div><p><em>Testing Query Objects</em></p>
+<h2 id="summary">Summary:</h2>
+<h3 id="good-query-object">Good Query Object:</h3>
+<ul>
+<li>Follows <em>Single Responsibility Principle</em></li>
+<li>Can be easily tested in isolation</li>
+<li>Can be combined/extended with another Query Object</li>
+<li>Can be effortlessly reused in any other parts of an application</li>
+<li>Returns <em>ActiveRecord::Relation</em>, not <em>Array</em></li>
+<li>Represents only database query, not business logic or action</li>
+<li>Methods of Query Object are named like <em>ActiveRecord</em> methods (<em>all,
+last, count, etc</em>)</li>
+</ul>
+<h3 id="use-query-objects-when">Use Query Objects when:</h3>
+<ul>
+<li>You need to reuse one query in multiple places of application</li>
+<li>You need to extend, compose or inherit queries and their relations</li>
+<li>You need to write a lot of raw SQL, but don&rsquo;t want to mess up your
+code</li>
+<li>Your query is too complex / vast for just one method or scope</li>
+<li>Your query causes <em>feature envy</em></li>
+</ul>
+<h3 id="dont-use-query-objects-when">Don&rsquo;t use Query Objects when:</h3>
+<ul>
+<li>Your query is simple enough for just one method or scope</li>
+<li>You don&rsquo;t need to extend, compose or inherit your query</li>
+<li>Your query is unique and you don&rsquo;t want to make it reusable</li>
+</ul>
+<p>I hope this article will help you to build awesome queries in your
+applications. Good luck and happy coding!</p>
+]]></content:encoded>
+    </item>
+    <item>
+      <title>Query objects in Ruby on Rails</title>
+      <link>https://neiro.io/posts/2016-10-05-query-objects-in-ruby-on-rails.md/</link>
+      <pubDate>Wed, 05 Oct 2016 10:00:00 +0200</pubDate>
+      <guid>https://neiro.io/posts/2016-10-05-query-objects-in-ruby-on-rails.md/</guid>
+      <description>&lt;p&gt;Database queries are common when you develop web applications. &lt;em&gt;Ruby on&#xA;Rails&lt;/em&gt; and it&amp;rsquo;s &lt;em&gt;ActiveRecord&lt;/em&gt; liberates you from writing tons of&#xA;boilerplate SQL code and results in creation of elegant, eloquent&#xA;queries in plain Ruby.&lt;/p&gt;&#xA;&lt;figure&gt;&lt;img src=&#34;https://cdn-images-1.medium.com/max/1600/1*-oIlwIWlt0BDN4b5a9rRCQ.png&#34;&gt;&#xA;&lt;/figure&gt;&#xA;&#xA;&lt;p&gt;But plenty of immense possibilities that Ruby and ActiveRecord provide,&#xA;unfortunately, remain unused. I bet that often you see a lot of enormous&#xA;scopes in Ruby on Rails models, endless chains of queries in controllers&#xA;and even bulky chunks of raw SQL.&lt;/p&gt;</description>
+      <content:encoded><![CDATA[<p>Database queries are common when you develop web applications. <em>Ruby on
+Rails</em> and it&rsquo;s <em>ActiveRecord</em> liberates you from writing tons of
+boilerplate SQL code and results in creation of elegant, eloquent
+queries in plain Ruby.</p>
+<figure><img src="https://cdn-images-1.medium.com/max/1600/1*-oIlwIWlt0BDN4b5a9rRCQ.png">
+</figure>
+
+<p>But plenty of immense possibilities that Ruby and ActiveRecord provide,
+unfortunately, remain unused. I bet that often you see a lot of enormous
+scopes in Ruby on Rails models, endless chains of queries in controllers
+and even bulky chunks of raw SQL.</p>
+<p>#+begin_src ruby
+@articles = Article.includes(:user)
+.order(&ldquo;created_at DESC&rdquo;)
+.where(&ldquo;text IS NOT NULL&rdquo;)
+.page(page)</p>
+<p>@articles = Articles.connection
+.select_all(%Q{SELECT articles.* FROM
+articles WHERE (text IS NOT NULL) ORDER BY created_at DESC LIMIT 5
+OFFSET 0})
+#+end_src <em>Bad cases of using ActiveRecord queries</em></p>
+<p>These poor practices may create obstacles and become a reason of
+developer&rsquo;s headaches in the real-world web applications.</p>
+<h2 id="typical-db-queries-application-problems">Typical DB queries application problems:</h2>
+<ul>
+<li>Big pieces of queries code in controllers/models/services mess up your
+code</li>
+<li>It is hard to understand complex database requests</li>
+<li>Inserts of raw SQL are non-consistent and often mix with ActiveRecord
+queries</li>
+<li>Testing one separate query in isolation is very problematic</li>
+<li>It is difficult to compose, extend or inherit queries</li>
+<li>Often Single Responsibility Principle gets violated</li>
+</ul>
+<h2 id="solution">Solution:</h2>
+<p>These problems can be solved by using <em>Query Object</em> pattern &mdash; a
+common technique that isolates your complex queries.</p>
+<p><em>Query Object</em> in ideal case is a separate class that contains one
+specific query that implements just one business logic rule.</p>
+<h2 id="implementation">Implementation:</h2>
+<p>For most of the cases <em>Query Object</em> is PORO that accepts relation in
+constructor and defines queries named like an <em>ActiveRecord</em> common
+methods:</p>
+<p>#+begin_src ruby</p>
+<p>class Article &lt; ActiveRecord::Base
+scope :by_title, -&gt;(direction) { order title: direction }
+scope :by_date, -&gt;(direction) { order created_at: direction }
+scope :by_author, -&gt;(direction) { order &ldquo;users.full_name #{direction}&rdquo; }</p>
+<p>SORT_OPTIONS = %w(by_date by_title by_author).freeze</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">  def initialize(params = {}, relation = Article.includes(:user))
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">    @relation = relation
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">    @params = params
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">  end
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">  def all
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">    @relation.public_send(sort_by, direction)
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">  end
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">
+</span></span><span class="line"><span class="ln">10</span><span class="cl">  private
+</span></span><span class="line"><span class="ln">11</span><span class="cl">
+</span></span><span class="line"><span class="ln">12</span><span class="cl">  def sort_by
+</span></span><span class="line"><span class="ln">13</span><span class="cl">    @params[:sort].presence_in(SORT_OPTIONS) || :by_date
+</span></span><span class="line"><span class="ln">14</span><span class="cl">  end
+</span></span><span class="line"><span class="ln">15</span><span class="cl">
+</span></span><span class="line"><span class="ln">16</span><span class="cl">  def direction
+</span></span><span class="line"><span class="ln">17</span><span class="cl">    @params[:direction] == &#34;asc&#34; ? :asc : :desc
+</span></span><span class="line"><span class="ln">18</span><span class="cl">  end</span></span></code></pre></div><p>end</p>
+<p>index @articles = OrderedArticlesQuery.new(sort_query_params).all.page(params[:page])
+end</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">  private
+</span></span><span class="line"><span class="ln">2</span><span class="cl">
+</span></span><span class="line"><span class="ln">3</span><span class="cl">  def sort_query_params
+</span></span><span class="line"><span class="ln">4</span><span class="cl">    params.slice(:sort_by, :direction)
+</span></span><span class="line"><span class="ln">5</span><span class="cl">  end</span></span></code></pre></div><p>end
+#+end_src <em>Query Object implementation and usage in
+controller</em></p>
+<h3 id="heredoc-syntax-for-raw-sql">HEREDOC syntax for raw SQL:</h3>
+<p>For the cases where you desperately need to use raw SQL code try to
+isolate it using Ruby&rsquo;s <em>HEREDOC syntax:</em></p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"> <span class="k">class</span> <span class="nc">PopularArticlesQuery</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  <span class="no">POPULAR_TRESHOLD</span> <span class="o">=</span> <span class="mi">5</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">subscriptions</span> <span class="o">=</span> <span class="no">Subscription</span><span class="o">.</span><span class="n">all</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">    <span class="vi">@subscriptions</span> <span class="o">=</span> <span class="n">subscriptions</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">  <span class="k">def</span> <span class="nf">all</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">    <span class="vi">@subscriptions</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">
+</span></span><span class="line"><span class="ln">12</span><span class="cl">  <span class="kp">private</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">
+</span></span><span class="line"><span class="ln">14</span><span class="cl">  <span class="k">def</span> <span class="nf">query</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">    <span class="s">&lt;&lt;-SQL
+</span></span></span><span class="line"><span class="ln">16</span><span class="cl"><span class="s"></span>      <span class="n">articles</span><span class="o">.</span><span class="n">comments_count</span> <span class="o">&gt;=</span> <span class="c1">#{POPULAR_TRESHOLD}</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">      <span class="no">AND</span> <span class="n">articles</span><span class="o">.</span><span class="n">content</span> <span class="no">IS</span> <span class="no">NOT</span> <span class="no">NULL</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl">      <span class="no">AND</span> <span class="n">articles</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="c1">#{Article::STATUSES[:published]}</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">      <span class="no">ORDER</span> <span class="no">BY</span> <span class="n">articles</span><span class="o">.</span><span class="n">comments_count</span> <span class="no">DESC</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl">    <span class="no">SQL</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">22</span><span class="cl"><span class="k">end</span></span></span></code></pre></div><p><em>HEREDOC syntax example for raw SQL inserts</em></p>
+<h3 id="extending-scope">Extending scope:</h3>
+<p>If your scope relates to existing <em>QueryObject</em>, you can easily extend
+its relation instead of cluttering up your models.
+<a href="http://apidock.com/rails/ActiveRecord/QueryMethods/extending">ActiveRecord::QueryMethods.extending</a>
+method will help you:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="k">class</span> <span class="nc">OrderedArticlesQuery</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  <span class="no">SORT_OPTIONS</span> <span class="o">=</span> <span class="sx">%w(by_date by_title by_author)</span><span class="o">.</span><span class="n">freeze</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">params</span> <span class="o">=</span> <span class="p">{},</span> <span class="n">relation</span> <span class="o">=</span> <span class="no">Article</span><span class="o">.</span><span class="n">includes</span><span class="p">(</span><span class="ss">:user</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">    <span class="vi">@relation</span> <span class="o">=</span> <span class="n">relation</span><span class="o">.</span><span class="n">extending</span><span class="p">(</span><span class="no">Scopes</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">    <span class="vi">@params</span> <span class="o">=</span> <span class="n">params</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">
+</span></span><span class="line"><span class="ln">10</span><span class="cl">  <span class="k">def</span> <span class="nf">all</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">    <span class="vi">@relation</span><span class="o">.</span><span class="n">public_send</span><span class="p">(</span><span class="n">sort_by</span><span class="p">,</span> <span class="n">direction</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">
+</span></span><span class="line"><span class="ln">14</span><span class="cl">  <span class="kp">private</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">
+</span></span><span class="line"><span class="ln">16</span><span class="cl">  <span class="k">def</span> <span class="nf">sort_by</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">    <span class="vi">@params</span><span class="o">[</span><span class="ss">:sort</span><span class="o">].</span><span class="n">presence_in</span><span class="p">(</span><span class="no">SORT_OPTIONS</span><span class="p">)</span> <span class="o">||</span> <span class="ss">:by_date</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">
+</span></span><span class="line"><span class="ln">20</span><span class="cl">  <span class="k">def</span> <span class="nf">direction</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl">    <span class="vi">@params</span><span class="o">[</span><span class="ss">:direction</span><span class="o">]</span> <span class="o">==</span> <span class="s2">&#34;asc&#34;</span> <span class="p">?</span> <span class="ss">:asc</span> <span class="p">:</span> <span class="ss">:desc</span>
+</span></span><span class="line"><span class="ln">22</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">23</span><span class="cl">
+</span></span><span class="line"><span class="ln">24</span><span class="cl">  <span class="c1"># Group additional scope methods in module in order to extend relation</span>
+</span></span><span class="line"><span class="ln">25</span><span class="cl">  <span class="k">module</span> <span class="nn">Scopes</span>
+</span></span><span class="line"><span class="ln">26</span><span class="cl">    <span class="k">def</span> <span class="nf">by_title</span><span class="p">(</span><span class="n">direction</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">27</span><span class="cl">      <span class="n">order</span><span class="p">(</span><span class="ss">title</span><span class="p">:</span> <span class="n">direction</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">28</span><span class="cl">    <span class="k">end</span>
+</span></span><span class="line"><span class="ln">29</span><span class="cl">
+</span></span><span class="line"><span class="ln">30</span><span class="cl">    <span class="k">def</span> <span class="nf">by_date</span><span class="p">(</span><span class="n">direction</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">31</span><span class="cl">      <span class="n">order</span><span class="p">(</span><span class="ss">created_at</span><span class="p">:</span> <span class="n">direction</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">32</span><span class="cl">    <span class="k">end</span>
+</span></span><span class="line"><span class="ln">33</span><span class="cl">
+</span></span><span class="line"><span class="ln">34</span><span class="cl">    <span class="k">def</span> <span class="nf">by_author</span>
+</span></span><span class="line"><span class="ln">35</span><span class="cl">      <span class="n">order</span><span class="p">(</span><span class="s2">&#34;users.full_name </span><span class="si">#{</span><span class="n">direction</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">36</span><span class="cl">    <span class="k">end</span>
+</span></span><span class="line"><span class="ln">37</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">38</span><span class="cl"><span class="k">end</span></span></span></code></pre></div><p><em>Extending scope for Query Objects relations</em></p>
+<h2 id="composing-query-objects">Composing Query Objects:</h2>
+<p><em>Query Objects</em> should be devised to support composition with other
+<em>Query Objects</em> and other ActiveRecord relations. In the example below
+two composed Query Objects represent one SQL query:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="k">class</span> <span class="nc">FeaturedQuery</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">relation</span> <span class="o">=</span> <span class="no">Article</span><span class="o">.</span><span class="n">all</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">    <span class="vi">@relation</span> <span class="o">=</span> <span class="n">relation</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">  <span class="k">def</span> <span class="nf">all</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">    <span class="vi">@relation</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="ss">featured</span><span class="p">:</span> <span class="kp">true</span><span class="p">)</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="s2">&#34;views_count &gt; ?&#34;</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="k">end</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">
+</span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="k">class</span> <span class="nc">ArticlesController</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">  <span class="k">def</span> <span class="nf">index</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">    <span class="vi">@articles</span> <span class="o">=</span> <span class="no">FeaturedArticlesQuery</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">sorted_articles</span><span class="p">)</span><span class="o">.</span><span class="n">all</span> <span class="c1"># SELECT &#34;articles&#34;.* FROM &#34;articles&#34; WHERE &#34;articles&#34;.&#34;featured&#34; = $1 # AND (views_count &gt;100) ORDER BY &#34;articles&#34;.&#34;created_at&#34; DESC LIMIT 10 OFFSET 0</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">
+</span></span><span class="line"><span class="ln">16</span><span class="cl">  <span class="kp">private</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">
+</span></span><span class="line"><span class="ln">18</span><span class="cl">  <span class="k">def</span> <span class="nf">sorted_articles</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">    <span class="no">SortedArticlesQuery</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">sort_query_params</span><span class="p">)</span><span class="o">.</span><span class="n">all</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl">
+</span></span><span class="line"><span class="ln">22</span><span class="cl">  <span class="k">def</span> <span class="nf">sort_query_params</span>
+</span></span><span class="line"><span class="ln">23</span><span class="cl">    <span class="p">{</span> <span class="ss">sort</span><span class="p">:</span> <span class="ss">:by_title</span><span class="p">,</span> <span class="ss">direction</span><span class="p">:</span> <span class="ss">:desc</span> <span class="p">}</span>
+</span></span><span class="line"><span class="ln">24</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">25</span><span class="cl"><span class="k">end</span></span></span></code></pre></div><p><em>Composing two Query Objects</em></p>
+<h2 id="inheritance-of-query-objects">Inheritance of Query Objects:</h2>
+<p>If you have similar queries you may want them to be inherited to reduce
+repetition and follow DRY principle:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="k">class</span> <span class="nc">ArticlesQuery</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  <span class="no">TEXT_LENGTH</span> <span class="o">=</span> <span class="mi">3</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="c1">#+BEGIN_EXAMPLE</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">comments</span> <span class="o">=</span> <span class="no">Comment</span><span class="o">.</span><span class="n">all</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">    <span class="vi">@comments</span> <span class="o">=</span> <span class="n">comments</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">  <span class="k">def</span> <span class="nf">all</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    <span class="n">comments</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">      <span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="s2">&#34;user_id IS NOT NULL&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">      <span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="s2">&#34;LENGTH(content) </span><span class="si">#{</span><span class="n">condition</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">
+</span></span><span class="line"><span class="ln">15</span><span class="cl">  <span class="k">def</span> <span class="nf">condition</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl">    <span class="s2">&#34;&gt; </span><span class="si">#{</span><span class="no">TEXT_LENGTH</span><span class="si">}</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl"><span class="k">end</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">
+</span></span><span class="line"><span class="ln">20</span><span class="cl"><span class="k">class</span> <span class="nc">LongArticlesQuery</span> <span class="o">&lt;</span> <span class="no">ArticlesQuery</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl">  <span class="no">TEXT_LENGTH</span> <span class="o">=</span> <span class="mi">5</span>
+</span></span><span class="line"><span class="ln">22</span><span class="cl">
+</span></span><span class="line"><span class="ln">23</span><span class="cl">  <span class="c1">#+BEGIN_EXAMPLE</span>
+</span></span><span class="line"><span class="ln">24</span><span class="cl">  <span class="k">def</span> <span class="nf">condition</span>
+</span></span><span class="line"><span class="ln">25</span><span class="cl">    <span class="s2">&#34;&gt;= </span><span class="si">#{</span><span class="no">TEXT_LENGTH</span><span class="si">}</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="ln">26</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">27</span><span class="cl"><span class="k">end</span></span></span></code></pre></div><p><em>Inheritance of Query Objects</em></p>
+<h2 id="testing-query-objects">Testing Query Objects:</h2>
+<p>Query Objects should be designed to be pleasant for testing. In most
+cases you just need to test core methods defined in query for their
+results:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="nb">require</span> <span class="s2">&#34;rails_helper&#34;</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="n">describe</span> <span class="no">LongArticlesQuery</span> <span class="k">do</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">  <span class="n">describe</span> <span class="s2">&#34;#all&#34;</span> <span class="k">do</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">    <span class="n">subject</span><span class="p">(</span><span class="ss">:all</span><span class="p">)</span> <span class="p">{</span> <span class="n">described_class</span><span class="o">.</span><span class="n">new</span><span class="o">.</span><span class="n">all</span> <span class="p">}</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">    <span class="n">before</span> <span class="k">do</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">      <span class="n">create</span> <span class="ss">:article</span><span class="p">,</span> <span class="ss">text</span><span class="p">:</span> <span class="s2">&#34;abc&#34;</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">      <span class="n">create</span> <span class="ss">:article</span><span class="p">,</span> <span class="ss">text</span><span class="p">:</span> <span class="s2">&#34;this is long article&#34;</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    <span class="k">end</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">
+</span></span><span class="line"><span class="ln">12</span><span class="cl">    <span class="n">it</span> <span class="s2">&#34;returns one short comment&#34;</span> <span class="k">do</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">      <span class="n">expect</span><span class="p">(</span><span class="n">all</span><span class="o">.</span><span class="n">size</span><span class="p">)</span><span class="o">.</span><span class="n">to</span> <span class="n">eq</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">    <span class="k">end</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl"><span class="k">end</span></span></span></code></pre></div><p><em>Testing Query Objects</em></p>
+<h2 id="summary">Summary:</h2>
+<h3 id="good-query-object">Good Query Object:</h3>
+<ul>
+<li>Follows <em>Single Responsibility Principle</em></li>
+<li>Can be easily tested in isolation</li>
+<li>Can be combined/extended with another Query Object</li>
+<li>Can be effortlessly reused in any other parts of an application</li>
+<li>Returns <em>ActiveRecord::Relation</em>, not <em>Array</em></li>
+<li>Represents only database query, not business logic or action</li>
+<li>Methods of Query Object are named like <em>ActiveRecord</em> methods (<em>all,
+last, count, etc</em>)</li>
+</ul>
+<h3 id="use-query-objects-when">Use Query Objects when:</h3>
+<ul>
+<li>You need to reuse one query in multiple places of application</li>
+<li>You need to extend, compose or inherit queries and their relations</li>
+<li>You need to write a lot of raw SQL, but don&rsquo;t want to mess up your
+code</li>
+<li>Your query is too complex / vast for just one method or scope</li>
+<li>Your query causes <em>feature envy</em></li>
+</ul>
+<h3 id="dont-use-query-objects-when">Don&rsquo;t use Query Objects when:</h3>
+<ul>
+<li>Your query is simple enough for just one method or scope</li>
+<li>You don&rsquo;t need to extend, compose or inherit your query</li>
+<li>Your query is unique and you don&rsquo;t want to make it reusable</li>
+</ul>
+<p>I hope this article will help you to build awesome queries in your
+applications. Good luck and happy coding!</p>
+]]></content:encoded>
+    </item>
+    <item>
+      <title>Jekyll with Rails assets</title>
+      <link>https://neiro.io/blog/2015-05-14-jekyll-with-rails-assets/</link>
+      <pubDate>Thu, 14 May 2015 10:00:00 +0200</pubDate>
+      <guid>https://neiro.io/blog/2015-05-14-jekyll-with-rails-assets/</guid>
+      <description>&lt;p&gt;&lt;a href=&#34;http://jekyllrb.com/&#34;&gt;Jekyll&lt;/a&gt; is the great static website generator,&#xA;that can be easily used for blogs, portfolio pages, galleries and others&#xA;simple projects. It`s very simple, flexible tool that can be upgraded&#xA;with hundreds powerful plugins.&lt;/p&gt;&#xA;&lt;p&gt;If you like Ruby on Rails, you might want to use Rails assets pipeline&#xA;when you work with front-end in Jekyll. If so, here are&#xA;&lt;a href=&#34;https://github.com/jekyll-assets/jekyll-assets&#34;&gt;jekyll-assets&lt;/a&gt;. This&#xA;project allows you to use some Rails-like assets pipeline functionality:&lt;/p&gt;</description>
+      <content:encoded><![CDATA[<p><a href="http://jekyllrb.com/">Jekyll</a> is the great static website generator,
+that can be easily used for blogs, portfolio pages, galleries and others
+simple projects. It`s very simple, flexible tool that can be upgraded
+with hundreds powerful plugins.</p>
+<p>If you like Ruby on Rails, you might want to use Rails assets pipeline
+when you work with front-end in Jekyll. If so, here are
+<a href="https://github.com/jekyll-assets/jekyll-assets">jekyll-assets</a>. This
+project allows you to use some Rails-like assets pipeline functionality:</p>
+<ul>
+<li>
+<p>SASS, LESS, Coffeescript and even ERB</p>
+</li>
+<li>
+<p>Rails assets dependencies management:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="ln">1</span><span class="cl">  <span class="c1">//=require &#39;jquery&#39;
+</span></span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="c1"></span>  <span class="c1">//=require &#39;parallax&#39;
+</span></span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="c1"></span>  <span class="c1">//=require &#39;slideout&#39;
+</span></span></span></code></pre></div></li>
+<li>
+<p>Minification and compression for Javascript and CSS</p>
+</li>
+<li>
+<p>Gzipped versions of assets</p>
+</li>
+</ul>
+<p>But what if you also wants to use popular Bower packages with Jekyll and
+jekyll-assets?<br />
+First, you need <a href="https://rails-assets.org/">Rails assets</a> project,
+that allows you to use any Bower modules with Bundler. You just need to
+add required packages in your <em>Gemfile</em> like this:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">source</span> <span class="s1">&#39;https://rails-assets.org&#39;</span> <span class="k">do</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">  <span class="n">gem</span> <span class="s1">&#39;rails-assets-jquery&#39;</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl">  <span class="n">gem</span> <span class="s1">&#39;rails-assets-normalize-scss&#39;</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl">  <span class="n">gem</span> <span class="s1">&#39;rails-assets-slideout.js&#39;</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl"><span class="k">end</span></span></span></code></pre></div><p>It works great with Ruby on Rails, but you need some hack to use it
+with jekyll-assets - by default, jekyll-assets configuration does not
+include rails-assets paths. To fix this, you can load paths with
+<strong>Sprockets</strong> in your Jekyll plugin file (<strong>_plugins/ext.rb</strong>) .</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="nb">require</span> <span class="s1">&#39;jekyll-assets&#39;</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="nb">require</span> <span class="s1">&#39;bundler/setup&#39;</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="no">Bundler</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="ss">:default</span><span class="p">,</span> <span class="s1">&#39;development&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="k">if</span> <span class="n">defined?</span><span class="p">(</span><span class="no">RailsAssets</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">  <span class="no">RailsAssets</span><span class="o">.</span><span class="n">load_paths</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">path</span><span class="o">|</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">    <span class="no">Sprockets</span><span class="o">.</span><span class="n">append_path</span> <span class="n">path</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="k">end</span></span></span></code></pre></div><p>When you&rsquo;ve completed this setup, you can manage your assets almost like in
+Ruby on Rails.</p>
+]]></content:encoded>
+    </item>
+    <item>
+      <title>Jekyll with Rails assets</title>
+      <link>https://neiro.io/posts/2015-05-14-jekyll-with-rails-assets/</link>
+      <pubDate>Thu, 14 May 2015 10:00:00 +0200</pubDate>
+      <guid>https://neiro.io/posts/2015-05-14-jekyll-with-rails-assets/</guid>
+      <description>&lt;p&gt;&lt;a href=&#34;http://jekyllrb.com/&#34;&gt;Jekyll&lt;/a&gt; is the great static website generator,&#xA;that can be easily used for blogs, portfolio pages, galleries and others&#xA;simple projects. It`s very simple, flexible tool that can be upgraded&#xA;with hundreds powerful plugins.&lt;/p&gt;&#xA;&lt;p&gt;If you like Ruby on Rails, you might want to use Rails assets pipeline&#xA;when you work with front-end in Jekyll. If so, here are&#xA;&lt;a href=&#34;https://github.com/jekyll-assets/jekyll-assets&#34;&gt;jekyll-assets&lt;/a&gt;. This&#xA;project allows you to use some Rails-like assets pipeline functionality:&lt;/p&gt;</description>
+      <content:encoded><![CDATA[<p><a href="http://jekyllrb.com/">Jekyll</a> is the great static website generator,
+that can be easily used for blogs, portfolio pages, galleries and others
+simple projects. It`s very simple, flexible tool that can be upgraded
+with hundreds powerful plugins.</p>
+<p>If you like Ruby on Rails, you might want to use Rails assets pipeline
+when you work with front-end in Jekyll. If so, here are
+<a href="https://github.com/jekyll-assets/jekyll-assets">jekyll-assets</a>. This
+project allows you to use some Rails-like assets pipeline functionality:</p>
+<ul>
+<li>
+<p>SASS, LESS, Coffeescript and even ERB</p>
+</li>
+<li>
+<p>Rails assets dependencies management:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="ln">1</span><span class="cl">  <span class="c1">//=require &#39;jquery&#39;
+</span></span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="c1"></span>  <span class="c1">//=require &#39;parallax&#39;
+</span></span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="c1"></span>  <span class="c1">//=require &#39;slideout&#39;
+</span></span></span></code></pre></div></li>
+<li>
+<p>Minification and compression for Javascript and CSS</p>
+</li>
+<li>
+<p>Gzipped versions of assets</p>
+</li>
+</ul>
+<p>But what if you also wants to use popular Bower packages with Jekyll and
+jekyll-assets?<br />
+First, you need <a href="https://rails-assets.org/">Rails assets</a> project,
+that allows you to use any Bower modules with Bundler. You just need to
+add required packages in your <em>Gemfile</em> like this:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">source</span> <span class="s1">&#39;https://rails-assets.org&#39;</span> <span class="k">do</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">  <span class="n">gem</span> <span class="s1">&#39;rails-assets-jquery&#39;</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl">  <span class="n">gem</span> <span class="s1">&#39;rails-assets-normalize-scss&#39;</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl">  <span class="n">gem</span> <span class="s1">&#39;rails-assets-slideout.js&#39;</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl"><span class="k">end</span></span></span></code></pre></div><p>It works great with Ruby on Rails, but you need some hack to use it
+with jekyll-assets - by default, jekyll-assets configuration does not
+include rails-assets paths. To fix this, you can load paths with
+<strong>Sprockets</strong> in your Jekyll plugin file (<strong>_plugins/ext.rb</strong>) .</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="nb">require</span> <span class="s1">&#39;jekyll-assets&#39;</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="nb">require</span> <span class="s1">&#39;bundler/setup&#39;</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="no">Bundler</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="ss">:default</span><span class="p">,</span> <span class="s1">&#39;development&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="k">if</span> <span class="n">defined?</span><span class="p">(</span><span class="no">RailsAssets</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">  <span class="no">RailsAssets</span><span class="o">.</span><span class="n">load_paths</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">path</span><span class="o">|</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">    <span class="no">Sprockets</span><span class="o">.</span><span class="n">append_path</span> <span class="n">path</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">  <span class="k">end</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="k">end</span></span></span></code></pre></div><p>When you&rsquo;ve completed this setup, you can manage your assets almost like in
+Ruby on Rails.</p>
+]]></content:encoded>
+    </item>
+  </channel>
+</rss>

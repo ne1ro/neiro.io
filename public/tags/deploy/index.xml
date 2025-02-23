@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Deploy on neiro blog</title>
+    <link>https://neiro.io/tags/deploy/</link>
+    <description>Recent content in Deploy on neiro blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-GB</language>
+    <copyright>neiro © 2012-2025</copyright>
+    <lastBuildDate>Sun, 24 May 2015 10:00:00 +0200</lastBuildDate>
+    <atom:link href="https://neiro.io/tags/deploy/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Deploy Jekyll with Capistrano</title>
+      <link>https://neiro.io/blog/2015-05-24-deploy-jekyll-with-capistrano/</link>
+      <pubDate>Sun, 24 May 2015 10:00:00 +0200</pubDate>
+      <guid>https://neiro.io/blog/2015-05-24-deploy-jekyll-with-capistrano/</guid>
+      <description>&lt;p&gt;If you&amp;rsquo;re using Jekyll to generate your static website, you may want to&#xA;deploy it as simple and fast, as Jekyll works. For this case, Ruby&#xA;ecosystem has remote server automation and deployment tool that called&#xA;&lt;a href=&#34;http://capistranorb.com/&#34;&gt;Capistrano&lt;/a&gt; .&lt;/p&gt;&#xA;&lt;p&gt;First of all, you need to create &lt;em&gt;Gemfile&lt;/em&gt; in your Jekyll project and&#xA;add this lines:&lt;/p&gt;&#xA;&#xA;&#xA;&#xA;&#xA;&#xA;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-ruby&#34; data-lang=&#34;ruby&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;source&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;https://rubygems.org&amp;#39;&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;ln&#34;&gt;2&lt;/span&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;gem&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;capistrano&amp;#39;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;~&amp;gt; 3.4.0&amp;#39;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then execute:&lt;/p&gt;&#xA;&#xA;&#xA;&#xA;&#xA;&#xA;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;cl&#34;&gt;bundle install &lt;span class=&#34;o&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; bundle &lt;span class=&#34;nb&#34;&gt;exec&lt;/span&gt; cap install&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This creates configuration files, that you can change with your&#xA;parameters. Make sure that you set up production configuration with your&#xA;server data (&lt;em&gt;/config/deploy/production.rb&lt;/em&gt;):&lt;/p&gt;</description>
+      <content:encoded><![CDATA[<p>If you&rsquo;re using Jekyll to generate your static website, you may want to
+deploy it as simple and fast, as Jekyll works. For this case, Ruby
+ecosystem has remote server automation and deployment tool that called
+<a href="http://capistranorb.com/">Capistrano</a> .</p>
+<p>First of all, you need to create <em>Gemfile</em> in your Jekyll project and
+add this lines:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">source</span> <span class="s1">&#39;https://rubygems.org&#39;</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="n">gem</span> <span class="s1">&#39;capistrano&#39;</span><span class="p">,</span> <span class="s1">&#39;~&gt; 3.4.0&#39;</span></span></span></code></pre></div><p>Then execute:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="ln">1</span><span class="cl">bundle install <span class="o">&amp;&amp;</span> bundle <span class="nb">exec</span> cap install</span></span></code></pre></div><p>This creates configuration files, that you can change with your
+parameters. Make sure that you set up production configuration with your
+server data (<em>/config/deploy/production.rb</em>):</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl">
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="n">role</span> <span class="ss">:app</span><span class="p">,</span> <span class="sx">%w{user@server}</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="n">role</span> <span class="ss">:web</span><span class="p">,</span> <span class="sx">%w{user@server}</span></span></span></code></pre></div><p>After configuration you can deploy your project with one simple command:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="ln">1</span><span class="cl">bundle <span class="nb">exec</span> cap production deploy</span></span></code></pre></div><p>This command deploys source to <em>/var/www/website_name</em>, but it does not
+generate website. To execute <code>jekyll build</code> command you need to install
+Ruby using <a href="https://github.com/sstephenson/rbenv">rbenv</a> or
+<a href="https://rvm.io/">RVM</a> first.</p>
+<p>Next you should add Capistrano plugin for rbenv in <em>Gemfile</em>:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">gem</span> <span class="s1">&#39;capistrano-rbenv&#39;</span><span class="p">,</span> <span class="s1">&#39;~&gt; 2.0&#39;</span></span></span></code></pre></div><p>Then execute</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">bundle</span> <span class="nb">exec</span></span></span></code></pre></div><p>And add this line to <em>Capfile</em>:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="nb">require</span> <span class="s1">&#39;capistrano/rbenv&#39;</span></span></span></code></pre></div><p>Install Jekyll gem on server and add it to rbenv binaries list in
+<em>config/deploy.rb</em>:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">set</span> <span class="ss">:rbenv_map_bins</span><span class="p">,</span> <span class="sx">%w{rake gem bundle ruby jekyll}</span></span></span></code></pre></div><p>Now you can use my
+<a href="https://github.com/ne1ro/capistrano-jekyll">capistrano-jekyll</a> gem to
+execute <code>jekyll build</code> command every time when you deploy your website&rsquo;s
+changes:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="c1"># Gemfile</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="n">gem</span> <span class="s1">&#39;capistrano-jekyll&#39;</span></span></span></code></pre></div>
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="ln">1</span><span class="cl">$ bundle install <span class="o">&amp;&amp;</span> bundle <span class="nb">exec</span> cap production deploy</span></span></code></pre></div>]]></content:encoded>
+    </item>
+    <item>
+      <title>Deploy Jekyll with Capistrano</title>
+      <link>https://neiro.io/posts/2015-05-24-deploy-jekyll-with-capistrano/</link>
+      <pubDate>Sun, 24 May 2015 10:00:00 +0200</pubDate>
+      <guid>https://neiro.io/posts/2015-05-24-deploy-jekyll-with-capistrano/</guid>
+      <description>&lt;p&gt;If you&amp;rsquo;re using Jekyll to generate your static website, you may want to&#xA;deploy it as simple and fast, as Jekyll works. For this case, Ruby&#xA;ecosystem has remote server automation and deployment tool that called&#xA;&lt;a href=&#34;http://capistranorb.com/&#34;&gt;Capistrano&lt;/a&gt; .&lt;/p&gt;&#xA;&lt;p&gt;First of all, you need to create &lt;em&gt;Gemfile&lt;/em&gt; in your Jekyll project and&#xA;add this lines:&lt;/p&gt;&#xA;&#xA;&#xA;&#xA;&#xA;&#xA;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-ruby&#34; data-lang=&#34;ruby&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;source&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;https://rubygems.org&amp;#39;&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;ln&#34;&gt;2&lt;/span&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;gem&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;capistrano&amp;#39;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;s1&#34;&gt;&amp;#39;~&amp;gt; 3.4.0&amp;#39;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then execute:&lt;/p&gt;&#xA;&#xA;&#xA;&#xA;&#xA;&#xA;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;ln&#34;&gt;1&lt;/span&gt;&lt;span class=&#34;cl&#34;&gt;bundle install &lt;span class=&#34;o&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; bundle &lt;span class=&#34;nb&#34;&gt;exec&lt;/span&gt; cap install&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This creates configuration files, that you can change with your&#xA;parameters. Make sure that you set up production configuration with your&#xA;server data (&lt;em&gt;/config/deploy/production.rb&lt;/em&gt;):&lt;/p&gt;</description>
+      <content:encoded><![CDATA[<p>If you&rsquo;re using Jekyll to generate your static website, you may want to
+deploy it as simple and fast, as Jekyll works. For this case, Ruby
+ecosystem has remote server automation and deployment tool that called
+<a href="http://capistranorb.com/">Capistrano</a> .</p>
+<p>First of all, you need to create <em>Gemfile</em> in your Jekyll project and
+add this lines:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">source</span> <span class="s1">&#39;https://rubygems.org&#39;</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="n">gem</span> <span class="s1">&#39;capistrano&#39;</span><span class="p">,</span> <span class="s1">&#39;~&gt; 3.4.0&#39;</span></span></span></code></pre></div><p>Then execute:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="ln">1</span><span class="cl">bundle install <span class="o">&amp;&amp;</span> bundle <span class="nb">exec</span> cap install</span></span></code></pre></div><p>This creates configuration files, that you can change with your
+parameters. Make sure that you set up production configuration with your
+server data (<em>/config/deploy/production.rb</em>):</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl">
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="n">role</span> <span class="ss">:app</span><span class="p">,</span> <span class="sx">%w{user@server}</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="n">role</span> <span class="ss">:web</span><span class="p">,</span> <span class="sx">%w{user@server}</span></span></span></code></pre></div><p>After configuration you can deploy your project with one simple command:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="ln">1</span><span class="cl">bundle <span class="nb">exec</span> cap production deploy</span></span></code></pre></div><p>This command deploys source to <em>/var/www/website_name</em>, but it does not
+generate website. To execute <code>jekyll build</code> command you need to install
+Ruby using <a href="https://github.com/sstephenson/rbenv">rbenv</a> or
+<a href="https://rvm.io/">RVM</a> first.</p>
+<p>Next you should add Capistrano plugin for rbenv in <em>Gemfile</em>:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">gem</span> <span class="s1">&#39;capistrano-rbenv&#39;</span><span class="p">,</span> <span class="s1">&#39;~&gt; 2.0&#39;</span></span></span></code></pre></div><p>Then execute</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">bundle</span> <span class="nb">exec</span></span></span></code></pre></div><p>And add this line to <em>Capfile</em>:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="nb">require</span> <span class="s1">&#39;capistrano/rbenv&#39;</span></span></span></code></pre></div><p>Install Jekyll gem on server and add it to rbenv binaries list in
+<em>config/deploy.rb</em>:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">set</span> <span class="ss">:rbenv_map_bins</span><span class="p">,</span> <span class="sx">%w{rake gem bundle ruby jekyll}</span></span></span></code></pre></div><p>Now you can use my
+<a href="https://github.com/ne1ro/capistrano-jekyll">capistrano-jekyll</a> gem to
+execute <code>jekyll build</code> command every time when you deploy your website&rsquo;s
+changes:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="c1"># Gemfile</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="n">gem</span> <span class="s1">&#39;capistrano-jekyll&#39;</span></span></span></code></pre></div>
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="ln">1</span><span class="cl">$ bundle install <span class="o">&amp;&amp;</span> bundle <span class="nb">exec</span> cap production deploy</span></span></code></pre></div>]]></content:encoded>
+    </item>
+  </channel>
+</rss>

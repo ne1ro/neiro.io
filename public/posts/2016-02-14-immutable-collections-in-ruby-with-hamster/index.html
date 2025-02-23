@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+
+<head>
+  <meta http-equiv="X-Clacks-Overhead" content="GNU Terry Pratchett" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="shortcut icon" href="https://neiro.io/images/favicon.png" />
+<title>Immutable collections in Ruby with Hamster | neiro blog</title>
+<meta name="title" content="Immutable collections in Ruby with Hamster" />
+<meta name="description" content="Ruby has much in common with functional programming languages. For
+example, Ruby supports high-order functions, lambdas, currying and
+recursion, but not the immutability - Ruby&rsquo;s types and data structures
+are mutable and can be changed at any time.
+Why immutability is important? The&rsquo;re many arguments for that:
+
+reliability
+thread-safety
+simpler debugging
+purity - immutable data allows you to write side-effects free code
+
+If you want to make Ruby hash immutable, you can use freeze it:" />
+<meta name="author" content="[neiro]" />
+<meta name="keywords" content="ruby,functional,immutable," />
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+<meta property="og:title" content="Immutable collections in Ruby with Hamster" />
+<meta property="og:description" content="Ruby has much in common with functional programming languages. For
+example, Ruby supports high-order functions, lambdas, currying and
+recursion, but not the immutability - Ruby&rsquo;s types and data structures
+are mutable and can be changed at any time.
+Why immutability is important? The&rsquo;re many arguments for that:
+
+reliability
+thread-safety
+simpler debugging
+purity - immutable data allows you to write side-effects free code
+
+If you want to make Ruby hash immutable, you can use freeze it:" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://neiro.io/posts/2016-02-14-immutable-collections-in-ruby-with-hamster/" />
+
+<meta property="og:image" content="https://neiro.io/images/social_card_bg_hu6466199455690406532.webp"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2016-02-14T10:00:00+01:00" />
+<meta property="article:modified_time" content="2016-02-14T10:00:00+01:00" /><meta property="og:site_name" content="neiro" />
+
+
+
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://neiro.io/images/social_card_bg_hu6466199455690406532.webp"/>
+<meta name="twitter:title" content="Immutable collections in Ruby with Hamster"/>
+<meta name="twitter:description" content="Ruby has much in common with functional programming languages. For
+example, Ruby supports high-order functions, lambdas, currying and
+recursion, but not the immutability - Ruby&rsquo;s types and data structures
+are mutable and can be changed at any time.
+Why immutability is important? The&rsquo;re many arguments for that:
+
+reliability
+thread-safety
+simpler debugging
+purity - immutable data allows you to write side-effects free code
+
+If you want to make Ruby hash immutable, you can use freeze it:"/>
+
+
+
+<meta itemprop="name" content="Immutable collections in Ruby with Hamster">
+<meta itemprop="description" content="Ruby has much in common with functional programming languages. For
+example, Ruby supports high-order functions, lambdas, currying and
+recursion, but not the immutability - Ruby&rsquo;s types and data structures
+are mutable and can be changed at any time.
+Why immutability is important? The&rsquo;re many arguments for that:
+
+reliability
+thread-safety
+simpler debugging
+purity - immutable data allows you to write side-effects free code
+
+If you want to make Ruby hash immutable, you can use freeze it:"><meta itemprop="datePublished" content="2016-02-14T10:00:00+01:00" />
+<meta itemprop="dateModified" content="2016-02-14T10:00:00+01:00" />
+<meta itemprop="wordCount" content="397">
+
+<meta itemprop="image" content="https://neiro.io/images/social_card_bg_hu6466199455690406532.webp"/>
+
+
+<meta itemprop="keywords" content="ruby,functional,immutable," />
+
+<meta name="referrer" content="no-referrer-when-downgrade" />
+
+  
+  <link href="/herman.min.css" rel="stylesheet">
+
+  
+    
+    <link href="/syntax.min.css" rel="stylesheet">
+  
+
+  
+
+  
+</head>
+
+<body>
+  <header><a class="skip-link" href="#main-content">Skip to main content</a>
+
+<a href="/" class="title"><h1>neiro blog</h1></a>
+<nav>
+  <a href="/">Home</a>
+
+  <a href="/blog/">Blog</a>
+
+<a href='https://neiro.io/index.xml'>RSS</a>
+
+
+
+
+
+
+
+</nav>
+</header>
+  <main id="main-content">
+
+<h1>Immutable collections in Ruby with Hamster</h1>
+<p class="byline">
+  <time datetime='2016-02-14' pubdate>
+    2016-02-14
+  </time>
+  · [neiro]
+</p>
+
+<content>
+  <p>Ruby has much in common with functional programming languages. For
+example, Ruby supports high-order functions, lambdas, currying and
+recursion, but not the immutability - Ruby&rsquo;s types and data structures
+are mutable and can be changed at any time.</p>
+<p>Why immutability is important? The&rsquo;re many arguments for that:</p>
+<ul>
+<li>reliability</li>
+<li>thread-safety</li>
+<li>simpler debugging</li>
+<li>purity - immutable data allows you to write side-effects free code</li>
+</ul>
+<p>If you want to make Ruby hash immutable, you can use freeze it:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">immutable</span> <span class="o">=</span> <span class="p">{</span> <span class="ss">foo</span><span class="p">:</span> <span class="s1">&#39;bar&#39;</span> <span class="p">}</span> <span class="n">immutable</span><span class="o">.</span><span class="n">freeze</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="n">immutable</span><span class="o">[</span><span class="ss">:foo</span><span class="o">]</span> <span class="o">=</span> <span class="s1">&#39;tball&#39;</span><span class="c1"># RuntimeError: can&#39;t modify frozen Hash</span></span></span></code></pre></div><p>But if you want to use already immutable collections, sets and other
+data structures, you can try
+<a href="https://github.com/hamstergem/hamster">Hamster</a> library.</p>
+<h2 id="hamster">Hamster</h2>
+<p>Hamster provides efficient, immutable and thread-safe collection classes
+for Ruby, such as <em>Hash</em>, <em>Vector</em>, <em>Set</em>, <em>SortedSet</em> and <em>List</em>.
+Hamster collections offers Ruby`s <em>Hash</em>, <em>Array</em>, <em>Enumberable</em>
+compatibility where it possible. You can require all of Hamster
+collection classes:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">gem</span> <span class="n">i</span> <span class="n">hamster</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="nb">require</span> <span class="s1">&#39;hamster&#39;</span></span></span></code></pre></div><p>or only certain types:</p>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="nb">require</span> <span class="s1">&#39;hamster/hash&#39;</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="nb">require</span> <span class="s1">&#39;hamster/vector&#39;</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="nb">require</span> <span class="s1">&#39;hamster/set&#39;</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl"><span class="nb">require</span> <span class="s1">&#39;hamster/sorted_set&#39;</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl"><span class="nb">require</span> <span class="s1">&#39;hamster/list&#39;</span>
+</span></span><span class="line"><span class="ln">6</span><span class="cl"><span class="nb">require</span> <span class="s1">&#39;hamster/deque&#39;</span></span></span></code></pre></div><h2 id="hash">Hash</h2>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="c1"># Create new Hamster Hash</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="n">parrot</span> <span class="o">=</span> <span class="no">Hamster</span><span class="o">::</span><span class="no">Hash</span><span class="o">[</span><span class="ss">type</span><span class="p">:</span> <span class="s1">&#39;bird&#39;</span><span class="p">,</span> <span class="ss">class</span><span class="p">:</span> <span class="s1">&#39;parrot&#39;</span><span class="p">,</span> <span class="ss">color</span><span class="p">:</span> <span class="s1">&#39;yellow&#39;</span><span class="o">]</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="n">parrot</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="ss">:color</span><span class="p">)</span> <span class="c1"># yellow</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="n">parrot</span><span class="o">[</span><span class="ss">:type</span><span class="o">]</span> <span class="c1"># bird</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="c1"># You can not change hash because of immutability</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="n">parrot</span><span class="o">[</span><span class="ss">:subclass</span><span class="o">]</span> <span class="o">=</span> <span class="s1">&#39;budgie&#39;</span> <span class="c1"># NoMethodError: undefined method `[]=&#39;</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="c1"># But you can create a new</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">
+</span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="n">budgie</span> <span class="o">=</span> <span class="n">parrot</span><span class="o">.</span><span class="n">put</span> <span class="ss">:subclass</span><span class="p">,</span> <span class="s1">&#39;budgie&#39;</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="n">budgie</span> <span class="o">==</span> <span class="n">parrot</span> <span class="c1"># false</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl"><span class="n">budgie</span><span class="o">[</span><span class="ss">:subclass</span><span class="o">]</span> <span class="c1"># budgie</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl"><span class="n">parrot</span><span class="o">[</span><span class="ss">:subclass</span><span class="o">]</span> <span class="c1"># nil</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">
+</span></span><span class="line"><span class="ln">16</span><span class="cl"><span class="n">budgie</span><span class="o">.</span><span class="n">to_hash</span><span class="o">.</span><span class="n">class</span> <span class="c1"># Plain Ruby Hash</span></span></span></code></pre></div><h2 id="list">List</h2>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">list</span> <span class="o">=</span> <span class="no">Hamster</span><span class="o">::</span><span class="no">List</span><span class="o">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="o">]</span> <span class="n">list</span><span class="o">.</span><span class="n">tail</span> <span class="c1"># Hamster::List[1, 2]</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="n">list</span><span class="o">.</span><span class="n">head</span> <span class="c1"># 0</span></span></span></code></pre></div><h2 id="set">Set</h2>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="c1"># Hamster&#39;s set is an unordered collection with no duplicates</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="n">colors</span> <span class="o">=</span> <span class="no">Hamster</span><span class="o">::</span><span class="no">Set</span><span class="o">[</span><span class="ss">:green</span><span class="p">,</span> <span class="ss">:white</span><span class="o">]</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="n">colors</span><span class="o">.</span><span class="n">include?</span><span class="p">(</span><span class="ss">:green</span><span class="p">)</span> <span class="c1"># true</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="n">palette</span> <span class="o">=</span> <span class="n">colors</span><span class="o">.</span><span class="n">add</span> <span class="ss">:yellow</span> <span class="c1"># Hamster::Set[:green, :yellow, :white]</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="n">colors</span><span class="o">.</span><span class="n">include?</span><span class="p">(</span><span class="ss">:yellow</span><span class="p">)</span> <span class="c1"># false palette.superset?(colors) # true</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="n">palette</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">colors</span><span class="p">)</span> <span class="c1"># Hamster::Set[:green, :white]</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="n">palette</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">colors</span><span class="p">)</span><span class="o">.</span><span class="n">first</span> <span class="c1"># :yellow</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">
+</span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="n">palette</span><span class="o">.</span><span class="n">to_a</span> <span class="c1"># Plain Ruby array: [:green, :white, :yellow]</span></span></span></code></pre></div><h2 id="vector">Vector</h2>
+
+
+
+
+
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ruby" data-lang="ruby"><span class="line"><span class="ln"> 1</span><span class="cl"> <span class="c1"># Vector is an integer-indexed immutable array</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="n">vector</span> <span class="o">=</span> <span class="no">Hamster</span><span class="o">::</span><span class="no">Vector</span><span class="o">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="o">]</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="n">vector</span><span class="o">[</span><span class="mi">2</span><span class="o">]</span> <span class="c1"># 2</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="n">vector</span><span class="o">[-</span><span class="mi">1</span><span class="o">]</span> <span class="c1"># 2</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="n">vector</span><span class="o">[-</span><span class="mi">4</span><span class="o">]</span> <span class="c1"># nil</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="n">vector</span><span class="o">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="o">]</span> <span class="c1"># Hamster::Vector[1, 2]</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="n">vector</span><span class="o">[</span><span class="mi">0</span><span class="o">..</span><span class="mi">2</span><span class="o">]</span> <span class="c1"># Hamster::Vector[0, 1, 2]</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="n">binary_vector</span> <span class="o">=</span> <span class="n">vector</span><span class="o">.</span><span class="n">delete_at</span> <span class="mi">0</span> <span class="c1"># Hamster::Vector[1, 2]</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="n">vector</span><span class="o">.</span><span class="n">size</span> <span class="c1"># 3</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="n">binary_vector</span><span class="o">.</span><span class="n">size</span> <span class="c1"># 2</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="n">vector</span> <span class="o">==</span> <span class="n">binary_vector</span> <span class="c1"># false</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">
+</span></span><span class="line"><span class="ln">14</span><span class="cl"><span class="p">(</span><span class="n">binary_vector</span> <span class="o">+</span> <span class="n">vector</span><span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="o">.</span><span class="n">uniq</span> <span class="c1"># Hamster::Vector[0, 1, 2]</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl"><span class="p">(</span><span class="n">binary_vector</span> <span class="o">+</span> <span class="n">vector</span><span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="o">.</span><span class="n">uniq</span> <span class="o">==</span> <span class="n">vector</span> <span class="c1"># true</span></span></span></code></pre></div><h2 id="conclusion">Conclusion</h2>
+<p>If you want to use immutable data structures in Ruby to write more
+reliable, efficient and at the same time thread-safe code, you can take
+a look at Hamster. You can find more in Hamster&rsquo;s
+<a href="http://www.rubydoc.info/github/hamstergem/hamster/master">API
+documentation</a>.</p>
+
+</content>
+<p>
+  
+    <a class="blog-tags" href="/tags/ruby/">#ruby</a>
+  
+    <a class="blog-tags" href="/tags/functional/">#functional</a>
+  
+    <a class="blog-tags" href="/tags/immutable/">#immutable</a>
+  
+</p>
+
+
+
+
+  </main>
+  <footer><small>
+  neiro © 2012-2025 | Made with <a href="https://github.com/clente/hugo-bearcub">Bear Cub</a>
+</small></footer>
+
+    
+</body>
+
+</html>

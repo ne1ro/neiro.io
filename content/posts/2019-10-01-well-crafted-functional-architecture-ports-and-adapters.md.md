@@ -54,8 +54,6 @@ architecture_. According to this terminology the inner part of your
 software - the place where you put your business logic - is hexagon
 while your adapters are placed surround it.
 
-{{< figure src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Hexagonal_Architecture.svg/1000px-Hexagonal_Architecture.svg.png" caption="<span class=\"figure-number\">Figure 1: </span>Hexagon" >}}
-
 The hexagon should not contain any references to another frameworks,
 real world services, libraries, etc. - all these elements should be
 adapters. At the same time the architecture doesn't prescribe you to

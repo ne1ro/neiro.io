@@ -11,8 +11,6 @@ Rails_ and it's _ActiveRecord_ liberates you from writing tons of
 boilerplate SQL code and results in creation of elegant, eloquent
 queries in plain Ruby.
 
-{{< figure src="https://cdn-images-1.medium.com/max/1600/1*-oIlwIWlt0BDN4b5a9rRCQ.png" >}}
-
 But plenty of immense possibilities that Ruby and ActiveRecord provide,
 unfortunately, remain unused. I bet that often you see a lot of enormous
 scopes in Ruby on Rails models, endless chains of queries in controllers
